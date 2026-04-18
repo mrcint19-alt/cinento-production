@@ -1,52 +1,47 @@
+/**
+ * File: app/api/contact/route.ts
+ * Version: v5.1 STABLE LEADS API
+ * Updated: 2026-04-18 [Europe/Istanbul]
+ * Status: FIXED FOR CURRENT PROJECT
+ */
+
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
-type LeadStatus = "New" | "In Review" | "Contacted" | "Closed";
-type LeadTemperature = "Hot" | "Warm" | "Cold";
+export async function GET() {
+  try {
+    const { data, error } = await supabase
+      .from("leads")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-type LeadPayload = {
-  name?: unknown;
-  email?: unknown;
-  phone?: unknown;
-  message?: unknown;
-  category?: unknown;
-  status?: unknown;
-  lead_temperature?: unknown;
-};
+    if (error) throw error;
 
-const VALID_STATUSES: LeadStatus[] = ["New", "In Review", "Contacted", "Closed"];
-const VALID_TEMPERATURES: LeadTemperature[] = ["Hot", "Warm", "Cold"];
-
-function normalizeString(value: unknown): string {
-  return String(value ?? "").trim();
-}
-
-function normalizeStatus(value: unknown): LeadStatus {
-  const normalized = normalizeString(value) as LeadStatus;
-  return VALID_STATUSES.includes(normalized) ? normalized : "New";
-}
-
-function normalizeTemperature(value: unknown): LeadTemperature {
-  const normalized = normalizeString(value) as LeadTemperature;
-  return VALID_TEMPERATURES.includes(normalized) ? normalized : "Cold";
+    return NextResponse.json({
+      success: true,
+      leads: data ?? [],
+    });
+  } catch (error: any) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message || "Failed to load leads",
+      },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(req: Request) {
   try {
-    const body: LeadPayload = await req.json();
-
-    const name = normalizeString(body.name);
-    const email = normalizeString(body.email);
-    const phone = normalizeString(body.phone);
-    const message = normalizeString(body.message);
-    const category = normalizeString(body.category) || "Film";
-    const status = normalizeStatus(body.status);
-    const lead_temperature = normalizeTemperature(body.lead_temperature);
+    const body = await req.json();
+    const { name, email, phone, message } = body;
 
     if (!name || !email || !phone || !message) {
       return NextResponse.json(
         {
-          error: "Name, email, phone, and message are required.",
+          success: false,
+          error: "Missing required fields",
         },
         { status: 400 }
       );
@@ -60,66 +55,143 @@ export async function POST(req: Request) {
           email,
           phone,
           message,
-          category,
-          status,
-          lead_temperature,
+          status: "New",
+          category: "Film",
+          notes: "Website form submission",
+          lead_temperature: "Cold",
+          follow_up_date: null,
         },
       ])
-      .select("*")
+      .select()
       .single();
 
-    if (error) {
-      console.error("SUPABASE INSERT ERROR:", error);
-      return NextResponse.json(
-        { error: error.message || "Failed to save lead." },
-        { status: 500 }
-      );
-    }
+    if (error) throw error;
 
+    return NextResponse.json({
+      success: true,
+      lead: data,
+    });
+  } catch (error: any) {
     return NextResponse.json(
       {
-        success: true,
-        message: "Lead submitted successfully.",
-        lead: data,
+        success: false,
+        error: error.message || "Failed to save lead",
       },
-      { status: 201 }
+      { status: 500 }
     );
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Server error";
-
-    console.error("CONTACT POST ERROR:", err);
-
-    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
-export async function GET() {
+export async function PATCH(req: Request) {
   try {
-    const { data, error } = await supabase
-      .from("leads")
-      .select("*")
-      .order("created_at", { ascending: false });
+    const body = await req.json();
 
-    if (error) {
-      console.error("SUPABASE FETCH ERROR:", error);
+    const {
+      id,
+      status,
+      notes,
+      follow_up_date,
+    }: {
+      id?: string | number;
+      status?: string;
+      notes?: string;
+      follow_up_date?: string | null;
+    } = body;
+
+    if (!id) {
       return NextResponse.json(
-        { error: error.message || "Failed to fetch leads." },
-        { status: 500 }
+        {
+          success: false,
+          error: "Missing id",
+        },
+        { status: 400 }
       );
     }
 
+    const updatePayload: Record<string, any> = {};
+
+    if (typeof status === "string" && status.trim()) {
+      updatePayload.status = status.trim();
+    }
+
+    if (typeof notes === "string") {
+      updatePayload.notes = notes;
+    }
+
+    if (typeof follow_up_date === "string") {
+      updatePayload.follow_up_date = follow_up_date || null;
+    }
+
+    if (follow_up_date === null) {
+      updatePayload.follow_up_date = null;
+    }
+
+    if (Object.keys(updatePayload).length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "No fields provided to update",
+        },
+        { status: 400 }
+      );
+    }
+
+    const { data, error } = await supabase
+      .from("leads")
+      .update(updatePayload)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return NextResponse.json({
+      success: true,
+      lead: data,
+    });
+  } catch (error: any) {
     return NextResponse.json(
       {
-        success: true,
-        leads: data ?? [],
+        success: false,
+        error: error.message || "Failed to update lead",
       },
-      { status: 200 }
+      { status: 500 }
     );
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Server error";
+  }
+}
 
-    console.error("CONTACT GET ERROR:", err);
+export async function DELETE(req: Request) {
+  try {
+    const body = await req.json();
+    const { id } = body;
 
-    return NextResponse.json({ error: message }, { status: 500 });
+    if (!id) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Missing id",
+        },
+        { status: 400 }
+      );
+    }
+
+    const { error } = await supabase
+      .from("leads")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+
+    return NextResponse.json({
+      success: true,
+    });
+  } catch (error: any) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message || "Failed to delete lead",
+      },
+      { status: 500 }
+    );
   }
 }

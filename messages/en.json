@@ -1,0 +1,85 @@
+{
+  "_meta": {
+    "project": "CINENTO Website",
+    "version": "v1.0",
+    "updated": "2026-04-16 20:00 Europe/Istanbul",
+    "status": "EN content file"
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "platforms": "Platforms",
+    "gallery": "Gallery",
+    "journal": "Journal",
+    "contact": "Contact"
+  },
+  "hero": {
+    "eyebrow": "CINENTO",
+    "title": "From Idea to International Film Market",
+    "subtitle": "CINENTO develops film and series projects through creative strategy, cinematic packaging, financing vision, and international market positioning.",
+    "primaryButton": "Start Your Project",
+    "secondaryButton": "Explore Platforms"
+  },
+  "about": {
+    "title": "About CINENTO",
+    "text": "CINENTO is a next-generation film development platform connecting storytelling, financing, packaging, and distribution into one cinematic ecosystem."
+  },
+  "platforms": {
+    "title": "Our Core Platforms",
+    "items": [
+      {
+        "title": "Development Studio",
+        "text": "Structured development for film and series projects from concept to package."
+      },
+      {
+        "title": "Pitch Deck & Packaging",
+        "text": "Investor-ready and platform-ready cinematic presentation materials."
+      },
+      {
+        "title": "Market Positioning",
+        "text": "Sharper project identity for festivals, producers, and streaming platforms."
+      },
+      {
+        "title": "Distribution Vision",
+        "text": "Strategic thinking for regional and international release pathways."
+      }
+    ]
+  },
+  "why": {
+    "title": "Why CINENTO",
+    "items": [
+      "Cinematic project development",
+      "Professional international packaging",
+      "Producer-oriented strategy",
+      "Turkey-to-global market vision"
+    ]
+  },
+  "journal": {
+    "title": "CINENTO Journal",
+    "items": [
+      {
+        "title": "Why strong development matters before production",
+        "text": "Projects fail early when structure, market fit, and packaging are weak."
+      },
+      {
+        "title": "How to position a project for international partners",
+        "text": "A good project is not enough. It must be clearly positioned for the right market."
+      },
+      {
+        "title": "From story potential to investor communication",
+        "text": "Creative vision needs a professional language for producers and investors."
+      }
+    ]
+  },
+  "contact": {
+    "title": "Start Your Project",
+    "name": "Name",
+    "email": "Email",
+    "projectType": "Project Type",
+    "message": "Message",
+    "submit": "Send Request"
+  },
+  "footer": {
+    "text": "CINENTO — Cinema and TV on Us"
+  }
+}

@@ -1,0 +1,600 @@
+"use client";
+
+/**
+ * File: app/[lang]/page.tsx
+ * Version: v4.3 FULL HOME + ABOUT/GALLERY/JOURNAL ROUTES
+ * Updated: 2026-04-17 [Europe/Istanbul]
+ * Status: ACTIVE
+ */
+
+import { useMemo, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { homepageContent } from "../../content/homepage";
+import {
+  defaultLanguage,
+  isValidLanguage,
+  type SiteLanguage,
+} from "@/lib/i18n";
+
+type LeadStatus = "New" | "In Review" | "Contacted" | "Closed";
+type LeadTemperature = "Hot" | "Warm" | "Cold";
+
+type FormState = {
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+  status: LeadStatus;
+};
+
+export default function HomePage() {
+  const params = useParams();
+  const router = useRouter();
+
+  const routeLang = Array.isArray(params.lang) ? params.lang[0] : params.lang;
+  const currentLang: SiteLanguage =
+    typeof routeLang === "string" && isValidLanguage(routeLang)
+      ? routeLang
+      : defaultLanguage;
+
+  const content = useMemo(() => homepageContent[currentLang], [currentLang]);
+
+  const [form, setForm] = useState<FormState>({
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+    status: "New",
+  });
+
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const switchLanguage = (nextLang: SiteLanguage) => {
+    if (nextLang === currentLang) return;
+    router.push(`/${nextLang}`);
+  };
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    setForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const goToSection = (id: string) => {
+    if (id === "home") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    const section = document.getElementById(id);
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  const goToPath = (href: string) => {
+    const isExternal =
+      href.startsWith("http://") || href.startsWith("https://");
+
+    if (isExternal) {
+      window.location.href = href;
+      return;
+    }
+
+    const localizedHref = href === "/" ? `/${currentLang}` : `/${currentLang}${href}`;
+    window.location.href = localizedHref;
+  };
+
+  const handleNavClick = (target: string) => {
+    if (target === "about") {
+      window.location.href = `/${currentLang}/about`;
+      return;
+    }
+
+    if (target === "gallery") {
+      window.location.href = `/${currentLang}/gallery`;
+      return;
+    }
+
+    if (target === "journal") {
+      window.location.href = `/${currentLang}/journal`;
+      return;
+    }
+
+    if (target === "platforms") {
+      window.location.href = `/${currentLang}/platforms`;
+      return;
+    }
+
+    goToSection(target);
+  };
+
+  const getLeadTemperature = (
+    message: string,
+    phone: string
+  ): LeadTemperature => {
+    const text = message.toLowerCase().trim();
+
+    const hotKeywords = [
+      "investor",
+      "investment",
+      "budget",
+      "funding",
+      "finance",
+      "financing",
+      "partner",
+      "partnership",
+      "co-production",
+      "coproduction",
+      "distribution",
+      "platform",
+      "netflix",
+      "urgent",
+      "festival",
+      "sales",
+      "producer",
+      "production",
+      "yatırımcı",
+      "yatırım",
+      "bütçe",
+      "fon",
+      "ortak",
+      "ortak yapım",
+      "dağıtım",
+      "yapımcı",
+      "finansman",
+    ];
+
+    const hasHotKeyword = hotKeywords.some((word) => text.includes(word));
+    const hasPhone = phone.trim().length >= 8;
+    const isDetailed = text.length >= 80;
+
+    if ((hasHotKeyword && hasPhone) || (hasHotKeyword && isDetailed)) {
+      return "Hot";
+    }
+
+    if (text.length >= 30 || hasPhone) {
+      return "Warm";
+    }
+
+    return "Cold";
+  };
+
+  const handleSubmit = async () => {
+    const name = form.name.trim();
+    const email = form.email.trim();
+    const phone = form.phone.trim();
+    const message = form.message.trim();
+    const status = form.status;
+    const leadTemperature = getLeadTemperature(message, phone);
+
+    if (!name || !email || !phone || !message) {
+      setError(content.contact.errorRequired);
+      setSuccess("");
+      return;
+    }
+
+    const whatsappWindow = window.open("", "_blank");
+
+    try {
+      setIsSubmitting(true);
+      setError("");
+      setSuccess("");
+
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          phone,
+          message,
+          status,
+          lead_temperature: leadTemperature,
+          language: currentLang,
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        if (whatsappWindow && !whatsappWindow.closed) {
+          whatsappWindow.close();
+        }
+        throw new Error(data?.detail || data?.error || "Submission failed.");
+      }
+
+      const whatsappMessage = `
+🎬 CINENTO — New Project Submission
+
+Language: ${currentLang.toUpperCase()}
+
+━━━━━━━━━━━━━━━━━━
+👤 Client Information
+Name: ${name}
+Email: ${email}
+Phone: ${phone}
+
+📌 Project Details
+${message}
+
+📊 Status: ${status}
+🔥 Lead Priority: ${leadTemperature}
+━━━━━━━━━━━━━━━━━━
+
+— CINENTO
+${content.hero.title}
+      `.trim();
+
+      const whatsappUrl = `https://wa.me/905461232134?text=${encodeURIComponent(
+        whatsappMessage
+      )}`;
+
+      setSuccess(content.contact.successMessage);
+
+      if (whatsappWindow) {
+        whatsappWindow.location.href = whatsappUrl;
+      } else {
+        window.location.href = whatsappUrl;
+      }
+
+      setForm({
+        name: "",
+        email: "",
+        phone: "",
+        message: "",
+        status: "New",
+      });
+    } catch (err: unknown) {
+      if (whatsappWindow && !whatsappWindow.closed) {
+        whatsappWindow.close();
+      }
+
+      const errorMessage =
+        err instanceof Error ? err.message : "Something went wrong.";
+      setError(errorMessage);
+      setSuccess("");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-black text-white" id="home">
+      <div className="max-w-7xl mx-auto px-6 md:px-10 py-6 md:py-8 space-y-14">
+        <header className="sticky top-4 z-50">
+          <div className="rounded-3xl border border-yellow-600/25 bg-black/70 backdrop-blur-xl shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
+            <div className="flex flex-col gap-4 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex items-center justify-between gap-4">
+                <button
+                  onClick={() => goToSection("home")}
+                  className="group flex items-center gap-3 text-left"
+                >
+                  <span className="text-xl font-semibold tracking-[0.18em] text-yellow-500 transition group-hover:text-yellow-400">
+                    {content.nav.brand}
+                  </span>
+                </button>
+
+                <div className="flex items-center gap-2 lg:hidden">
+                  <button
+                    onClick={() => switchLanguage("en")}
+                    className={`min-w-[52px] rounded-full border px-3 py-1.5 text-xs font-semibold tracking-wide transition ${
+                      currentLang === "en"
+                        ? "border-yellow-500 bg-yellow-500 text-black shadow-[0_0_20px_rgba(234,179,8,0.25)]"
+                        : "border-yellow-600/25 bg-black/40 text-yellow-100 hover:border-yellow-500 hover:text-white"
+                    }`}
+                  >
+                    EN
+                  </button>
+
+                  <button
+                    onClick={() => switchLanguage("tr")}
+                    className={`min-w-[52px] rounded-full border px-3 py-1.5 text-xs font-semibold tracking-wide transition ${
+                      currentLang === "tr"
+                        ? "border-yellow-500 bg-yellow-500 text-black shadow-[0_0_20px_rgba(234,179,8,0.25)]"
+                        : "border-yellow-600/25 bg-black/40 text-yellow-100 hover:border-yellow-500 hover:text-white"
+                    }`}
+                  >
+                    TR
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 lg:gap-3">
+                {content.nav.map((item) => (
+                  <button
+                    key={item.label}
+                    onClick={() => handleNavClick(item.target)}
+                    className="rounded-full border border-yellow-600/15 bg-white/[0.02] px-4 py-2 text-sm text-neutral-200 transition hover:border-yellow-500/50 hover:bg-yellow-500/10 hover:text-white"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+
+                <div className="ml-2 hidden items-center gap-2 rounded-full border border-yellow-600/20 bg-black/40 px-2 py-1 lg:flex">
+                  <span className="px-2 text-[11px] font-medium uppercase tracking-[0.2em] text-neutral-400">
+                    {content.languageLabel}
+                  </span>
+
+                  <button
+                    onClick={() => switchLanguage("en")}
+                    className={`min-w-[54px] rounded-full px-3 py-2 text-xs font-semibold tracking-wide transition ${
+                      currentLang === "en"
+                        ? "bg-yellow-500 text-black shadow-[0_0_20px_rgba(234,179,8,0.25)]"
+                        : "text-yellow-100 hover:bg-white/5 hover:text-white"
+                    }`}
+                  >
+                    EN
+                  </button>
+
+                  <button
+                    onClick={() => switchLanguage("tr")}
+                    className={`min-w-[54px] rounded-full px-3 py-2 text-xs font-semibold tracking-wide transition ${
+                      currentLang === "tr"
+                        ? "bg-yellow-500 text-black shadow-[0_0_20px_rgba(234,179,8,0.25)]"
+                        : "text-yellow-100 hover:bg-white/5 hover:text-white"
+                    }`}
+                  >
+                    TR
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <section className="grid lg:grid-cols-2 gap-12 items-center min-h-[78vh]">
+          <div className="space-y-6">
+            <div className="text-xs uppercase tracking-[0.3em] text-yellow-600">
+              {content.hero.eyebrow}
+            </div>
+
+            <h1 className="text-4xl md:text-6xl font-bold leading-tight">
+              {content.hero.title}
+            </h1>
+
+            <p className="text-lg text-neutral-300 leading-8 max-w-xl">
+              {content.hero.subtitle}
+            </p>
+
+            <div className="flex flex-wrap gap-4 pt-2">
+              <button
+                onClick={() => window.location.href = `/${currentLang}/platforms`}
+                className="px-6 py-3 bg-yellow-600 text-black font-medium rounded-xl hover:bg-yellow-500 transition"
+              >
+                {content.hero.cta1}
+              </button>
+              <button
+                onClick={() => goToSection("contact")}
+                className="px-6 py-3 border border-yellow-600/40 rounded-xl hover:border-yellow-500 transition"
+              >
+                {content.hero.cta2}
+              </button>
+            </div>
+          </div>
+
+          <div className="relative h-[360px] rounded-3xl overflow-hidden border border-yellow-600/20 bg-gradient-to-br from-neutral-950 via-neutral-900 to-black">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(234,179,8,0.25),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.08),transparent_22%)]" />
+            <div className="absolute inset-0 border border-yellow-500/10 rounded-3xl" />
+            <div className="absolute bottom-6 left-6 right-6">
+              <div className="text-xs uppercase tracking-[0.3em] text-yellow-500 mb-3">
+                {content.hero.eyebrow}
+              </div>
+              <div className="text-2xl md:text-3xl font-semibold text-white leading-tight max-w-xl mb-2">
+                {content.hero.visualTitle}
+              </div>
+              <div className="text-sm text-neutral-400">
+                {content.hero.visualSubtitle}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section
+          id="about"
+          className="grid md:grid-cols-2 gap-8 rounded-3xl border border-yellow-600/20 bg-neutral-950 p-8"
+        >
+          <div className="space-y-4">
+            <h2 className="text-2xl text-yellow-500 font-semibold">
+              {content.about.titleLeft}
+            </h2>
+            <div className="space-y-3 text-neutral-300 leading-7">
+              {content.about.whatWeDo.map((item) => (
+                <div key={item}>{item}</div>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h2 className="text-2xl text-yellow-500 font-semibold">
+              {content.about.titleRight}
+            </h2>
+            <div className="space-y-3 text-neutral-300 leading-7">
+              {content.about.whyCinento.map((item) => (
+                <div key={item}>{item}</div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section
+          id="platforms"
+          className="space-y-8 rounded-3xl border border-yellow-600/20 bg-neutral-950 p-8"
+        >
+          <div className="space-y-3">
+            <h2 className="text-2xl font-semibold text-yellow-500">
+              {content.platformsSection.title}
+            </h2>
+            <p className="text-neutral-400 max-w-3xl leading-7">
+              {content.platformsSection.subtitle}
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-5">
+            {content.platforms.map((item) => (
+              <button
+                key={item.title}
+                onClick={() => goToPath(item.href)}
+                className="text-left p-6 rounded-2xl bg-black border border-yellow-600/20 hover:border-yellow-500 transition space-y-3"
+              >
+                <div className="text-lg font-medium text-yellow-500">
+                  {item.title}
+                </div>
+                <div className="text-sm text-neutral-400 leading-7">
+                  {item.description}
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section
+          id="gallery"
+          className="space-y-8 rounded-3xl border border-yellow-600/20 bg-neutral-950 p-8"
+        >
+          <div className="space-y-3">
+            <h2 className="text-2xl font-semibold text-yellow-500">
+              {content.gallerySection.title}
+            </h2>
+            <p className="text-neutral-400 max-w-3xl leading-7">
+              {content.gallerySection.subtitle}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {content.gallery.map((item) => (
+              <img
+                key={item.src}
+                src={item.src}
+                alt={item.alt}
+                className="w-full h-[300px] object-cover rounded-2xl border border-yellow-600/20 hover:scale-[1.02] transition duration-300"
+              />
+            ))}
+          </div>
+        </section>
+
+        <section className="grid lg:grid-cols-3 gap-5">
+          {content.platforms.slice(0, 3).map((item) => (
+            <div
+              key={item.title}
+              className="rounded-2xl bg-neutral-900 border border-yellow-600/20 p-6 space-y-3"
+            >
+              <div className="text-lg font-medium text-yellow-500">
+                {item.title}
+              </div>
+              <div className="text-sm text-neutral-400 leading-7">
+                {item.description}
+              </div>
+            </div>
+          ))}
+        </section>
+
+        <section
+          id="journal"
+          className="space-y-6 rounded-3xl border border-yellow-600/20 bg-neutral-950 p-8"
+        >
+          <h2 className="text-2xl font-semibold text-yellow-500">
+            {content.journalSection.title}
+          </h2>
+
+          <div className="grid md:grid-cols-3 gap-4">
+            {content.journal.map((item) => (
+              <div
+                key={item.title}
+                className="p-6 rounded-2xl bg-black border border-yellow-600/20 space-y-3"
+              >
+                <div className="text-lg font-medium text-white leading-7">
+                  {item.title}
+                </div>
+                <div className="text-sm text-neutral-400 leading-7">
+                  {item.description}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section
+          id="contact"
+          className="rounded-3xl bg-neutral-900 p-8 border border-yellow-600/20"
+        >
+          <h2 className="text-2xl text-yellow-500 mb-6 font-semibold">
+            {content.contact.title}
+          </h2>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <input
+                name="name"
+                placeholder={content.contact.namePlaceholder}
+                value={form.name}
+                onChange={handleChange}
+                className="w-full p-3 bg-black border border-yellow-600/20 rounded-xl outline-none focus:border-yellow-500"
+              />
+
+              <input
+                name="email"
+                placeholder={content.contact.emailPlaceholder}
+                value={form.email}
+                onChange={handleChange}
+                className="w-full p-3 bg-black border border-yellow-600/20 rounded-xl outline-none focus:border-yellow-500"
+              />
+
+              <input
+                name="phone"
+                placeholder={content.contact.phonePlaceholder}
+                value={form.phone}
+                onChange={handleChange}
+                className="w-full p-3 bg-black border border-yellow-600/20 rounded-xl outline-none focus:border-yellow-500"
+              />
+
+              <textarea
+                name="message"
+                placeholder={content.contact.messagePlaceholder}
+                value={form.message}
+                onChange={handleChange}
+                className="w-full p-3 bg-black border border-yellow-600/20 rounded-xl h-32 outline-none focus:border-yellow-500"
+              />
+
+              {error ? <div className="text-sm text-red-400">{error}</div> : null}
+              {success ? (
+                <div className="text-sm text-green-400">{success}</div>
+              ) : null}
+
+              <button
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="px-6 py-3 bg-yellow-600 text-black rounded-xl hover:bg-yellow-500 transition disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isSubmitting
+                  ? content.contact.submittingLabel
+                  : content.contact.submitLabel}
+              </button>
+            </div>
+
+            <div className="text-neutral-400 leading-8 whitespace-pre-line">
+              CINENTO
+              {"\n\n"}
+              International development, positioning and platform-oriented project structure.
+              {"\n\n"}
+              → Film
+              {"\n"}
+              → Series
+              {"\n"}
+              → Pitch Deck
+              {"\n"}
+              → Co-Production
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}

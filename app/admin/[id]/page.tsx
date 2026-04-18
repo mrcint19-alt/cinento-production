@@ -1,289 +1,521 @@
-// File: app/admin/[id]/page.tsx
-// Version: v2.2
-// Updated: 2026-04-15 [Europe/Istanbul]
-// Status: STEP 2 - VIEW LEAD WITH EMAIL HISTORY
+"use client";
 
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { getEmailsByLeadId } from "@/lib/email-logs";
+/**
+ * File: app/admin/[id]/page.tsx
+ * Version: v2.0 LEAD DETAIL PRO PLUS
+ * Updated: 2026-04-18 [Europe/Istanbul]
+ * Status: ACTIVE
+ */
+
+import { useEffect, useMemo, useState } from "react";
+import { useParams } from "next/navigation";
 
 type LeadStatus = "New" | "In Review" | "Contacted" | "Closed";
 type LeadTemperature = "Hot" | "Warm" | "Cold";
 
 type LeadItem = {
-  id: string;
+  id: string | number;
   name: string;
   email: string;
   phone: string;
   message: string;
   status: LeadStatus;
+  category?: string | null;
+  follow_up_date?: string | null;
+  notes?: string | null;
   lead_temperature?: LeadTemperature | null;
-  created_at?: string;
+  created_at?: string | null;
 };
 
-async function getLeadById(id: string): Promise<LeadItem | null> {
-  try {
-    const supabase = await createClient();
+type ActivityItem = {
+  id: string;
+  time: string;
+  action: string;
+  detail: string;
+};
 
-    const { data, error } = await supabase
-      .from("leads")
-      .select("*")
-      .eq("id", id)
-      .maybeSingle();
-
-    if (error) {
-      console.log("Lead Detail Supabase Error:", error.message || error);
-      return null;
-    }
-
-    if (!data) {
-      return null;
-    }
-
-    return {
-      id: String(data.id),
-      name: String(data.name ?? ""),
-      email: String(data.email ?? ""),
-      phone: String(data.phone ?? ""),
-      message: String(data.message ?? ""),
-      status: (data.status ?? "New") as LeadStatus,
-      lead_temperature: (data.lead_temperature ?? "Cold") as LeadTemperature,
-      created_at: String(data.created_at ?? ""),
-    };
-  } catch (err: any) {
-    console.log("Lead Detail Catch Error:", err?.message || err);
-    return null;
-  }
+function safePhone(phone?: string | null) {
+  if (!phone) return "";
+  return String(phone).replace(/[^\d]/g, "");
 }
 
-function formatDate(value?: string) {
-  if (!value) return "-";
+function toDatetimeLocal(value?: string | null) {
+  if (!value) return "";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString();
+  if (Number.isNaN(date.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+    date.getDate()
+  )}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
-function getTemperatureBadgeClass(temperature?: LeadTemperature | null) {
-  if (temperature === "Hot") {
-    return "bg-red-500/20 text-red-300 border border-red-500/30";
-  }
-
-  if (temperature === "Warm") {
-    return "bg-yellow-500/20 text-yellow-300 border border-yellow-500/30";
-  }
-
-  return "bg-neutral-500/20 text-neutral-300 border border-neutral-500/30";
+function fromDatetimeLocal(value: string) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toISOString();
 }
 
-function getStatusBadgeClass(status: LeadStatus) {
-  if (status === "Closed") {
-    return "bg-green-500/20 text-green-300 border border-green-500/30";
-  }
+export default function LeadDetailPage() {
+  const params = useParams();
+  const leadId = Array.isArray(params.id) ? params.id[0] : params.id;
 
-  if (status === "Contacted") {
-    return "bg-blue-500/20 text-blue-300 border border-blue-500/30";
-  }
+  const [lead, setLead] = useState<LeadItem | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [updating, setUpdating] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
-  if (status === "In Review") {
-    return "bg-purple-500/20 text-purple-300 border border-purple-500/30";
-  }
+  const [statusValue, setStatusValue] = useState<LeadStatus>("New");
+  const [notesValue, setNotesValue] = useState("");
+  const [followUpValue, setFollowUpValue] = useState("");
 
-  return "bg-neutral-500/20 text-neutral-300 border border-neutral-500/30";
-}
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
 
-export default async function LeadDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
+  useEffect(() => {
+    const fetchLead = async () => {
+      try {
+        setLoading(true);
+        setError("");
 
-  const [lead, emails] = await Promise.all([
-    getLeadById(id),
-    getEmailsByLeadId(id),
-  ]);
+        const response = await fetch("/api/contact", {
+          method: "GET",
+          cache: "no-store",
+        });
 
-  if (!lead) {
-    notFound();
-  }
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(data?.error || "Failed to load lead.");
+        }
+
+        const rawLeads = Array.isArray(data?.leads) ? data.leads : [];
+        const found = rawLeads.find((item: any) => String(item.id) === String(leadId));
+
+        if (!found) {
+          throw new Error("Lead not found.");
+        }
+
+        const normalizedLead: LeadItem = {
+          id: found.id,
+          name: found.name || "",
+          email: found.email || "",
+          phone: found.phone || "",
+          message: found.message || "",
+          status: (found.status || "New") as LeadStatus,
+          category: found.category || "Film",
+          follow_up_date: found.follow_up_date || "",
+          notes: found.notes || "",
+          lead_temperature: (found.lead_temperature || "Cold") as LeadTemperature,
+          created_at: found.created_at || "",
+        };
+
+        setLead(normalizedLead);
+        setStatusValue(normalizedLead.status || "New");
+        setNotesValue(normalizedLead.notes || "");
+        setFollowUpValue(toDatetimeLocal(normalizedLead.follow_up_date || ""));
+
+        const initialActivities: ActivityItem[] = [
+          {
+            id: "activity-created",
+            time: normalizedLead.created_at || new Date().toISOString(),
+            action: "Lead Created",
+            detail: "Lead record loaded successfully.",
+          },
+        ];
+
+        if (normalizedLead.status) {
+          initialActivities.push({
+            id: "activity-status",
+            time: new Date().toISOString(),
+            action: "Current Status",
+            detail: normalizedLead.status,
+          });
+        }
+
+        if (normalizedLead.follow_up_date) {
+          initialActivities.push({
+            id: "activity-followup",
+            time: new Date().toISOString(),
+            action: "Follow-up Scheduled",
+            detail: normalizedLead.follow_up_date,
+          });
+        }
+
+        if (normalizedLead.notes) {
+          initialActivities.push({
+            id: "activity-notes",
+            time: new Date().toISOString(),
+            action: "Notes Loaded",
+            detail: normalizedLead.notes,
+          });
+        }
+
+        setActivities(initialActivities);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Something went wrong.";
+        setError(message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (leadId) {
+      fetchLead();
+    }
+  }, [leadId]);
+
+  const formatDate = (value?: string | null) => {
+    if (!value) return "-";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return date.toLocaleString();
+  };
+
+  const getTemperatureBadgeClass = (temperature?: LeadTemperature | null) => {
+    if (temperature === "Hot") {
+      return "border border-red-500/40 bg-red-500/15 text-red-300";
+    }
+
+    if (temperature === "Warm") {
+      return "border border-yellow-500/40 bg-yellow-500/15 text-yellow-200";
+    }
+
+    return "border border-neutral-500/40 bg-neutral-500/10 text-neutral-300";
+  };
+
+  const getStatusBadgeClass = (status: LeadStatus) => {
+    if (status === "Closed") {
+      return "border border-green-500/40 bg-green-500/15 text-green-300";
+    }
+
+    if (status === "Contacted") {
+      return "border border-blue-500/40 bg-blue-500/15 text-blue-300";
+    }
+
+    if (status === "In Review") {
+      return "border border-purple-500/40 bg-purple-500/15 text-purple-300";
+    }
+
+    return "border border-neutral-500/40 bg-neutral-500/10 text-neutral-300";
+  };
+
+  const addActivity = (action: string, detail: string) => {
+    setActivities((prev) => [
+      {
+        id: `${Date.now()}-${Math.random()}`,
+        time: new Date().toISOString(),
+        action,
+        detail,
+      },
+      ...prev,
+    ]);
+  };
+
+  const updateLead = async () => {
+    if (!lead) return;
+
+    try {
+      setUpdating(true);
+      setError("");
+
+      const response = await fetch("/api/contact", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: lead.id,
+          status: statusValue,
+          notes: notesValue,
+          follow_up_date: fromDatetimeLocal(followUpValue),
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok || !data?.success) {
+        throw new Error(data?.error || "Failed to update lead.");
+      }
+
+      const updatedLead = data?.lead;
+
+      const nextLead: LeadItem = {
+        ...lead,
+        status: (updatedLead?.status || statusValue) as LeadStatus,
+        notes: updatedLead?.notes ?? notesValue,
+        follow_up_date: updatedLead?.follow_up_date ?? fromDatetimeLocal(followUpValue),
+      };
+
+      setLead(nextLead);
+      setStatusValue(nextLead.status || "New");
+      setNotesValue(nextLead.notes || "");
+      setFollowUpValue(toDatetimeLocal(nextLead.follow_up_date || ""));
+
+      addActivity("Lead Updated", "Status / Notes / Follow-up updated successfully.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Update failed.";
+      setError(message);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const deleteLead = async () => {
+    if (!lead) return;
+
+    const confirmed = window.confirm("Are you sure you want to delete this lead?");
+    if (!confirmed) return;
+
+    try {
+      setDeleting(true);
+      setError("");
+
+      const response = await fetch("/api/contact", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: lead.id }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok || !data?.success) {
+        throw new Error(data?.error || "Failed to delete lead.");
+      }
+
+      window.location.href = "/admin";
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Delete failed.";
+      setError(message);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const whatsappUrl = useMemo(() => {
+    if (!lead) return "";
+    const phone = safePhone(lead.phone);
+    if (!phone) return "";
+    const text = `Hello ${lead.name || ""}, this is CINENTO regarding your project inquiry.`;
+    return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+  }, [lead]);
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="max-w-7xl mx-auto px-6 md:px-10 py-8 space-y-8">
-        <div className="rounded-3xl border border-yellow-600/20 bg-neutral-950 p-6 md:p-8">
-          <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
-            <div>
-              <div className="text-xs uppercase tracking-[0.3em] text-yellow-600">
-                CINENTO
-              </div>
+    <main className="min-h-screen bg-black text-white px-6 py-8">
+      <div className="max-w-6xl mx-auto space-y-8">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="text-red-500 text-2xl font-bold">LEAD DETAIL LIVE</div>
 
-              <h1 className="text-3xl md:text-4xl font-bold mt-2">
-                View Lead
-              </h1>
-
-              <p className="text-neutral-400 mt-3 max-w-2xl leading-7">
-                Lead profile, communication summary, and email history in one place.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/admin"
-                className="inline-flex px-4 py-2 rounded-xl border border-yellow-600/30 text-white hover:border-yellow-500 transition"
-              >
-                Back to Admin
-              </Link>
-
-              <Link
-                href="/email-history"
-                className="inline-flex px-4 py-2 rounded-xl bg-yellow-600 text-black hover:bg-yellow-500 transition"
-              >
-                Email History
-              </Link>
-            </div>
+          <div className="flex gap-3">
+            <a
+              href="/admin"
+              className="rounded-xl border border-yellow-600/20 bg-black px-4 py-2 text-sm text-white transition hover:border-yellow-500"
+            >
+              Back to Admin
+            </a>
           </div>
         </div>
 
-        <div className="rounded-3xl border border-yellow-600/20 bg-neutral-950 p-6 md:p-8">
-          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-            <div>
-              <div className="text-xs uppercase tracking-[0.3em] text-yellow-600">
-                Lead Profile
-              </div>
-
-              <h2 className="text-2xl md:text-3xl font-bold mt-2 break-words">
-                {lead.name || "Unnamed Lead"}
-              </h2>
-
-              <div className="mt-4 space-y-2 text-neutral-300">
-                <div className="break-all">
-                  <span className="text-neutral-500">Email:</span> {lead.email || "-"}
-                </div>
-                <div>
-                  <span className="text-neutral-500">Phone:</span> {lead.phone || "-"}
-                </div>
-                <div>
-                  <span className="text-neutral-500">Created:</span>{" "}
-                  {formatDate(lead.created_at)}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-3">
-              <span
-                className={`inline-flex px-4 py-2 rounded-full text-sm font-medium ${getTemperatureBadgeClass(
-                  lead.lead_temperature
-                )}`}
-              >
-                {lead.lead_temperature || "Cold"}
-              </span>
-
-              <span
-                className={`inline-flex px-4 py-2 rounded-full text-sm font-medium ${getStatusBadgeClass(
-                  lead.status
-                )}`}
-              >
-                {lead.status}
-              </span>
-            </div>
+        {loading ? (
+          <div className="rounded-3xl border border-yellow-600/20 bg-neutral-950 p-6 text-neutral-300">
+            Loading lead...
           </div>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-4">
-          <div className="rounded-2xl bg-neutral-950 border border-yellow-600/20 p-5">
-            <div className="text-sm text-neutral-400">Lead ID</div>
-            <div className="text-sm font-medium mt-2 break-all">{lead.id}</div>
+        ) : error ? (
+          <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-6 text-red-300">
+            {error}
           </div>
-
-          <div className="rounded-2xl bg-neutral-950 border border-yellow-600/20 p-5">
-            <div className="text-sm text-neutral-400">Total Emails</div>
-            <div className="text-3xl font-bold mt-2">{emails.length}</div>
+        ) : !lead ? (
+          <div className="rounded-3xl border border-yellow-600/20 bg-neutral-950 p-6 text-neutral-300">
+            Lead not found.
           </div>
+        ) : (
+          <>
+            <section className="rounded-3xl border border-yellow-600/20 bg-neutral-950 p-6 space-y-6">
+              <div className="flex flex-wrap items-start justify-between gap-6">
+                <div className="space-y-3">
+                  <h1 className="text-3xl font-bold text-yellow-500">
+                    {lead.name || "Unnamed Lead"}
+                  </h1>
 
-          <div className="rounded-2xl bg-neutral-950 border border-yellow-600/20 p-5">
-            <div className="text-sm text-neutral-400">Current Status</div>
-            <div className="text-xl font-semibold mt-2">{lead.status}</div>
-          </div>
-        </div>
-
-        <div className="rounded-3xl border border-yellow-600/20 bg-neutral-950 p-6">
-          <h3 className="text-xl font-semibold mb-4">Lead Message</h3>
-
-          <div className="rounded-2xl border border-yellow-600/10 bg-black/40 p-4 text-neutral-300 leading-7 whitespace-pre-wrap break-words">
-            {lead.message || "-"}
-          </div>
-        </div>
-
-        <div className="rounded-3xl border border-yellow-600/20 bg-neutral-950 p-6">
-          <div className="flex items-center justify-between gap-4 mb-6">
-            <div>
-              <h3 className="text-xl font-semibold">Email History</h3>
-              <p className="text-neutral-400 text-sm mt-2">
-                Emails linked to this lead through <code>lead_id</code>.
-              </p>
-            </div>
-          </div>
-
-          {emails.length === 0 ? (
-            <div className="rounded-2xl border border-yellow-600/10 bg-black/40 p-6 text-neutral-400">
-              No emails found for this lead.
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[900px] text-sm">
-                <thead>
-                  <tr className="text-left text-neutral-400 border-b border-yellow-600/10">
-                    <th className="py-4 pr-4">Date</th>
-                    <th className="py-4 pr-4">To</th>
-                    <th className="py-4 pr-4">Subject</th>
-                    <th className="py-4 pr-4">Status</th>
-                    <th className="py-4 pr-4">Action</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {emails.map((email) => (
-                    <tr
-                      key={email.id}
-                      className="border-b border-yellow-600/10 align-top"
+                  <div className="flex flex-wrap gap-3">
+                    <span
+                      className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${getStatusBadgeClass(
+                        lead.status || "New"
+                      )}`}
                     >
-                      <td className="py-4 pr-4 text-neutral-300">
-                        {email.created_at
-                          ? new Date(email.created_at).toLocaleString()
-                          : "-"}
-                      </td>
+                      {lead.status || "-"}
+                    </span>
 
-                      <td className="py-4 pr-4 text-neutral-300 break-all">
-                        {email.to_email}
-                      </td>
+                    <span
+                      className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${getTemperatureBadgeClass(
+                        lead.lead_temperature
+                      )}`}
+                    >
+                      {lead.lead_temperature || "Cold"}
+                    </span>
 
-                      <td className="py-4 pr-4 text-white">
-                        {email.subject}
-                      </td>
+                    <span className="inline-flex rounded-full border border-yellow-600/20 bg-black px-3 py-1 text-xs text-neutral-300">
+                      {lead.category || "Film"}
+                    </span>
+                  </div>
+                </div>
 
-                      <td className="py-4 pr-4">
-                        <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                          {email.status}
-                        </span>
-                      </td>
+                <div className="flex flex-wrap gap-3">
+                  {whatsappUrl ? (
+                    <a
+                      href={whatsappUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-xl bg-green-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-700"
+                    >
+                      WhatsApp
+                    </a>
+                  ) : null}
 
-                      <td className="py-4 pr-4">
-                        <Link
-                          href={`/email-history/${email.id}`}
-                          className="inline-flex px-4 py-2 rounded-xl border border-yellow-600/30 text-white hover:border-yellow-500 transition"
+                  {lead.email ? (
+                    <a
+                      href={`mailto:${lead.email}`}
+                      className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+                    >
+                      Email
+                    </a>
+                  ) : null}
+
+                  <button
+                    onClick={deleteLead}
+                    disabled={deleting}
+                    className="rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-700 disabled:opacity-60"
+                  >
+                    {deleting ? "Deleting..." : "Delete Lead"}
+                  </button>
+                </div>
+              </div>
+
+              {error ? (
+                <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                  {error}
+                </div>
+              ) : null}
+            </section>
+
+            <section className="grid gap-6 lg:grid-cols-3">
+              <div className="rounded-3xl border border-yellow-600/20 bg-neutral-950 p-6 lg:col-span-2 space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-yellow-500 mb-4">
+                    Project Message
+                  </h2>
+                  <div className="rounded-2xl border border-yellow-600/10 bg-black p-5 text-neutral-300 whitespace-pre-wrap leading-7">
+                    {lead.message || "-"}
+                  </div>
+                </div>
+
+                <div>
+                  <h2 className="text-xl font-semibold text-yellow-500 mb-4">
+                    CRM Activity Log
+                  </h2>
+
+                  <div className="space-y-3">
+                    {activities.length === 0 ? (
+                      <div className="rounded-2xl border border-yellow-600/10 bg-black p-4 text-neutral-400">
+                        No activity yet.
+                      </div>
+                    ) : (
+                      activities.map((item) => (
+                        <div
+                          key={item.id}
+                          className="rounded-2xl border border-yellow-600/10 bg-black p-4"
                         >
-                          View Email
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="text-sm font-semibold text-yellow-400">
+                              {item.action}
+                            </div>
+                            <div className="text-xs text-neutral-500">
+                              {formatDate(item.time)}
+                            </div>
+                          </div>
+
+                          <div className="mt-2 text-sm text-neutral-300 whitespace-pre-wrap break-words">
+                            {item.detail}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-3xl border border-yellow-600/20 bg-neutral-950 p-6 space-y-5">
+                <h2 className="text-xl font-semibold text-yellow-500">Lead Info</h2>
+
+                <div className="space-y-3 text-sm">
+                  <div>
+                    <div className="text-neutral-500">Email</div>
+                    <div className="text-white break-all">{lead.email || "-"}</div>
+                  </div>
+
+                  <div>
+                    <div className="text-neutral-500">Phone</div>
+                    <div className="text-white">{lead.phone || "-"}</div>
+                  </div>
+
+                  <div>
+                    <div className="text-neutral-500">Created At</div>
+                    <div className="text-white">{formatDate(lead.created_at)}</div>
+                  </div>
+                </div>
+
+                <div className="pt-2 space-y-2">
+                  <label className="block text-sm text-neutral-400">
+                    Change Status
+                  </label>
+                  <select
+                    value={statusValue}
+                    onChange={(e) => setStatusValue(e.target.value as LeadStatus)}
+                    className="w-full rounded-xl border border-yellow-600/20 bg-black px-4 py-3 text-sm text-white outline-none focus:border-yellow-500"
+                  >
+                    <option value="New">New</option>
+                    <option value="In Review">In Review</option>
+                    <option value="Contacted">Contacted</option>
+                    <option value="Closed">Closed</option>
+                  </select>
+                </div>
+
+                <div className="pt-2 space-y-2">
+                  <label className="block text-sm text-neutral-400">
+                    Follow-up Date
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={followUpValue}
+                    onChange={(e) => setFollowUpValue(e.target.value)}
+                    className="w-full rounded-xl border border-yellow-600/20 bg-black px-4 py-3 text-sm text-white outline-none focus:border-yellow-500"
+                  />
+                </div>
+
+                <div className="pt-2 space-y-2">
+                  <label className="block text-sm text-neutral-400">Notes</label>
+                  <textarea
+                    value={notesValue}
+                    onChange={(e) => setNotesValue(e.target.value)}
+                    className="min-h-[180px] w-full rounded-xl border border-yellow-600/20 bg-black px-4 py-3 text-sm text-white outline-none focus:border-yellow-500"
+                    placeholder="Write notes, follow-up results, call outcomes..."
+                  />
+                </div>
+
+                <button
+                  onClick={updateLead}
+                  disabled={updating}
+                  className="w-full rounded-xl bg-yellow-500 px-4 py-3 text-sm font-semibold text-black transition hover:bg-yellow-400 disabled:opacity-60"
+                >
+                  {updating ? "Saving..." : "Save Lead Updates"}
+                </button>
+              </div>
+            </section>
+          </>
+        )}
       </div>
-    </div>
+    </main>
   );
 }

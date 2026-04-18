@@ -1,0 +1,85 @@
+{
+  "_meta": {
+    "project": "CINENTO Website",
+    "version": "v1.0",
+    "updated": "2026-04-16 20:00 Europe/Istanbul",
+    "status": "TR content file"
+  },
+  "nav": {
+    "home": "Ana Sayfa",
+    "about": "Hakkında",
+    "platforms": "Platformlar",
+    "gallery": "Galeri",
+    "journal": "Journal",
+    "contact": "İletişim"
+  },
+  "hero": {
+    "eyebrow": "CINENTO",
+    "title": "Fikirden Uluslararası Film Pazarına",
+    "subtitle": "CINENTO, film ve dizi projelerini yaratıcı strateji, sinematik paketleme, finansman vizyonu ve uluslararası pazar konumlandırmasıyla geliştirir.",
+    "primaryButton": "Projenizi Başlatın",
+    "secondaryButton": "Platformları Keşfet"
+  },
+  "about": {
+    "title": "CINENTO Hakkında",
+    "text": "CINENTO; hikâye geliştirme, finansman, proje paketleme ve dağıtımı tek bir sinematik ekosistemde birleştiren yeni nesil bir film geliştirme platformudur."
+  },
+  "platforms": {
+    "title": "Temel Platformlarımız",
+    "items": [
+      {
+        "title": "Development Studio",
+        "text": "Film ve dizi projeleri için fikirden sunuma uzanan yapılandırılmış geliştirme."
+      },
+      {
+        "title": "Pitch Deck & Packaging",
+        "text": "Yatırımcıya ve platformlara hazır sinematik sunum materyalleri."
+      },
+      {
+        "title": "Market Positioning",
+        "text": "Festivaller, yapımcılar ve dijital platformlar için daha güçlü proje konumlandırması."
+      },
+      {
+        "title": "Distribution Vision",
+        "text": "Bölgesel ve uluslararası dağıtım yolları için stratejik yaklaşım."
+      }
+    ]
+  },
+  "why": {
+    "title": "Neden CINENTO",
+    "items": [
+      "Sinematik proje geliştirme",
+      "Profesyonel uluslararası paketleme",
+      "Yapımcı odaklı strateji",
+      "Türkiye'den küresel pazara vizyon"
+    ]
+  },
+  "journal": {
+    "title": "CINENTO Journal",
+    "items": [
+      {
+        "title": "Yapım öncesi güçlü geliştirme neden önemlidir",
+        "text": "Yapı, pazar uyumu ve paketleme zayıf olduğunda projeler erken aşamada kaybolur."
+      },
+      {
+        "title": "Bir proje uluslararası ortaklar için nasıl konumlandırılır",
+        "text": "İyi bir proje tek başına yetmez; doğru pazar için doğru şekilde sunulmalıdır."
+      },
+      {
+        "title": "Hikâye potansiyelinden yatırımcı iletişimine",
+        "text": "Yaratıcı vizyonun, yapımcı ve yatırımcı için profesyonel bir dile dönüşmesi gerekir."
+      }
+    ]
+  },
+  "contact": {
+    "title": "Projenizi Başlatın",
+    "name": "Ad Soyad",
+    "email": "E-posta",
+    "projectType": "Proje Türü",
+    "message": "Mesaj",
+    "submit": "Talep Gönder"
+  },
+  "footer": {
+    "text": "CINENTO — Cinema and TV on Us"
+  }
+}
