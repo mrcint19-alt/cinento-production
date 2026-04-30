@@ -1,0 +1,181 @@
+{
+  "en": {
+    "brand": "CINENTO",
+    "hero": {
+      "eyebrow": "CINENTO",
+      "title": "From Idea to International Film Market",
+      "description": "CINENTO develops film, series, and media projects from concept to professional presentation — including screenwriting, pitch development, and investor-ready packages for international markets.",
+      "primaryCta": "Start Your Project",
+      "secondaryCta": "Explore Platform",
+      "cardTitle": "CINENTO",
+      "cardSubtitle": "Where Ideas Become Film-Ready Projects."
+    },
+    "contact": {
+      "title": "Have a Film or Series Idea?",
+      "subtitle": "Send us your project concept and we will help you develop it into a professional, market-ready package.",
+      "namePlaceholder": "Your Name",
+      "emailPlaceholder": "Your Email",
+      "messagePlaceholder": "Tell us about your project...",
+      "buttonLabel": "Submit Your Project",
+      "whatsappLabel": "Chat on WhatsApp"
+    },
+    "footer": {
+      "brandLine": "From Idea to International Film Market",
+      "contactTitle": "Start Your Project",
+      "followTitle": "Follow CINENTO",
+      "rights": "© 2026 CINENTO. All rights reserved."
+    },
+    "whatWeDo": {
+      "title": "What We Do",
+      "items": [
+        "CINENTO helps creators, producers, and partners develop film, series, and media projects with a clear path from concept to presentation."
+      ]
+    },
+    "whyCinento": {
+      "title": "Why CINENTO",
+      "items": [
+        "Film & Series Development — From idea to structured story and screenplay",
+        "Pitch Deck & Investor Packages — Professional materials ready for international markets",
+        "AI-Powered Creative Tools — Faster writing, development, and project building",
+        "Production Strategy — From concept to execution and positioning",
+        "Global Market Focus — Designed for international co-production and distribution"
+      ]
+    },
+    "ecosystem": {
+      "title": "CINENTO Ecosystem",
+      "subtitle": "CINENTO is not just a production company — it is a complete ecosystem connecting film development, AI tools, production strategy, and global presentation into one integrated system."
+    },
+    "platforms": [
+      {
+        "title": "CINENTO Films",
+        "description": "Original films, series, and co-productions developed for local and international markets."
+      },
+      {
+        "title": "CINENTO AI Studio",
+        "description": "AI-powered tools for screenplay writing, pitch deck creation, and professional project development."
+      },
+      {
+        "title": "CINENTO Watch",
+        "description": "A curated platform for showcasing projects, previews, and future cinematic releases."
+      },
+      {
+        "title": "CINENTO Budget Engine",
+        "description": "An intelligent budgeting system that transforms screenplay structure into detailed production cost estimates, enabling accurate planning and investor-ready financial presentations."
+      }
+    ],
+    "gallery": {
+      "title": "",
+      "subtitle": "",
+      "items": []
+    },
+    "journalSection": {
+      "title": "Insights on Film Development"
+    },
+    "journal": [
+      {
+        "title": "Why Most Film Projects Fail Before Production",
+        "description": "Most film projects never reach production — not because of weak ideas, but due to lack of structure, development strategy, and market positioning."
+      },
+      {
+        "title": "Why Most Scripts Never Become Films",
+        "description": "A strong script is not enough. Without professional development, packaging, and industry alignment, most screenplays remain unrealized ideas."
+      },
+      {
+        "title": "Why Most Film Ideas Fail in the Market",
+        "description": "Even good ideas fail when they are not designed for the market. Understanding audience, positioning, and presentation is key to success."
+      }
+    ]
+  },
+  "tr": {
+    "brand": "CINENTO",
+    "hero": {
+      "eyebrow": "CINENTO",
+      "title": "Fikirden Uluslararası Film Pazarına",
+      "description": "CINENTO; film, dizi ve medya projelerini fikir aşamasından profesyonel sunuma kadar geliştirir.",
+      "primaryCta": "Projeni Başlat",
+      "secondaryCta": "Platformu Keşfet",
+      "cardTitle": "CINENTO",
+      "cardSubtitle": "Fikirlerin filme hazır projelere dönüştüğü yer."
+    },
+    "contact": {
+      "title": "Bir Film veya Dizi Fikriniz Var mı?",
+      "subtitle": "Proje fikrinizi bize gönderin; onu profesyonel ve pazara hazır bir pakete dönüştürmenize yardımcı olalım.",
+      "namePlaceholder": "Adınız",
+      "emailPlaceholder": "E-posta adresiniz",
+      "messagePlaceholder": "Projenizi anlatın...",
+      "buttonLabel": "Projeni Gönder",
+      "whatsappLabel": "WhatsApp ile Yaz"
+    },
+    "footer": {
+      "brandLine": "Fikirden Uluslararası Film Pazarına",
+      "contactTitle": "Projeni Başlat",
+      "followTitle": "CINENTO'yu Takip Et",
+      "rights": "© 2026 CINENTO. Tüm hakları saklıdır.",
+      "social": {
+        "instagram": "https://instagram.com/cinento",
+        "linkedin": "https://linkedin.com/company/cinento",
+        "website": "https://cinento.net"
+      }
+    },
+    "whatWeDo": {
+      "title": "Ne Yapıyoruz",
+      "items": [
+        "CINENTO; yaratıcıların, yapımcıların ve iş ortaklarının film, dizi ve medya projelerini fikirden profesyonel sunuma kadar geliştirmesine yardımcı olur."
+      ]
+    },
+    "whyCinento": {
+      "title": "Neden CINENTO",
+      "items": [
+        "Film ve Dizi Geliştirme — Fikirden yapılandırılmış hikâye ve senaryoya",
+        "Pitch Deck ve Yatırımcı Paketleri — Uluslararası pazarlar için profesyonel materyaller",
+        "AI Destekli Yaratıcı Araçlar — Daha hızlı yazım, geliştirme ve proje oluşturma",
+        "Prodüksiyon Stratejisi — Konseptten uygulama ve konumlandırmaya",
+        "Küresel Pazar Odağı — Uluslararası ortak yapım ve dağıtım için tasarlandı"
+      ]
+    },
+    "ecosystem": {
+      "title": "CINENTO Ekosistemi",
+      "subtitle": "CINENTO yalnızca bir yapım şirketi değil; film geliştirme, AI araçları, prodüksiyon stratejisi ve küresel sunumu tek sistemde birleştiren bütünleşik bir ekosistemdir."
+    },
+    "platforms": [
+      {
+        "title": "CINENTO Films",
+        "description": "Yerel ve uluslararası pazarlar için geliştirilen özgün filmler, diziler ve ortak yapımlar."
+      },
+      {
+        "title": "CINENTO AI Studio",
+        "description": "Senaryo yazımı, pitch deck hazırlığı ve profesyonel proje geliştirme için AI destekli araçlar."
+      },
+      {
+        "title": "CINENTO Watch",
+        "description": "Projeleri, ön gösterimleri ve gelecekteki sinematik yayınları sunmak için kürate edilmiş bir platform."
+      },
+      {
+        "title": "CINENTO Budget Engine",
+        "description": "Senaryo yapısını detaylı prodüksiyon bütçesine dönüştüren, planlama ve yatırımcı sunumu için tasarlanmış akıllı bütçeleme sistemi."
+      }
+    ],
+    "gallery": {
+      "title": "",
+      "subtitle": "",
+      "items": []
+    },
+    "journalSection": {
+      "title": "Film Geliştirme Üzerine İçgörüler"
+    },
+    "journal": [
+      {
+        "title": "Neden Çoğu Film Projesi Prodüksiyondan Önce Başarısız Olur?",
+        "description": "Çoğu film projesi prodüksiyona ulaşamaz; bunun nedeni zayıf fikirler değil, eksik yapı, geliştirme stratejisi ve pazar konumlandırmasıdır."
+      },
+      {
+        "title": "Neden Çoğu Senaryo Filme Dönüşmez?",
+        "description": "Güçlü bir senaryo tek başına yeterli değildir. Profesyonel geliştirme, paketleme ve sektör uyumu olmadan çoğu senaryo fikir olarak kalır."
+      },
+      {
+        "title": "Neden Çoğu Film Fikri Pazarda Başarısız Olur?",
+        "description": "İyi fikirler bile pazara göre tasarlanmadığında başarısız olabilir. İzleyici, konumlandırma ve sunum başarının anahtarıdır."
+      }
+    ]
+  }
+}

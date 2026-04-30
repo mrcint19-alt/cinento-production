@@ -1,343 +1,978 @@
+/* 
+File: app/[lang]/page.tsx
+Version: CINENTO Website PRO v3.6
+Updated: 2026-04-30 [Europe/Istanbul]
+Status: PAGE54 BASE + CMS CONNECTED + IMAGE MANAGER ACTIVE HERO SYSTEM CONNECTED + SAFE FALLBACK
+*/
+
 "use client";
 
-/**
- * File: app/[lang]/page.tsx
- * Version: v5.2 HOME NO DUPLICATE HEADER
- * Updated: 2026-04-18 [Europe/Istanbul]
- * Status: ACTIVE
- */
+import { useEffect, useMemo, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 
-import { useMemo, useState } from "react";
-import { useParams } from "next/navigation";
-import { homepageContent } from "../../content/homepage";
-import { defaultLanguage, isValidLanguage, type SiteLanguage } from "@/lib/i18n";
+type Lang = "en" | "tr";
 
-type LeadStatus = "New" | "In Review" | "Contacted" | "Closed";
+type NavItem = {
+  label: string;
+  href: string;
+};
+
+type PlatformItem = {
+  title: string;
+  description: string;
+};
+
+type JournalItem = {
+  title: string;
+  description: string;
+};
+
+type ContactContent = {
+  title: string;
+  subtitle: string;
+  namePlaceholder: string;
+  emailPlaceholder: string;
+  messagePlaceholder: string;
+  buttonLabel: string;
+  whatsappLabel: string;
+};
+
+type PageContent = {
+  brand: string;
+  nav: NavItem[];
+  hero: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    primaryCta: string;
+    secondaryCta: string;
+    cardTitle: string;
+    cardSubtitle: string;
+  };
+  whatWeDo: {
+    title: string;
+    items: string[];
+  };
+  whyCinento: {
+    title: string;
+    items: string[];
+  };
+  ecosystem: {
+    title: string;
+    subtitle: string;
+  };
+  platforms: PlatformItem[];
+  gallery: {
+    title: string;
+    subtitle: string;
+    items: string[];
+    images?: string[];
+  };
+  journalSection: {
+    title: string;
+  };
+  journal: JournalItem[];
+  contact: ContactContent;
+  footer: {
+    brandLine: string;
+    contactTitle: string;
+    followTitle: string;
+    rights: string;
+    social?: {
+      instagram?: string;
+      linkedin?: string;
+      website?: string;
+    };
+  };
+};
+
+type DynamicHomepageContent = Partial<PageContent> & {
+  heroTitle?: string;
+  heroSubtitle?: string;
+  buttonPrimary?: string;
+  buttonSecondary?: string;
+};
+
+type UploadedImages = {
+  hero: string[];
+  gallery: string[];
+  projects: string[];
+  active: {
+    hero: string;
+    gallery: string;
+    projects: string;
+  };
+};
+
+const CONTENT: Record<Lang, PageContent> = {
+  en: {
+    brand: "CINENTO",
+    nav: [
+      { label: "Home", href: "#home" },
+      { label: "About", href: "#about" },
+      { label: "Gallery", href: "#gallery" },
+      { label: "Journal", href: "#journal" },
+      { label: "Contact", href: "#contact" },
+    ],
+    hero: {
+      eyebrow: "CINENTO",
+      title: "From Idea to International Film Market",
+      description:
+        "CINENTO is a next-generation film development platform connecting storytelling, financing, and distribution into one unified cinematic ecosystem.",
+      primaryCta: "Explore Platform",
+      secondaryCta: "Start Project",
+      cardTitle: "CINENTO",
+      cardSubtitle: "Cinematic Development for the International Market",
+    },
+    whatWeDo: {
+      title: "What We Do",
+      items: [
+        "Film & Series Development",
+        "Co-Production Strategy",
+        "Investor Packaging",
+      ],
+    },
+    whyCinento: {
+      title: "Why CINENTO",
+      items: [
+        "Turkey–GCC Bridge",
+        "Creative + Financial Integration",
+        "Scalable Media System",
+        "Investor-Ready Output",
+      ],
+    },
+    ecosystem: {
+      title: "CINENTO Ecosystem",
+      subtitle:
+        "A connected structure designed to combine creative development, project intake, business growth, and future-facing distribution under one brand ecosystem.",
+    },
+    platforms: [
+      {
+        title: "CINENTO AI Studio",
+        description:
+          "Professional cinematic development system for screenplay generation, story architecture, and investor-ready packaging.",
+      },
+      {
+        title: "Outreach CRM",
+        description:
+          "Lead management, project tracking, and business development system for CINENTO partnerships and growth.",
+      },
+      {
+        title: "CINENTO Academy",
+        description:
+          "Training programs, workshops, and structured learning for creators and industry professionals.",
+      },
+      {
+        title: "CINENTO TV",
+        description:
+          "Distribution platform for showcasing projects and curated cinematic content.",
+      },
+    ],
+    gallery: {
+      title: "CINENTO Gallery",
+      subtitle:
+        "Selected visual frames designed to strengthen CINENTO’s cinematic identity, brand presence, and professional presentation.",
+      items: [
+        "Cinematic brand frame",
+        "Development environment",
+        "Investor-ready presentation mood",
+      ],
+      images: [
+        "/images/gallery/gallery-1.jpg",
+        "/images/gallery/gallery-2.jpg",
+        "/images/gallery/gallery-3.jpg",
+      ],
+    },
+    journalSection: {
+      title: "CINENTO Journal",
+    },
+    journal: [
+      {
+        title: "Why strong film projects fail before reaching the market",
+        description:
+          "Development gaps and weak positioning often damage otherwise promising projects.",
+      },
+      {
+        title: "Investor-ready storytelling changes project value",
+        description:
+          "The way a project is packaged and presented directly shapes professional interest.",
+      },
+      {
+        title: "Building a media ecosystem beyond one project",
+        description:
+          "Long-term value comes from systems, not only single productions.",
+      },
+    ],
+    contact: {
+      title: "Start Your Project",
+      subtitle:
+        "Tell us about your project and begin the first step toward development, packaging, and international positioning.",
+      namePlaceholder: "Name / Company",
+      emailPlaceholder: "Email",
+      messagePlaceholder: "Tell us about your project...",
+      buttonLabel: "Submit Project",
+      whatsappLabel: "WhatsApp",
+    },
+    footer: {
+      brandLine: "From Idea to International Film Market",
+      contactTitle: "Contact",
+      followTitle: "Follow",
+      rights: "© 2026 CINENTO. All rights reserved.",
+      social: {
+        instagram: "https://instagram.com/cinento",
+        linkedin: "https://linkedin.com/company/cinento",
+        website: "https://cinento.net",
+      },
+    },
+  },
+  tr: {
+    brand: "CINENTO",
+    nav: [
+      { label: "Ana Sayfa", href: "#home" },
+      { label: "Hakkında", href: "#about" },
+      { label: "Galeri", href: "#gallery" },
+      { label: "Journal", href: "#journal" },
+      { label: "İletişim", href: "#contact" },
+    ],
+    hero: {
+      eyebrow: "CINENTO",
+      title: "Fikirden Uluslararası Film Pazarına",
+      description:
+        "CINENTO; hikâye geliştirme, finansman ve dağıtımı tek bir sinematik ekosistemde birleştiren yeni nesil bir film geliştirme platformudur.",
+      primaryCta: "Platformu Keşfet",
+      secondaryCta: "Projeni Başlat",
+      cardTitle: "CINENTO",
+      cardSubtitle: "Uluslararası Pazar İçin Sinematik Geliştirme",
+    },
+    whatWeDo: {
+      title: "Ne Yapıyoruz",
+      items: [
+        "Film ve Dizi Geliştirme",
+        "Ortak Yapım Stratejisi",
+        "Yatırımcı Paketleme",
+      ],
+    },
+    whyCinento: {
+      title: "Neden CINENTO",
+      items: [
+        "Türkiye–Körfez Köprüsü",
+        "Yaratıcı + Finansal Entegrasyon",
+        "Ölçeklenebilir Medya Sistemi",
+        "Yatırımcıya Hazır Çıktı",
+      ],
+    },
+    ecosystem: {
+      title: "CINENTO Ekosistemi",
+      subtitle:
+        "Yaratıcı geliştirme, proje kabulü, iş büyümesi ve geleceğe dönük dağıtımı tek bir marka sistemi altında birleştiren bağlantılı bir yapı.",
+    },
+    platforms: [
+      {
+        title: "CINENTO AI Studio",
+        description:
+          "Senaryo üretimi, hikâye mimarisi ve yatırımcıya hazır paketleme için profesyonel sinematik geliştirme sistemi.",
+      },
+      {
+        title: "Outreach CRM",
+        description:
+          "CINENTO ortaklıkları ve büyümesi için lead yönetimi, proje takibi ve iş geliştirme sistemi.",
+      },
+      {
+        title: "CINENTO Academy",
+        description:
+          "Yaratıcılar ve sektör profesyonelleri için eğitim programları, atölyeler ve yapılandırılmış öğrenme.",
+      },
+      {
+        title: "CINENTO TV",
+        description:
+          "Projeleri ve seçilmiş sinematik içerikleri sunmaya yönelik dağıtım platformu.",
+      },
+    ],
+    gallery: {
+      title: "CINENTO Galeri",
+      subtitle:
+        "CINENTO’nun sinematik kimliğini, marka görünürlüğünü ve profesyonel sunum gücünü destekleyen seçilmiş görseller.",
+      items: [
+        "Sinematik marka karesi",
+        "Geliştirme ortamı",
+        "Yatırımcı sunum atmosferi",
+      ],
+      images: [
+        "/images/gallery/gallery-1.jpg",
+        "/images/gallery/gallery-2.jpg",
+        "/images/gallery/gallery-3.jpg",
+      ],
+    },
+    journalSection: {
+      title: "CINENTO Journal",
+    },
+    journal: [
+      {
+        title: "Güçlü film projeleri neden pazara ulaşmadan zayıflar",
+        description:
+          "Geliştirme eksikleri ve zayıf konumlandırma, umut veren projeleri bile zedeleyebilir.",
+      },
+      {
+        title: "Yatırımcıya hazır hikâye anlatımı proje değerini değiştirir",
+        description:
+          "Bir projenin nasıl paketlendiği ve sunulduğu, profesyonel ilgiyi doğrudan etkiler.",
+      },
+      {
+        title: "Tek projeden öte bir medya ekosistemi kurmak",
+        description:
+          "Uzun vadeli değer sadece tekil yapımlardan değil, sistemlerden doğar.",
+      },
+    ],
+    contact: {
+      title: "Projenizi Başlatın",
+      subtitle:
+        "Bize projenizi anlatın ve geliştirme, paketleme ve uluslararası konumlandırmanın ilk adımını başlatın.",
+      namePlaceholder: "İsim / Şirket",
+      emailPlaceholder: "E-posta",
+      messagePlaceholder: "Projenizi anlatın...",
+      buttonLabel: "Projeyi Gönder",
+      whatsappLabel: "WhatsApp",
+    },
+    footer: {
+      brandLine: "Fikirden Uluslararası Film Pazarına",
+      contactTitle: "İletişim",
+      followTitle: "Takip Et",
+      rights: "© 2026 CINENTO. Tüm hakları saklıdır.",
+      social: {
+        instagram: "https://instagram.com/cinento",
+        linkedin: "https://linkedin.com/company/cinento",
+        website: "https://cinento.net",
+      },
+    },
+  },
+};
+
+function mergeHomepageContent(
+  fallback: PageContent,
+  dynamic?: DynamicHomepageContent | null
+): PageContent {
+  if (!dynamic) return fallback;
+
+  return {
+    ...fallback,
+    ...dynamic,
+    nav: dynamic.nav || fallback.nav,
+    hero: {
+      ...fallback.hero,
+      ...(dynamic.hero || {}),
+      title: dynamic.heroTitle || dynamic.hero?.title || fallback.hero.title,
+      description:
+        dynamic.heroSubtitle ||
+        dynamic.hero?.description ||
+        fallback.hero.description,
+      primaryCta:
+        dynamic.buttonPrimary ||
+        dynamic.hero?.primaryCta ||
+        fallback.hero.primaryCta,
+      secondaryCta:
+        dynamic.buttonSecondary ||
+        dynamic.hero?.secondaryCta ||
+        fallback.hero.secondaryCta,
+    },
+    whatWeDo: {
+      ...fallback.whatWeDo,
+      ...(dynamic.whatWeDo || {}),
+      items: dynamic.whatWeDo?.items || fallback.whatWeDo.items,
+    },
+    whyCinento: {
+      ...fallback.whyCinento,
+      ...(dynamic.whyCinento || {}),
+      items: dynamic.whyCinento?.items || fallback.whyCinento.items,
+    },
+    ecosystem: {
+      ...fallback.ecosystem,
+      ...(dynamic.ecosystem || {}),
+    },
+    platforms: dynamic.platforms || fallback.platforms,
+    gallery: {
+      ...fallback.gallery,
+      ...(dynamic.gallery || {}),
+      items: dynamic.gallery?.items || fallback.gallery.items,
+      images: dynamic.gallery?.images || fallback.gallery.images,
+    },
+    journalSection: {
+      ...fallback.journalSection,
+      ...(dynamic.journalSection || {}),
+    },
+    journal: dynamic.journal || fallback.journal,
+    contact: {
+      ...fallback.contact,
+      ...(dynamic.contact || {}),
+    },
+    footer: {
+      ...fallback.footer,
+      ...(dynamic.footer || {}),
+    },
+  };
+}
 
 export default function HomePage() {
   const params = useParams();
+  const router = useRouter();
 
-  const routeLang = Array.isArray(params.lang) ? params.lang[0] : params.lang;
+  const lang = (params?.lang === "tr" ? "tr" : "en") as Lang;
 
-  const currentLang: SiteLanguage =
-    typeof routeLang === "string" && isValidLanguage(routeLang)
-      ? routeLang
-      : defaultLanguage;
+  const [dynamicContent, setDynamicContent] =
+    useState<DynamicHomepageContent | null>(null);
 
-  const content = useMemo(() => homepageContent[currentLang], [currentLang]);
+  const [uploadedImages, setUploadedImages] = useState<UploadedImages>({
+    hero: [],
+    gallery: [],
+    projects: [],
+    active: {
+      hero: "",
+      gallery: "",
+      projects: "",
+    },
+  });
+
+  const [brokenImages, setBrokenImages] = useState<Record<string, boolean>>({});
+
+  const content = useMemo(() => {
+    return mergeHomepageContent(CONTENT[lang], dynamicContent);
+  }, [lang, dynamicContent]);
+
+  const activeHeroImage = useMemo(() => {
+    const activeHero = uploadedImages.active.hero;
+
+    if (activeHero && !brokenImages[activeHero]) {
+      return activeHero;
+    }
+
+    const validHeroImages = uploadedImages.hero.filter(
+      (image) => !brokenImages[image]
+    );
+
+    if (validHeroImages.length > 0) {
+      return validHeroImages[0];
+    }
+
+    return null;
+  }, [uploadedImages.active.hero, uploadedImages.hero, brokenImages]);
+
+  const activeGalleryImages = useMemo(() => {
+    const uploadedGallery = uploadedImages.gallery.filter(
+      (image) => !brokenImages[image]
+    );
+
+    if (uploadedGallery.length > 0) {
+      return uploadedGallery;
+    }
+
+    return (content.gallery.images || []).filter(
+      (image) => !brokenImages[image]
+    );
+  }, [uploadedImages.gallery, content.gallery.images, brokenImages]);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
-  const [status] = useState<LeadStatus>("New");
-  const [feedback, setFeedback] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const goToSection = (id: string) => {
-    if (id === "home") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
+  const whatsappNumber = "905555555555";
+
+  useEffect(() => {
+    let isActive = true;
+
+    fetch("/api/content/homepage", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!isActive) return;
+
+        if (data && data[lang]) {
+          setDynamicContent(data[lang]);
+        } else {
+          setDynamicContent(null);
+        }
+      })
+      .catch(() => {
+        if (isActive) {
+          setDynamicContent(null);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [lang]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    fetch("/api/admin/images", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!isActive) return;
+
+        if (data?.success && data.images) {
+          setUploadedImages({
+            hero: Array.isArray(data.images.hero) ? data.images.hero : [],
+            gallery: Array.isArray(data.images.gallery)
+              ? data.images.gallery
+              : [],
+            projects: Array.isArray(data.images.projects)
+              ? data.images.projects
+              : [],
+            active: {
+              hero: data.active?.hero || "",
+              gallery: data.active?.gallery || "",
+              projects: data.active?.projects || "",
+            },
+          });
+        }
+      })
+      .catch(() => {
+        if (isActive) {
+          setUploadedImages({
+            hero: [],
+            gallery: [],
+            projects: [],
+            active: {
+              hero: "",
+              gallery: "",
+              projects: "",
+            },
+          });
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  const mailBody = useMemo(() => {
+    return `${content.contact.title}
+
+${content.contact.namePlaceholder}: ${name}
+${content.contact.emailPlaceholder}: ${email}
+
+${message}`;
+  }, [content, name, email, message]);
+
+  function handleLanguageSwitch(nextLang: Lang) {
+    if (nextLang === lang) return;
+    router.push(`/${nextLang}`);
+  }
+
+  function handleNavClick(href: string) {
+    const targetId = href.replace("#", "");
+    const target = document.getElementById(targetId);
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
     }
+  }
 
-    const section = document.getElementById(id);
-    if (section) {
-      section.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
+  function handleImageError(src: string) {
+    setBrokenImages((current) => ({
+      ...current,
+      [src]: true,
+    }));
+  }
 
-  const handleNavClick = (target: string) => {
-    if (target === "about") {
-      window.location.href = `/${currentLang}/about`;
-      return;
-    }
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
 
-    if (target === "gallery") {
-      window.location.href = `/${currentLang}/gallery`;
-      return;
-    }
-
-    if (target === "journal") {
-      window.location.href = `/${currentLang}/journal`;
-      return;
-    }
-
-    if (target === "contact") {
-      window.location.href = `/${currentLang}/contact`;
-      return;
-    }
-
-    if (target === "platforms") {
-      goToSection("platforms");
-      return;
-    }
-
-    goToSection(target);
-  };
-
-  const openPlatform = (href: string) => {
-    if (!href || href === "#") return;
-    window.location.href = href;
-  };
-
-  const handleSubmit = async () => {
-    if (!name.trim() || !email.trim() || !phone.trim() || !message.trim()) {
-      setFeedback(content.contact.errorRequired);
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      setFeedback("");
-
-      const whatsappText = `
-🎬 CINENTO — New Project Request
-
-Language: ${currentLang.toUpperCase()}
-Status: ${status}
-
-Name: ${name}
-Email: ${email}
-Phone: ${phone}
-
-Project:
-${message}
-      `.trim();
-
-      window.open(
-        `https://wa.me/905461232134?text=${encodeURIComponent(whatsappText)}`,
-        "_blank"
+    if (!name.trim() || !email.trim() || !message.trim()) {
+      alert(
+        lang === "tr"
+          ? "Lütfen tüm alanları doldurun."
+          : "Please fill in all fields."
       );
-
-      setFeedback(content.contact.successMessage);
-      setName("");
-      setEmail("");
-      setPhone("");
-      setMessage("");
-    } finally {
-      setIsSubmitting(false);
+      return;
     }
-  };
+
+    const whatsappText = encodeURIComponent(mailBody);
+    window.open(
+      `https://wa.me/${whatsappNumber}?text=${whatsappText}`,
+      "_blank"
+    );
+  }
 
   return (
-    <main className="min-h-screen bg-black text-white" id="home">
-      <div className="max-w-7xl mx-auto px-6 md:px-10 py-6 md:py-8 space-y-14">
-        <section className="grid lg:grid-cols-2 gap-12 items-center min-h-[78vh] pt-4 md:pt-8">
-          <div className="space-y-6">
-            <div className="text-xs uppercase tracking-[0.3em] text-yellow-600">
-              {content.hero.eyebrow}
-            </div>
+    <main className="min-h-screen bg-[#070707] text-white">
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-black/70 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+          <div className="text-lg font-bold tracking-wide text-white">
+            {content.brand}
+          </div>
 
-            <h1 className="text-4xl md:text-6xl font-bold leading-tight">
-              {content.hero.title}
-            </h1>
-
-            <p className="text-lg text-neutral-300 leading-8 max-w-xl">
-              {content.hero.subtitle}
-            </p>
-
-            <div className="flex flex-wrap gap-4 pt-2">
+          <nav className="hidden items-center gap-6 md:flex">
+            {content.nav.map((item) => (
               <button
-                onClick={() => goToSection("platforms")}
-                className="px-6 py-3 bg-yellow-600 text-black font-medium rounded-xl hover:bg-yellow-500 transition"
+                key={item.label}
+                onClick={() => handleNavClick(item.href)}
+                className="text-sm text-neutral-300 transition hover:text-[#d4af37]"
               >
-                {content.hero.cta1}
+                {item.label}
+              </button>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-3">
+            <div className="hidden rounded-full border border-white/10 bg-white/5 p-1 sm:flex">
+              <button
+                onClick={() => handleLanguageSwitch("en")}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                  lang === "en"
+                    ? "bg-[#d4af37] text-black"
+                    : "text-neutral-300 hover:text-white"
+                }`}
+              >
+                EN
               </button>
 
               <button
-                onClick={() => handleNavClick("contact")}
-                className="px-6 py-3 border border-yellow-600/40 rounded-xl hover:border-yellow-500 transition"
+                onClick={() => handleLanguageSwitch("tr")}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                  lang === "tr"
+                    ? "bg-[#d4af37] text-black"
+                    : "text-neutral-300 hover:text-white"
+                }`}
               >
-                {content.hero.cta2}
+                TR
               </button>
             </div>
+
+            <button
+              onClick={() => handleNavClick("#contact")}
+              className="rounded-xl bg-[#d4af37] px-4 py-2 text-sm font-semibold text-black transition hover:opacity-90"
+            >
+              {content.hero.secondaryCta}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <section
+        id="home"
+        className="mx-auto grid max-w-7xl gap-12 px-6 py-20 md:grid-cols-2 md:py-28"
+      >
+        <div className="flex flex-col justify-center">
+          <div className="mb-4 text-xs font-semibold uppercase tracking-[0.35em] text-[#d4af37]">
+            {content.hero.eyebrow}
           </div>
 
-          <div className="relative h-[360px] rounded-3xl overflow-hidden border border-yellow-600/20">
-            <img
-              src={content.hero.image}
-              alt={content.hero.title}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-black via-black/45 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent" />
-            <div className="absolute bottom-6 left-6 right-6">
-              <div className="text-xs uppercase tracking-[0.3em] text-yellow-500 mb-3">
-                {content.hero.overlayEyebrow}
-              </div>
-              <div className="text-2xl md:text-3xl font-semibold text-white leading-tight max-w-xl">
-                {content.hero.overlayTitle}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section
-          id="about"
-          className="grid md:grid-cols-2 gap-8 rounded-3xl border border-yellow-600/20 bg-neutral-950 p-8"
-        >
-          <div className="space-y-4">
-            <h2 className="text-2xl text-yellow-500 font-semibold">
-              {content.about.titleLeft}
-            </h2>
-            <div className="space-y-3 text-neutral-300 leading-7">
-              {content.about.whatWeDo.map((item) => (
-                <div key={item}>{item}</div>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <h2 className="text-2xl text-yellow-500 font-semibold">
-              {content.about.titleRight}
-            </h2>
-            <div className="space-y-3 text-neutral-300 leading-7">
-              {content.about.whyCinento.map((item) => (
-                <div key={item}>{item}</div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section
-          id="platforms"
-          className="space-y-8 rounded-3xl border border-yellow-600/20 bg-neutral-950 p-8"
-        >
-          <div className="space-y-3">
-            <h2 className="text-2xl font-semibold text-yellow-500">
-              {content.platformsSection.title}
-            </h2>
-            <p className="text-neutral-400 max-w-3xl leading-7">
-              {content.platformsSection.subtitle}
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-5">
-            {content.platforms.map((item) => (
-              <button
-                key={item.title}
-                onClick={() => openPlatform(item.href)}
-                className="text-left p-6 rounded-2xl bg-black border border-yellow-600/20 hover:border-yellow-500 transition space-y-3"
-              >
-                <div className="text-lg font-medium text-yellow-500">
-                  {item.title}
-                </div>
-                <div className="text-sm text-neutral-400 leading-7">
-                  {item.description}
-                </div>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section
-          id="gallery"
-          className="space-y-8 rounded-3xl border border-yellow-600/20 bg-neutral-950 p-8"
-        >
-          <div className="space-y-3">
-            <h2 className="text-2xl font-semibold text-yellow-500">
-              {content.gallerySection.title}
-            </h2>
-            <p className="text-neutral-400 max-w-3xl leading-7">
-              {content.gallerySection.subtitle}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {content.gallery.map((item) => (
-              <img
-                key={item.src}
-                src={item.src}
-                alt={item.alt}
-                className="w-full h-[300px] object-cover rounded-2xl border border-yellow-600/20 hover:scale-[1.02] transition duration-300"
-              />
-            ))}
-          </div>
-        </section>
-
-        <section
-          id="journal"
-          className="space-y-6 rounded-3xl border border-yellow-600/20 bg-neutral-950 p-8"
-        >
-          <h2 className="text-2xl font-semibold text-yellow-500">
-            {content.journalSection.title}
-          </h2>
-
-          <div className="grid md:grid-cols-3 gap-4">
-            {content.journal.map((item) => (
-              <div
-                key={item.title}
-                className="p-6 rounded-2xl bg-black border border-yellow-600/20 space-y-3"
-              >
-                <div className="text-lg font-medium text-white leading-7">
-                  {item.title}
-                </div>
-                <div className="text-sm text-neutral-400 leading-7">
-                  {item.description}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section
-          className="rounded-3xl bg-neutral-900 p-8 border border-yellow-600/20"
-        >
-          <h1 className="text-4xl md:text-6xl text-yellow-500 mb-8 font-bold">
-            {content.contact.title}
+          <h1 className="max-w-xl text-4xl font-bold leading-tight md:text-6xl">
+            {content.hero.title}
           </h1>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={content.contact.namePlaceholder}
-                className="w-full p-3 bg-black border border-yellow-600/20 rounded-xl outline-none focus:border-yellow-500"
-              />
+          <p className="mt-6 max-w-xl text-base leading-8 text-neutral-400">
+            {content.hero.description}
+          </p>
 
-              <input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={content.contact.emailPlaceholder}
-                className="w-full p-3 bg-black border border-yellow-600/20 rounded-xl outline-none focus:border-yellow-500"
-              />
+          <div className="mt-8 flex flex-wrap gap-4">
+            <button
+              onClick={() => handleNavClick("#about")}
+              className="rounded-xl bg-[#d4af37] px-6 py-3 font-semibold text-black transition hover:opacity-90"
+            >
+              {content.hero.primaryCta}
+            </button>
 
-              <input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder={content.contact.phonePlaceholder}
-                className="w-full p-3 bg-black border border-yellow-600/20 rounded-xl outline-none focus:border-yellow-500"
-              />
+            <button
+              onClick={() => handleNavClick("#contact")}
+              className="rounded-xl border border-[#d4af37] px-6 py-3 font-semibold text-[#d4af37] transition hover:bg-[#d4af37] hover:text-black"
+            >
+              {content.hero.secondaryCta}
+            </button>
+          </div>
+        </div>
 
-              <textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder={content.contact.messagePlaceholder}
-                className="w-full p-3 bg-black border border-yellow-600/20 rounded-xl h-32 outline-none focus:border-yellow-500"
-              />
+        <div className="flex items-center">
+          <div className="w-full rounded-3xl border border-[#d4af37]/20 bg-neutral-900/80 p-6 shadow-2xl">
+            <div className="relative min-h-[320px] overflow-hidden rounded-2xl bg-gradient-to-br from-[#111111] via-[#1a1a1a] to-[#0b0b0b] p-8">
+              {activeHeroImage && (
+                <>
+                  <img
+                    src={activeHeroImage}
+                    alt="CINENTO Hero"
+                    onError={() => handleImageError(activeHeroImage)}
+                    className="absolute inset-0 h-full w-full object-cover opacity-45"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-br from-black/85 via-black/45 to-black/70" />
+                </>
+              )}
 
-              {feedback ? (
-                <div className="text-sm text-yellow-300">{feedback}</div>
-              ) : null}
+              <div className="relative z-10 flex min-h-[260px] flex-col justify-end">
+                <div className="mb-3 text-sm uppercase tracking-[0.25em] text-[#d4af37]">
+                  {content.hero.cardTitle}
+                </div>
 
-              <button
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="px-6 py-3 bg-yellow-600 text-black rounded-xl hover:bg-yellow-500 transition disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {isSubmitting
-                  ? content.contact.submittingLabel
-                  : content.contact.submitLabel}
-              </button>
-            </div>
-
-            <div className="text-neutral-400 leading-8 whitespace-pre-line">
-              {content.contact.sideText}
+                <div className="text-2xl font-semibold leading-snug text-white">
+                  {content.hero.cardSubtitle}
+                </div>
+              </div>
             </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
+
+      <section id="about" className="mx-auto max-w-7xl px-6 py-12">
+        <h2 className="mb-6 text-2xl font-semibold text-[#d4af37]">
+          {content.whatWeDo.title}
+        </h2>
+
+        <div className="grid gap-6 md:grid-cols-3">
+          {content.whatWeDo.items.map((item) => (
+            <div
+              key={item}
+              className="rounded-2xl border border-[#d4af37]/15 bg-neutral-900/80 p-6 text-white shadow-lg transition hover:border-[#d4af37]/40"
+            >
+              <div className="font-medium leading-7">{item}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-12">
+        <h2 className="mb-6 text-2xl font-semibold text-[#d4af37]">
+          {content.whyCinento.title}
+        </h2>
+
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {content.whyCinento.items.map((item) => (
+            <div
+              key={item}
+              className="rounded-2xl border border-white/10 bg-[#0f0f0f] p-6 text-neutral-200"
+            >
+              {item}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-12">
+        <div className="rounded-3xl border border-[#d4af37]/20 bg-neutral-900/80 p-8 shadow-xl">
+          <h2 className="mb-4 text-2xl font-semibold text-[#d4af37]">
+            {content.ecosystem.title}
+          </h2>
+
+          <p className="max-w-4xl text-neutral-300 leading-8">
+            {content.ecosystem.subtitle}
+          </p>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-12">
+        <div className="grid gap-6 md:grid-cols-2">
+          {content.platforms.map((item) => (
+            <div
+              key={item.title}
+              className="rounded-2xl border border-[#d4af37]/15 bg-neutral-900/80 p-6 shadow-lg"
+            >
+              <h3 className="mb-3 text-lg font-semibold text-white">
+                {item.title}
+              </h3>
+
+              <p className="text-sm leading-7 text-neutral-400">
+                {item.description}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section id="gallery" className="mx-auto max-w-7xl px-6 py-12">
+        <h2 className="mb-4 text-2xl font-semibold text-[#d4af37]">
+          {content.gallery.title}
+        </h2>
+
+        <p className="mb-8 max-w-4xl text-neutral-400 leading-8">
+          {content.gallery.subtitle}
+        </p>
+
+        {activeGalleryImages.length > 0 ? (
+          <div className="grid gap-5 md:grid-cols-3">
+            {activeGalleryImages.map((image, index) => {
+              const label =
+                content.gallery.items[index] || `Gallery ${index + 1}`;
+
+              return (
+                <div
+                  key={`${image}-${index}`}
+                  className="group overflow-hidden rounded-2xl border border-white/10 bg-[#0f0f0f] shadow-lg"
+                >
+                  <div className="relative h-56 w-full overflow-hidden">
+                    <img
+                      src={image}
+                      alt={label}
+                      onError={() => handleImageError(image)}
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-5">
+                      <span className="text-sm font-medium text-neutral-100">
+                        {label}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-3">
+            {content.gallery.items.map((item) => (
+              <div
+                key={item}
+                className="flex h-48 items-end rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] via-[#101010] to-[#050505] p-5 shadow-lg"
+              >
+                <span className="text-sm font-medium text-neutral-200">
+                  {item}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section id="journal" className="mx-auto max-w-7xl px-6 py-12">
+        <h2 className="mb-6 text-2xl font-semibold text-[#d4af37]">
+          {content.journalSection.title}
+        </h2>
+
+        <div className="grid gap-4 md:grid-cols-3">
+          {content.journal.map((item) => (
+            <div
+              key={item.title}
+              className="rounded-2xl border border-[#d4af37]/15 bg-neutral-900 p-6 shadow-lg"
+            >
+              <div className="mb-3 text-lg font-medium leading-7 text-white">
+                {item.title}
+              </div>
+
+              <div className="text-sm leading-7 text-neutral-400">
+                {item.description}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section id="contact" className="mx-auto max-w-4xl px-6 py-16">
+        <div className="rounded-3xl border border-[#d4af37]/20 bg-neutral-900/80 p-8 shadow-2xl md:p-10">
+          <h2 className="mb-3 text-3xl font-bold text-[#d4af37]">
+            {content.contact.title}
+          </h2>
+
+          <p className="mb-8 text-neutral-400 leading-8">
+            {content.contact.subtitle}
+          </p>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={content.contact.namePlaceholder}
+              className="w-full rounded-xl border border-[#d4af37]/20 bg-neutral-950 px-4 py-3 text-white placeholder-neutral-500 outline-none transition focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]"
+            />
+
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={content.contact.emailPlaceholder}
+              className="w-full rounded-xl border border-[#d4af37]/20 bg-neutral-950 px-4 py-3 text-white placeholder-neutral-500 outline-none transition focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]"
+            />
+
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder={content.contact.messagePlaceholder}
+              className="h-36 w-full rounded-xl border border-[#d4af37]/20 bg-neutral-950 px-4 py-3 text-white placeholder-neutral-500 outline-none transition focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]"
+            />
+
+            <button
+              type="submit"
+              className="w-full rounded-xl bg-[#d4af37] py-3 font-semibold text-black transition hover:opacity-90"
+            >
+              {content.contact.buttonLabel}
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <footer className="border-t border-white/10 bg-[#050505]">
+        <div className="mx-auto grid max-w-7xl gap-10 px-6 py-12 md:grid-cols-3">
+          <div>
+            <div className="mb-3 text-lg font-bold text-white">
+              {content.brand}
+            </div>
+
+            <div className="text-sm leading-7 text-neutral-400">
+              {content.footer.brandLine}
+            </div>
+          </div>
+
+          <div>
+            <div className="mb-3 font-semibold text-white">
+              {content.footer.contactTitle}
+            </div>
+
+            <div className="space-y-2 text-sm text-neutral-400">
+              <div>Istanbul, Turkey</div>
+              <div>cinento.tv@gmail.com</div>
+
+              <a
+                href={`https://wa.me/${whatsappNumber}`}
+                target="_blank"
+                className="block hover:text-[#d4af37]"
+                rel="noreferrer"
+              >
+                {content.contact.whatsappLabel}
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <div className="mb-3 font-semibold text-white">
+              {content.footer.followTitle}
+            </div>
+
+            <div className="space-y-2 text-sm text-neutral-400">
+              <a
+                href={
+                  content.footer.social?.instagram ||
+                  "https://instagram.com/cinento"
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block hover:text-[#d4af37]"
+              >
+                Instagram
+              </a>
+
+              <a
+                href={
+                  content.footer.social?.linkedin ||
+                  "https://linkedin.com/company/cinento"
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block hover:text-[#d4af37]"
+              >
+                LinkedIn
+              </a>
+
+              <a
+                href={content.footer.social?.website || "https://cinento.net"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block hover:text-[#d4af37]"
+              >
+                Website
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-white/10 py-4 text-center text-xs text-neutral-500">
+          {content.footer.rights}
+        </div>
+      </footer>
     </main>
   );
 }

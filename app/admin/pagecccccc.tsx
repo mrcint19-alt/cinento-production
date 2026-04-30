@@ -67,7 +67,7 @@ export default function AdminDashboardPage() {
         }
 
         const normalizedLeads: LeadItem[] = rawLeads.map((lead: any) => ({
-          id: lead.id,
+         id: lead.id || Date.now() + Math.random(),
           name: lead.name || "",
           email: lead.email || "",
           phone: lead.phone || "",
@@ -317,7 +317,9 @@ From Idea to International Film Market
   };
 
   const buildWhatsAppUrl = (lead: LeadItem) => {
-    const cleanPhone = (lead.phone || "").replace(/\D/g, "");
+   const cleanPhone = (lead.phone || "")
+     .replace(/\D/g, "")
+     .replace(/^0/, "90");
     const message = buildSalesWhatsAppMessage(lead);
 
     return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;

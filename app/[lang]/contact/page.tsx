@@ -2,12 +2,11 @@
 
 /**
  * File: app/[lang]/contact/page.tsx
- * Version: v3.0 UNIFIED CONTACT
- * Updated: 2026-04-17 [Europe/Istanbul]
- * Status: ACTIVE
+ * Version: v3.3 CONTACT PAGE CLEAN LAYOUT
+ * Updated: 2026-04-29 [Europe/Istanbul]
+ * Status: HEADER REMOVED FROM PAGE + FOOTER REMOVED FROM PAGE
  */
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { homepageContent } from "../../../content/homepage";
@@ -41,6 +40,22 @@ export default function ContactPage() {
       setIsSubmitting(true);
       setFeedback("");
 
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          phone: phone.replace(/\D/g, ""),
+          message: message.trim(),
+          language,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save contact request.");
+      }
+
       const whatsappText = `
 🎬 CINENTO — Contact Request
 
@@ -64,41 +79,17 @@ ${message}
       setEmail("");
       setPhone("");
       setMessage("");
+    } catch {
+      setFeedback("Something went wrong. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="max-w-7xl mx-auto px-6 md:px-10 py-6 md:py-8 space-y-12">
-        <header className="sticky top-4 z-50">
-          <div className="rounded-3xl border border-yellow-600/25 bg-black/70 backdrop-blur-xl shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
-            <div className="flex flex-col gap-4 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
-              <Link
-                href={`/${language}`}
-                className="text-left text-xl font-semibold tracking-[0.18em] text-yellow-500 transition hover:text-yellow-400"
-              >
-                {content.brand}
-              </Link>
-
-              <div className="flex flex-wrap items-center gap-3 text-sm">
-                <Link
-                  href={`/${language}`}
-                  className="rounded-full border border-yellow-600/15 bg-white/[0.02] px-4 py-2 text-neutral-200 transition hover:border-yellow-500/50 hover:bg-yellow-500/10 hover:text-white"
-                >
-                  {content.nav[0]?.label || "Home"}
-                </Link>
-
-                <span className="rounded-full border border-yellow-500/40 bg-yellow-500/10 px-4 py-2 text-white">
-                  {content.contact.title}
-                </span>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <section className="rounded-3xl bg-neutral-900 p-8 border border-yellow-600/20">
+    <section className="bg-black text-white">
+      <div className="mx-auto max-w-7xl px-6 md:px-10 py-12 md:py-16">
+        <div className="rounded-3xl bg-neutral-900 p-8 border border-yellow-600/20">
           <h1 className="text-4xl md:text-6xl text-yellow-500 mb-8 font-bold">
             {content.contact.title}
           </h1>
@@ -152,8 +143,8 @@ ${message}
               {content.contact.sideText}
             </div>
           </div>
-        </section>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
