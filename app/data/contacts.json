@@ -1,20 +1,22 @@
 [
   {
+    "id": "1",
     "name": "Hamit Asghari producer",
     "email": "asgharihamid17@gmail.com",
-    "message": "Proje Adı: LOST IDENTITY\nOrijinal Adı: Kayıp Kimlik (هویت گمشده)\nTür: Psikolojik Drama / Gerilim\nFormat: Uzun Metraj Film (Mini diziye uyarlanabilir)\nSüre: 100 dakika (tahmini)\nDil: İngilizce / Türkçe / Arapça / Farsça\nHedef Kitle: Uluslararası izleyici\n(Middle East + Europe + Global Platformlar)\n________________________________________",
+    "phone": "+905000000000",
+    "status": "new",
+    "lead_temperature": "hot",
+    "message": "LOST IDENTITY project",
     "createdAt": "2026-04-13T23:45:12.992Z"
   },
   {
+    "id": "2",
     "name": "Hamid Asghari - cinento film yapim",
     "email": "mr.cint19@gmail.com",
-    "message": "Proje Adı: LOST IDENTITY\nOrijinal Adı: Kayıp Kimlik (هویت گمشده)\nTür: Psikolojik Drama / Gerilim\nFormat: Uzun Metraj Film (Mini diziye uyarlanabilir)\nSüre: 100 dakika (tahmini)\nDil: İngilizce / Türkçe / Arapça / Farsça\nHedef Kitle: Uluslararası izleyici\n(Middle East + Europe + Global Platformlar)\n________________________________________",
+    "phone": "+905000000001",
+    "status": "contacted",
+    "lead_temperature": "warm",
+    "message": "LOST IDENTITY project",
     "createdAt": "2026-04-13T23:57:17.373Z"
-  },
-  {
-    "name": "Hamit Asghari producer",
-    "email": "asgharihamid17@gmail.com",
-    "message": "Proje Adı: LOST IDENTITY\nOrijinal Adı: Kayıp Kimlik (هویت گمشده)\nTür: Psikolojik Drama / Gerilim\nFormat: Uzun Metraj Film (Mini diziye uyarlanabilir)\nSüre: 100 dakika (tahmini)\nDil: İngilizce / Türkçe / Arapça / Farsça\nHedef Kitle: Uluslararası izleyici\n(Middle East + Europe + Global Platformlar)\n________________________________________",
-    "createdAt": "2026-04-14T00:14:26.260Z"
   }
 ]

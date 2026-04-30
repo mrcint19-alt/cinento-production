@@ -1,10 +1,10 @@
 "use client";
 
-/* 
+/*
 File: app/admin/page.tsx
-Version: v2.2
-Updated: 2026-04-20 [Europe/Istanbul]
-Status: AUTO SALES CRM DASHBOARD (WHATSAPP + EMAIL + AUTO CONTACTED) - FIXED FOR CURRENT CONTACT DATA
+Version: v2.3
+Updated: 2026-04-30 [Europe/Istanbul]
+Status: CRM Dashboard Fixed - Reads { leads: [] } API + Normalizes Status/Priority
 */
 
 import Link from "next/link";
@@ -24,6 +24,25 @@ type LeadItem = {
   created_at?: string;
 };
 
+function normalizeStatus(value: any): LeadStatus {
+  const v = String(value || "").toLowerCase();
+
+  if (v === "contacted") return "Contacted";
+  if (v === "closed" || v === "converted") return "Closed";
+  if (v === "in review" || v === "in_review" || v === "review") return "In Review";
+
+  return "New";
+}
+
+function normalizeTemperature(value: any): LeadTemperature {
+  const v = String(value || "").toLowerCase();
+
+  if (v === "hot") return "Hot";
+  if (v === "warm") return "Warm";
+
+  return "Cold";
+}
+
 export default function AdminDashboardPage() {
   const [leads, setLeads] = useState<LeadItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,12 +51,8 @@ export default function AdminDashboardPage() {
   const [search, setSearch] = useState("");
   const [updatingId, setUpdatingId] = useState<string | number | null>(null);
   const [deletingId, setDeletingId] = useState<string | number | null>(null);
-  const [sendingEmailId, setSendingEmailId] = useState<string | number | null>(
-    null
-  );
-  const [openingWhatsappId, setOpeningWhatsappId] = useState<
-    string | number | null
-  >(null);
+  const [sendingEmailId, setSendingEmailId] = useState<string | number | null>(null);
+  const [openingWhatsappId, setOpeningWhatsappId] = useState<string | number | null>(null);
 
   useEffect(() => {
     const fetchLeads = async () => {
@@ -45,7 +60,7 @@ export default function AdminDashboardPage() {
         setLoading(true);
         setError("");
 
-        const response = await fetch("/api/contact", {
+        const response = await fetch("/api/content", {
           method: "GET",
           cache: "no-store",
         });
@@ -64,18 +79,16 @@ export default function AdminDashboardPage() {
           rawLeads = data.leads;
         } else if (Array.isArray(data?.data)) {
           rawLeads = data.data;
-        } else {
-          rawLeads = [];
         }
 
-        const normalizedLeads: LeadItem[] = rawLeads.map((lead: any) => ({
-          id: lead.id ?? Date.now(),
+        const normalizedLeads: LeadItem[] = rawLeads.map((lead: any, index: number) => ({
+          id: lead.id ?? `${lead.email || "lead"}-${index}`,
           name: lead.name || "",
           email: lead.email || "",
           phone: lead.phone || "",
           message: lead.message || "",
-          status: (lead.status || "New") as LeadStatus,
-          lead_temperature: (lead.lead_temperature || "Cold") as LeadTemperature,
+          status: normalizeStatus(lead.status),
+          lead_temperature: normalizeTemperature(lead.lead_temperature || lead.priority),
           created_at: lead.created_at || lead.createdAt || "",
         }));
 
@@ -96,9 +109,7 @@ export default function AdminDashboardPage() {
     let result = leads;
 
     if (filter !== "All") {
-      result = result.filter(
-        (lead) => (lead.lead_temperature || "Cold") === filter
-      );
+      result = result.filter((lead) => lead.lead_temperature === filter);
     }
 
     if (search.trim() !== "") {
@@ -118,9 +129,7 @@ export default function AdminDashboardPage() {
 
   const hotCount = leads.filter((lead) => lead.lead_temperature === "Hot").length;
   const warmCount = leads.filter((lead) => lead.lead_temperature === "Warm").length;
-  const coldCount = leads.filter(
-    (lead) => !lead.lead_temperature || lead.lead_temperature === "Cold"
-  ).length;
+  const coldCount = leads.filter((lead) => lead.lead_temperature === "Cold").length;
 
   const getTemperatureBadgeClass = (temperature?: LeadTemperature | null) => {
     if (temperature === "Hot") {

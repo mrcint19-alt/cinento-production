@@ -22,7 +22,15 @@
     "footer": {
       "brandLine": "From Idea to International Film Market",
       "contactTitle": "Start Your Project",
+      "location": "",
+      "email": "",
+      "whatsappText": "",
       "followTitle": "Follow CINENTO",
+      "social": {
+        "instagram": "https://instagram.com/cinento.films",
+        "linkedin": "https://www.linkedin.com/in/hamid-asghari-6335312a4/",
+        "website": "https://cinento.net"
+      },
       "rights": "© 2026 CINENTO. All rights reserved."
     },
     "whatWeDo": {
