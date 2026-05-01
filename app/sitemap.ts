@@ -1,37 +1,34 @@
-/**
- * File: app/sitemap.ts
- * Version: v1.0 LOCALIZED SITEMAP
- * Updated: 2026-04-17 [Europe/Istanbul]
- * Status: ACTIVE
- */
+/*
+File: app/sitemap.ts
+Version: v1.2.0 BUILD SAFE
+Updated: 2026-05-01 [Europe/Istanbul]
+Status: STABLE
+*/
 
 import type { MetadataRoute } from "next";
-//import { getLocalizedPath, getSiteUrl, languages } from "@/lib/i18n";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const siteUrl = getSiteUrl();
+  const siteUrl = "https://cinento.net";
   const now = new Date();
 
-  const localizedHomeEntries = languages.map((lang) => ({
-    url: `${siteUrl}${getLocalizedPath(lang)}`,
-    lastModified: now,
-    changeFrequency: "weekly" as const,
-    priority: 1,
-  }));
-
   return [
-    ...localizedHomeEntries,
     {
-      url: `${siteUrl}/admin`,
+      url: siteUrl,
       lastModified: now,
-      changeFrequency: "weekly" as const,
-      priority: 0.4,
+      changeFrequency: "weekly",
+      priority: 1,
     },
     {
-      url: `${siteUrl}/email-history`,
+      url: `${siteUrl}/en`,
       lastModified: now,
-      changeFrequency: "weekly" as const,
-      priority: 0.3,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${siteUrl}/tr`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.9,
     },
   ];
 }
