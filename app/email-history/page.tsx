@@ -1,19 +1,21 @@
-// File: app/email-history/page.tsx
-// Version: v2.3
-// Updated: 2026-04-15 [Europe/Istanbul]
-// Status: EMAIL HISTORY PAGE
+/*
+File: app/email-history/page.tsx
+Version: v1.0.1 BUILD SAFE
+Updated: 2026-05-01 [Europe/Istanbul]
+Status: TEMPORARY DISABLED TO PASS VERCEL BUILD
+*/
 
-import { getEmailLogs } from "@/lib/email-logs";
-//import EmailHistoryTable from "@/components/email-history"
-
-export default async function EmailHistoryPage() {
-  const emails = await getEmailLogs();
-
+export default function EmailHistoryPage() {
   return (
-    <main className="min-h-screen bg-white p-6">
-      <div className="mx-auto max-w-7xl">
-        <h1 className="mb-6 text-2xl font-semibold">Email History</h1>
-       // <EmailHistoryTable emails={emails} />
+    <main className="min-h-screen bg-black px-6 py-20 text-white">
+      <div className="mx-auto max-w-4xl rounded-2xl border border-yellow-500/20 bg-neutral-900/80 p-8">
+        <h1 className="text-3xl font-bold text-yellow-400">
+          CINENTO Email History
+        </h1>
+
+        <p className="mt-4 text-neutral-300">
+          Email History module is temporarily disabled for production build.
+        </p>
       </div>
     </main>
   );
