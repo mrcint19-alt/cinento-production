@@ -6,7 +6,7 @@
  */
 
 import type { MetadataRoute } from "next";
-import { getLocalizedPath, getSiteUrl, languages } from "@/lib/i18n";
+//import { getLocalizedPath, getSiteUrl, languages } from "@/lib/i18n";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const siteUrl = getSiteUrl();

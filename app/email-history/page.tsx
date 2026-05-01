@@ -4,7 +4,7 @@
 // Status: EMAIL HISTORY PAGE
 
 import { getEmailLogs } from "@/lib/email-logs";
-import EmailHistoryTable from "@/components/email-history-table";
+import EmailHistoryTable from "@/components/email-history"
 
 export default async function EmailHistoryPage() {
   const emails = await getEmailLogs();
