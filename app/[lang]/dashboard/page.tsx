@@ -1,8 +1,8 @@
 /*
 File: app/[lang]/dashboard/page.tsx
-Version: v2.7.0
+Version: v2.7.0 + Preview read-only access
 Updated: 2026-05-01 [Europe/Istanbul]
-Status: Professional Dashboard UI Restored + Valid React Component + Stable Links
+Status: Existing dashboard preserved; Preview notice and logout added
 */
 
 import Link from "next/link";
@@ -11,6 +11,14 @@ export default function DashboardPage() {
   return (
     <main className="min-h-screen bg-black text-white px-8 py-16">
       <section className="mx-auto max-w-6xl">
+        {process.env.VERCEL_ENV === "preview" && (
+          <aside className="mb-8 rounded-xl border border-yellow-500/40 p-5 text-yellow-200">
+            <p>Read-only Preview. Content and images are repository snapshots. Saving, uploads, deletion, CRM and account editing are disabled.</p>
+            <form action="/api/auth/logout" method="post" className="mt-4">
+              <button type="submit" className="rounded border border-yellow-500 px-4 py-2">Log out</button>
+            </form>
+          </aside>
+        )}
         <div className="mb-14">
           <p className="mb-3 text-sm tracking-[0.35em] text-yellow-500">
             CINENTO
