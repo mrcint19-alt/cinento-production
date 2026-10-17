@@ -2,9 +2,10 @@
 
 /**
  * File: app/[lang]/platforms/page.tsx
- * CINENTO Products & Platforms — UI review v0.3 | 2026-10-18
+ * CINENTO Products & Platforms — UI review v0.4 | 2026-10-18
  * AI sign-in URL observed in owner-provided signed-in and Incognito views.
  * WATCH catalog observed; playback confirmed by owner on 2026-10-18.
+ * Suite Dashboard local Apps Manager UI observed; actions not tested.
  * Remaining products illustrative. No API, database or analytics integration.
  * Local language switch includes Persian without adding a /fa route.
  * CMS integration and further product capability checks are subsequent work.
@@ -34,13 +35,13 @@ const COPY: Record<Language, Copy> = {
     lead: "A new chapter where cinema, media and digital technology meet. Explore the proposed product portfolio behind CINENTO.",
     explore: "Explore the collection", catalog: "One vision. Different possibilities.",
     catalogIntro: "Six product profiles, brought together for this design review.",
-    review: "Pending verification", notice: "Design preview · CINENTO AI’s sign-in page and workspace have been observed; its capabilities and public registration have not been independently tested. WATCH’s catalog has been observed and playback confirmed by the owner. Other product profiles remain proposed content pending verification.",
+    review: "Pending verification", notice: "Design preview · AI’s sign-in page and workspace have been observed; capabilities and public registration remain untested. WATCH’s catalog has been observed and playback confirmed by the owner. Suite Dashboard’s local interface has been observed; its actions remain untested. Other profiles await verification.",
     details: "Explore this profile", audience: "Proposed audience", scope: "Proposed focus areas",
     related: "Related service proposal", linkNote: "Website and demo links will appear after verification.",
     concept: "Concept artwork · not a product screenshot", showing: "Profiles shown", language: "Page language",
     footerTitle: "From the screen to the system.",
     footerText: "The showcase brings CINENTO’s film, media and technology interests into one coherent experience. Verified product stories and real media will shape the next edition.",
-    footerNote: "UI review v0.3 · AI and WATCH open as separate applications. No live demo requests or account actions on this page.",
+    footerNote: "UI review v0.4 · AI and WATCH open as separate applications. No live demo requests or account actions on this page.",
     categories: { all: "All products", intelligence: "Intelligence", media: "Film & media", business: "Business", connectivity: "Connectivity" },
   },
   tr: {
@@ -48,13 +49,13 @@ const COPY: Record<Language, Copy> = {
     lead: "Sinema, medya ve dijital teknolojinin buluştuğu yeni bir bölüm. CINENTO için önerilen ürün portföyünü keşfedin.",
     explore: "Koleksiyonu keşfet", catalog: "Tek vizyon. Farklı olasılıklar.",
     catalogIntro: "Bu tasarım incelemesi için bir araya getirilen altı ürün profili.",
-    review: "Doğrulama bekliyor", notice: "Tasarım önizlemesi · CINENTO AI’ın giriş sayfası ve çalışma alanı gözlemlendi; yetenekleri ve herkese açık kayıt bağımsız olarak test edilmedi. WATCH kataloğu gözlemlendi ve oynatma proje sahibi tarafından doğrulandı. Diğer ürün profilleri doğrulama bekleyen içerik önerileridir.",
+    review: "Doğrulama bekliyor", notice: "Tasarım önizlemesi · AI’ın giriş sayfası ve çalışma alanı gözlemlendi; yetenekleri ve herkese açık kayıt test edilmedi. WATCH kataloğu gözlemlendi ve oynatma proje sahibi tarafından doğrulandı. Suite Dashboard’un yerel arayüzü gözlemlendi; işlemleri test edilmedi. Diğer profiller doğrulama bekliyor.",
     details: "Profili incele", audience: "Önerilen hedef kitle", scope: "Önerilen odak alanları",
     related: "İlgili hizmet önerisi", linkNote: "Web sitesi ve demo bağlantıları doğrulamadan sonra eklenecek.",
     concept: "Konsept görsel · ürün ekran görüntüsü değildir", showing: "Gösterilen profiller", language: "Sayfa dili",
     footerTitle: "Ekrandan sisteme.",
     footerText: "Bu vitrin, CINENTO’nun sinema, medya ve teknoloji alanlarını ortak bir deneyimde buluşturur. Sonraki sürüm doğrulanmış ürün bilgileri ve gerçek görsellerle şekillenecek.",
-    footerNote: "Arayüz incelemesi v0.3 · AI ve WATCH bağımsız uygulamalarda açılır. Bu sayfada canlı demo talebi veya hesap işlemi yoktur.",
+    footerNote: "Arayüz incelemesi v0.4 · AI ve WATCH bağımsız uygulamalarda açılır. Bu sayfada canlı demo talebi veya hesap işlemi yoktur.",
     categories: { all: "Tüm ürünler", intelligence: "Yapay zekâ", media: "Sinema & medya", business: "İş yönetimi", connectivity: "Bağlantı" },
   },
   fa: {
@@ -62,13 +63,13 @@ const COPY: Record<Language, Copy> = {
     lead: "فصلی تازه در پیوند سینما، رسانه و فناوری دیجیتال. مجموعه پیشنهادی محصولات CINENTO را کشف کنید.",
     explore: "کاوش در محصولات", catalog: "یک چشم‌انداز؛ امکان‌های متفاوت.",
     catalogIntro: "شش معرفی محصول در کنار هم، برای بررسی طراحی این مجموعه.",
-    review: "در انتظار تأیید", notice: "پیش‌نمایش طراحی · صفحه ورود و محیط CINENTO AI مشاهده شده‌اند؛ قابلیت‌ها و ثبت‌نام عمومی آن مستقلاً آزمایش نشده‌اند. فهرست WATCH مشاهده و پخش توسط مالک پروژه تأیید شده است. معرفی سایر محصولات، پیشنهاد محتوایی و در انتظار بررسی است.",
+    review: "در انتظار تأیید", notice: "پیش‌نمایش طراحی · صفحه ورود و محیط AI مشاهده شده‌اند؛ قابلیت‌ها و ثبت‌نام عمومی آن آزمایش نشده‌اند. فهرست WATCH مشاهده و پخش توسط مالک پروژه تأیید شده است. رابط محلی Suite Dashboard مشاهده شده، اما عملیات آن آزمایش نشده است. سایر معرفی‌ها در انتظار بررسی‌اند.",
     details: "مشاهده معرفی", audience: "مخاطبان پیشنهادی", scope: "محورهای پیشنهادی",
     related: "خدمت مرتبط پیشنهادی", linkNote: "لینک وب‌سایت و دمو پس از بررسی و تأیید اضافه می‌شود.",
     concept: "تصویر مفهومی؛ نمای واقعی محصول نیست", showing: "تعداد معرفی‌های نمایان", language: "زبان صفحه",
     footerTitle: "از قاب سینما تا دنیای سیستم‌ها.",
     footerText: "این مجموعه، حوزه‌های سینما، رسانه و فناوری CINENTO را در تجربه‌ای منسجم معرفی می‌کند. نسخه بعدی با اطلاعات تأییدشده و تصاویر واقعی محصولات تکمیل خواهد شد.",
-    footerNote: "بررسی رابط نسخه ۰٫۳ · AI و WATCH در برنامه‌های مستقل باز می‌شوند. درخواست دموی واقعی و عملیات حساب کاربری در این صفحه فعال نیست.",
+    footerNote: "بررسی رابط نسخه ۰٫۴ · AI و WATCH در برنامه‌های مستقل باز می‌شوند. درخواست دموی واقعی و عملیات حساب کاربری در این صفحه فعال نیست.",
     categories: { all: "همه محصولات", intelligence: "هوش مصنوعی", media: "سینما و رسانه", business: "کسب‌وکار", connectivity: "ارتباطات" },
   },
 };
@@ -84,10 +85,10 @@ const PRODUCTS: Product[] = [
     tr: { description: "Seçili yapımları keşfetmek ve izlemek için CINENTO’nun bağımsız sinema platformu. İzleyiciler, sinemacılar ve medya ortakları için geliştirilen, sınırlı kataloglu ilk sürüm.", audience: "İzleyiciler, sinemacılar ve medya ortakları", scope: ["Seçili yapım kataloğu", "Yapım bilgileri", "Video oynatma"], service: "Sinema ve medya stratejisi" },
     fa: { description: "پلتفرم مستقل سینمایی CINENTO برای کشف و تماشای آثار منتخب؛ نسخه‌ای اولیه با فهرست محدود که برای مخاطبان، فیلم‌سازان و شرکای رسانه‌ای توسعه می‌یابد.", audience: "مخاطبان، فیلم‌سازان و شرکای رسانه‌ای", scope: ["فهرست آثار منتخب", "اطلاعات آثار", "پخش ویدئو"], service: "راهبرد سینما و رسانه" },
   } },
-  { id: "enterprise", name: "CINENTO Enterprise OS", mark: "OS", category: "business", copy: {
-    en: { description: "A proposed presentation of CINENTO’s enterprise system, organized around the business workflows selected for a future demonstration.", audience: "Business leaders and operational teams", scope: ["Operational workflows", "Management workspace", "Module organization"], service: "Business system design" },
-    tr: { description: "Gelecekteki bir gösterim için seçilecek iş akışları etrafında düzenlenen CINENTO kurumsal sistem tanıtımı önerisi.", audience: "Yöneticiler ve operasyon ekipleri", scope: ["Operasyon akışları", "Yönetim çalışma alanı", "Modül düzeni"], service: "İş sistemi tasarımı" },
-    fa: { description: "معرفی پیشنهادی سیستم سازمانی CINENTO، بر اساس فرایندهایی که برای نمایش آینده انتخاب و بررسی خواهند شد.", audience: "مدیران کسب‌وکار و تیم‌های عملیاتی", scope: ["فرایندهای عملیاتی", "محیط مدیریت", "سازمان‌دهی ماژول‌ها"], service: "طراحی سیستم کسب‌وکار" },
+  { id: "enterprise", name: "CINENTO Suite Dashboard", mark: "SUITE", category: "business", copy: {
+    en: { description: "A local dashboard designed to organize CINENTO software tools and their launch settings. Its Apps Manager brings application records, addresses and setup status into one workspace.", audience: "CINENTO administrators and development teams", scope: ["Application registration form", "Frontend, backend, executable and port settings", "Setup status and active flags", "Launch, Edit and Delete controls"], service: "Software workspace organization" },
+    tr: { description: "CINENTO yazılım araçlarını ve başlatma ayarlarını düzenlemek için tasarlanan yerel panel. Apps Manager, uygulama kayıtlarını, adresleri ve kurulum durumlarını tek çalışma alanında sunar.", audience: "CINENTO yöneticileri ve geliştirme ekipleri", scope: ["Uygulama kayıt formu", "Ön yüz, arka uç, çalıştırılabilir dosya ve port ayarları", "Kurulum durumu ve etkinlik işaretleri", "Launch, Edit ve Delete kontrolleri"], service: "Yazılım çalışma alanının düzenlenmesi" },
+    fa: { description: "داشبورد محلی برای سامان‌دهی ابزارهای نرم‌افزاری CINENTO و تنظیمات اجرای آن‌ها. بخش Apps Manager، مشخصات برنامه‌ها، آدرس‌ها و وضعیت راه‌اندازی را در یک محیط نمایش می‌دهد.", audience: "مدیران و تیم توسعه CINENTO", scope: ["فرم ثبت مشخصات برنامه‌ها", "تنظیمات فرانت‌اند، بک‌اند، فایل اجرایی و پورت", "وضعیت راه‌اندازی و نشان فعال‌بودن", "کنترل‌های Launch، Edit و Delete"], service: "سامان‌دهی محیط ابزارهای نرم‌افزاری" },
   } },
   { id: "autocall", name: "CINENTO AutoCall", mark: "AC", category: "connectivity", copy: {
     en: { description: "A product story exploring coordinated calling workflows. Calling methods, regional support and automation require separate validation.", audience: "Outreach and customer communication teams", scope: ["Call planning", "Contact organization", "Campaign workflows"], service: "Communication workflow design" },
@@ -126,6 +127,13 @@ const WATCH_ACCESS = {
 const PRODUCT_ACCESS: Partial<Record<string, { url: string; copy: typeof AI_ACCESS }>> = {
   ai: { url: "https://ai.cinento.net", copy: AI_ACCESS },
   watch: { url: "https://watch.cinento.net", copy: WATCH_ACCESS },
+};
+
+// Local UI evidence only. Do not expose local URLs or executable paths.
+const SUITE_PROFILE = {
+  en: { status: "Local · In development", audience: "Intended audience", scope: "Visible interface", note: "Runs locally on the owner’s laptop. No public access link is provided. Registration, launch, edit and deletion have not been functionally tested in this review." },
+  tr: { status: "Yerel · Geliştiriliyor", audience: "Hedef kitle", scope: "Gözlemlenen arayüz", note: "Proje sahibinin dizüstü bilgisayarında yerel olarak çalışır. Herkese açık erişim bağlantısı yoktur. Kayıt, başlatma, düzenleme ve silme bu incelemede işlevsel olarak test edilmedi." },
+  fa: { status: "اجرای محلی · در حال توسعه", audience: "مخاطبان هدف", scope: "بخش‌های قابل مشاهده رابط", note: "روی لپ‌تاپ مالک پروژه اجرا می‌شود؛ لینک دسترسی عمومی ارائه نشده است. ثبت، اجرا، ویرایش و حذف در این بررسی به‌صورت عملی آزمایش نشده‌اند." },
 };
 
 function ProductSymbol({ id }: { id: string }) {
@@ -205,6 +213,7 @@ export default function PlatformsPage() {
             const content = product.copy[language];
             const access = PRODUCT_ACCESS[product.id];
             const accessText = access?.copy[language];
+            const profileText = accessText ?? (product.id === "enterprise" ? SUITE_PROFILE[language] : undefined);
             return (
               <article className={`cp-card cp-card-${product.id}`} key={product.id} aria-labelledby={`cp-${product.id}`}>
                 <div className="cp-art" aria-hidden="true">
@@ -215,19 +224,19 @@ export default function PlatformsPage() {
                 </div>
                 <p className="cp-art-caption">{text.concept}</p>
                 <div className="cp-card-body">
-                  <div className="cp-card-meta"><span>{text.categories[product.category]}</span><span className="cp-status"><i />{accessText?.status ?? text.review}</span></div>
+                  <div className="cp-card-meta"><span>{text.categories[product.category]}</span><span className="cp-status"><i />{profileText?.status ?? text.review}</span></div>
                   <h3 id={`cp-${product.id}`} dir="ltr">{product.name}</h3>
                   <p className="cp-description">{content.description}</p>
                   <details className="cp-details">
                     <summary>{text.details}<span aria-hidden="true">+</span></summary>
-                    <div className="cp-detail-content"><h4>{accessText?.audience ?? text.audience}</h4><p>{content.audience}</p><h4>{accessText?.scope ?? text.scope}</h4><ul>{content.scope.map((item) => <li key={item}>{item}</li>)}</ul><h4>{text.related}</h4><p>{content.service}</p></div>
+                    <div className="cp-detail-content"><h4>{profileText?.audience ?? text.audience}</h4><p>{content.audience}</p><h4>{profileText?.scope ?? text.scope}</h4><ul>{content.scope.map((item) => <li key={item}>{item}</li>)}</ul><h4>{text.related}</h4><p>{content.service}</p></div>
                   </details>
                   {access && accessText ? (
                     <div className="cp-access">
                       <a className="cp-access-link" href={access.url} target="_blank" rel="noopener noreferrer">{accessText.cta}<span aria-hidden="true">↗</span></a>
                       <p className="cp-link-note">{accessText.note}</p>
                     </div>
-                  ) : <p className="cp-link-note">{text.linkNote}</p>}
+                  ) : <p className="cp-link-note">{profileText?.note ?? text.linkNote}</p>}
                 </div>
               </article>
             );
@@ -258,6 +267,7 @@ export default function PlatformsPage() {
     </main>
   );
 }
+
 
 
 
