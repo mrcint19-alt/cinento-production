@@ -323,15 +323,18 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-[#070707] text-white">
       <header className="sticky top-0 z-50 border-b border-white/10 bg-black/70 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-4">
           <div className="text-lg font-bold tracking-wide text-white">{content.brand}</div>
 
-          <nav className="hidden items-center gap-6 md:flex">
+          <nav aria-label={lang === "tr" ? "Ana menü" : "Main navigation"} className="order-3 flex w-full flex-wrap items-center gap-x-5 gap-y-3 lg:order-none lg:w-auto">
             {content.nav.map((item) => (
               <button key={item.label} onClick={() => handleNavClick(item.href)} className="text-sm text-neutral-300 transition hover:text-[#d4af37]">
                 {item.label}
               </button>
             ))}
+            <a href={`/${lang}/platforms`} className="text-sm font-semibold text-[#d4af37] transition hover:text-white">
+              {lang === "tr" ? "Ürünler & Platformlar" : "Products & Platforms"}
+            </a>
           </nav>
 
           <div className="flex items-center gap-3">
@@ -405,6 +408,10 @@ export default function HomePage() {
         <div className="rounded-3xl border border-[#d4af37]/20 bg-neutral-900/80 p-8 shadow-xl">
           <h2 className="mb-4 text-2xl font-semibold text-[#d4af37]">{content.ecosystem.title}</h2>
           <p className="max-w-4xl text-neutral-300 leading-8">{content.ecosystem.subtitle}</p>
+          <a href={`/${lang}/platforms`} className="mt-6 inline-flex min-h-11 items-center gap-3 rounded-xl border border-[#d4af37]/50 px-5 py-3 text-sm font-semibold text-[#d4af37] transition hover:bg-[#d4af37] hover:text-black">
+            {lang === "tr" ? "Ürünler & Platformları Keşfet" : "Explore Products & Platforms"}
+            <span aria-hidden="true">↗</span>
+          </a>
         </div>
       </section>
 
@@ -501,3 +508,4 @@ export default function HomePage() {
     </main>
   );
 }
+
