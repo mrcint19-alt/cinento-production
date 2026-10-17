@@ -1,17 +1,38 @@
-/** Preview public-site gate. Temporary; not admin authentication or DB isolation. */
+/** Preview-only read access to the existing dashboard; all content writes remain blocked. */
 import { NextRequest, NextResponse } from "next/server";
+import { previewAuth, privateResponse } from "./lib/site-admin-auth";
 import homepage from "./app/data/homepage.json";
 import imageMetadata from "./app/data/images.json";
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   if (process.env.VERCEL_ENV === "preview") {
     const headers = {
       "X-Robots-Tag": "noindex, nofollow, noarchive",
       "Cache-Control": "no-store",
     };
+    if ((pathname === "/api/auth/login" || pathname === "/api/auth/logout") && request.method === "POST") {
+      return privateResponse(NextResponse.next());
+    }
     if (request.method !== "GET" && request.method !== "HEAD") {
       return NextResponse.json({ error: "Mutations are disabled in the UI-only preview." }, { status: 403, headers });
+    }
+    const privatePage = /^\/(en|tr)\/dashboard\/?$/.test(pathname) ||
+      /^\/admin\/content\/?$/.test(pathname) || /^\/(en|tr)\/admin\/images\/?$/.test(pathname);
+    if (privatePage) {
+      const auth = previewAuth(request);
+      if (!auth) return privateResponse(NextResponse.json({ error: "Preview administrator access is not configured." }, { status: 503 }));
+      try {
+        const { data, error } = await auth.client.auth.getUser();
+        if (!error && data.user && auth.allowed(data.user.id)) {
+          return auth.finish(NextResponse.next({ request: { headers: request.headers } }));
+        }
+      } catch { /* Fail closed; never render the private page. */ }
+      auth.clear();
+      return auth.finish(NextResponse.redirect(new URL("/login", request.url)));
+    }
+    if (pathname === "/login" || /^\/(en|tr)\/login\/?$/.test(pathname)) {
+      return privateResponse(NextResponse.next());
     }
     // Reply from repository snapshots; do not execute the live CMS handlers.
     if (pathname === "/api/content/homepage") {
@@ -57,3 +78,4 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = { matcher: ["/:path*"] };
+
