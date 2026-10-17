@@ -124,6 +124,13 @@ export default function PlatformsPage() {
   const [category, setCategory] = useState<Category>("all");
   const language: Language = selectedLanguage ?? (params?.lang === "tr" ? "tr" : "en");
   const text = COPY[language];
+  const siteLanguage = language === "tr" ? "tr" : language === "en" ? "en" : params?.lang === "tr" ? "tr" : "en";
+  const homeUrl = `/${siteLanguage}`;
+  const siteLabels = {
+    en: ["Home", "About", "Gallery", "Journal", "Contact"],
+    tr: ["Ana Sayfa", "Hakkımızda", "Galeri", "Günlük", "İletişim"],
+    fa: ["خانه", "درباره ما", "گالری", "مجله", "تماس"],
+  }[language];
   const products = PRODUCTS.filter((product) => category === "all" || product.category === category);
   const count = new Intl.NumberFormat(language).format(products.length);
 
@@ -131,8 +138,13 @@ export default function PlatformsPage() {
     <main className="cp" lang={language} dir={language === "fa" ? "rtl" : "ltr"}>
       <a className="cp-skip" href="#collection">{text.explore}</a>
       <header className="cp-header">
-        <a className="cp-brand" href="#top" aria-label="CINENTO">CINENTO<span aria-hidden="true">•</span></a>
-        <div className="cp-header-label">{text.title}</div>
+        <a className="cp-brand" href={homeUrl} aria-label={`CINENTO — ${siteLabels[0]}`}>CINENTO<span aria-hidden="true">•</span></a>
+        <nav className="cp-site-nav" aria-label={language === "fa" ? "منوی اصلی" : language === "tr" ? "Ana menü" : "Main navigation"}>
+          {(["home", "about", "gallery", "journal", "contact"] as const).map((section, index) => (
+            <a key={section} href={`${homeUrl}#${section}`}>{siteLabels[index]}</a>
+          ))}
+          <a href="#top" aria-current="page">{text.title}</a>
+        </nav>
         <div className="cp-languages" role="group" aria-label={text.language}>
           {(["en", "tr", "fa"] as Language[]).map((locale) => (
             <button key={locale} type="button" lang={locale} aria-pressed={language === locale} onClick={() => setSelectedLanguage(locale)}>
@@ -195,9 +207,10 @@ export default function PlatformsPage() {
       </section>
 
       <section className="cp-closing"><span className="cp-closing-mark" aria-hidden="true">C.</span><div><p className="cp-eyebrow">CINENTO</p><h2>{text.footerTitle}</h2><p>{text.footerText}</p></div></section>
-      <footer className="cp-footer"><span className="cp-footer-brand">CINENTO</span><p>{text.footerNote}</p><span>2026</span></footer>
+      <footer className="cp-footer"><a className="cp-footer-brand" href={homeUrl}>CINENTO</a><p>{text.footerNote}</p><a href={`${homeUrl}#contact`}>{siteLabels[4]}</a><span>2026</span></footer>
 
       <style jsx global>{`
+        .cp-site-nav{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px 17px;font-size:12px;color:#c2c1b8}.cp-site-nav a:hover,.cp-site-nav a[aria-current=page]{color:#d9b95b}.cp-site-nav a{padding-block:8px}.cp a:focus-visible,.cp button:focus-visible{outline:2px solid #d9b95b;outline-offset:5px}.cp-header{flex-wrap:wrap}.cp-site-nav{flex:1 1 400px}@media(max-width:900px){.cp-site-nav{order:3;flex-basis:100%;justify-content:flex-start;gap:5px 18px}.cp-header .cp-languages{margin-inline-start:auto}}
         .cp{--cp-gold:#d4af37;--cp-text:#f2f0e9;--cp-muted:#aaa9a2;background:#08090b;color:var(--cp-text);min-height:100vh;font-family:Arial,Tahoma,sans-serif;overflow-wrap:anywhere;color-scheme:dark}
         .cp *{box-sizing:border-box}.cp a{color:inherit;text-decoration:none}.cp button{font:inherit;cursor:pointer}.cp button,.cp a,.cp summary{-webkit-tap-highlight-color:transparent}.cp :focus-visible{outline:2px solid #e8c75b;outline-offset:5px}.cp h1,.cp h2,.cp h3,.cp h4,.cp p{margin:0}.cp button,.cp summary,.cp a{touch-action:manipulation}.cp-skip{position:fixed;top:8px;inset-inline-start:12px;padding:12px 20px;background:#d4af37;color:#111!important;z-index:100;transform:translateY(-160%)}.cp-skip:focus{transform:none}
         .cp-header{max-width:1320px;margin:auto;min-height:96px;padding:20px 44px;display:flex;align-items:center;justify-content:space-between;gap:22px;border-bottom:1px solid #ffffff12}.cp-brand{font-size:23px;letter-spacing:.16em;font-weight:750;direction:ltr;white-space:nowrap}.cp-brand span{font-size:10px;vertical-align:top;color:var(--cp-gold);margin-inline-start:4px}.cp-header-label{font-size:12px;color:#c2c1b8;letter-spacing:.04em}.cp-languages{display:flex;gap:3px;padding:4px;border:1px solid #ffffff20;border-radius:30px;direction:ltr}.cp-languages button{min-height:38px;min-width:42px;background:transparent;color:#bcbcb6;border:0;border-radius:22px;font-size:12px;padding:7px 12px}.cp-languages button[aria-pressed=true]{color:#111;background:#d9b95b}
@@ -215,3 +228,4 @@ export default function PlatformsPage() {
     </main>
   );
 }
+
