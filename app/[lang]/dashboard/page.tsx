@@ -35,6 +35,13 @@ export default function DashboardPage() {
 
         <div className="grid gap-6 md:grid-cols-3">
           <Link
+            href="/en/platforms"
+            className="rounded-2xl border border-yellow-500/20 bg-neutral-950/80 p-6 transition hover:border-yellow-500 hover:bg-neutral-900"
+          >
+            <h2 className="text-xl font-semibold text-yellow-500">Products &amp; Platforms</h2>
+            <p className="mt-3 text-gray-400">Review the CINENTO program catalog and its public presentation.</p>
+          </Link>
+          <Link
             href="/admin/content"
             className="rounded-2xl border border-yellow-500/20 bg-neutral-950/80 p-6 transition hover:border-yellow-500 hover:bg-neutral-900"
           >
@@ -147,3 +154,4 @@ export default function DashboardPage() {
     </main>
   );
 }
+

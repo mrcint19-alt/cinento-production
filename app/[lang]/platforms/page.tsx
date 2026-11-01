@@ -2,16 +2,17 @@
 
 /**
  * File: app/[lang]/platforms/page.tsx
- * CINENTO Products & Platforms — UI review v0.4 | 2026-10-18
+ * CINENTO Products & Platforms — catalog review v0.5 | 2026-11-01
  * AI sign-in URL observed in owner-provided signed-in and Incognito views.
  * WATCH catalog observed; playback confirmed by owner on 2026-10-18.
  * Suite Dashboard local Apps Manager UI observed; actions not tested.
- * Remaining products illustrative. No API, database or analytics integration.
+ * Additional profiles are editorial drafts. No API, database or analytics integration.
  * Local language switch includes Persian without adding a /fa route.
  * CMS integration and further product capability checks are subsequent work.
  */
 import { useState } from "react";
 import { useParams } from "next/navigation";
+import additionalPrograms from "../../data/programs.json";
 
 type Language = "en" | "tr" | "fa";
 type Category = "all" | "intelligence" | "media" | "business" | "connectivity";
@@ -19,13 +20,14 @@ type Copy = {
   eyebrow: string; title: string; lead: string; explore: string;
   catalog: string; catalogIntro: string; review: string; notice: string;
   details: string; audience: string; scope: string; related: string;
-  linkNote: string; concept: string; showing: string; language: string;
+  linkNote: string; inquire: string; concept: string; showing: string; language: string;
   footerTitle: string; footerText: string; footerNote: string;
   categories: Record<Category, string>;
 };
 type ProductText = { description: string; audience: string; scope: string[]; service: string };
 type Product = {
   id: string; name: string; mark: string; category: Exclude<Category, "all">;
+  status?: "desktop" | "development";
   copy: Record<Language, ProductText>;
 };
 
@@ -34,42 +36,42 @@ const COPY: Record<Language, Copy> = {
     eyebrow: "THE CINENTO ECOSYSTEM", title: "Products & Platforms",
     lead: "A new chapter where cinema, media and digital technology meet. Explore the proposed product portfolio behind CINENTO.",
     explore: "Explore the collection", catalog: "One vision. Different possibilities.",
-    catalogIntro: "Six product profiles, brought together for this design review.",
+    catalogIntro: "Explore the CINENTO program portfolio. Individual access and availability are shown only where verified.",
     review: "Pending verification", notice: "Design preview · AI’s sign-in page and workspace have been observed; capabilities and public registration remain untested. WATCH’s catalog has been observed and playback confirmed by the owner. Suite Dashboard’s local interface has been observed; its actions remain untested. Other profiles await verification.",
     details: "Explore this profile", audience: "Proposed audience", scope: "Proposed focus areas",
-    related: "Related service proposal", linkNote: "Website and demo links will appear after verification.",
+    related: "Related service proposal", linkNote: "Website and demo links will appear after verification.", inquire: "Ask about this program",
     concept: "Concept artwork · not a product screenshot", showing: "Profiles shown", language: "Page language",
     footerTitle: "From the screen to the system.",
     footerText: "The showcase brings CINENTO’s film, media and technology interests into one coherent experience. Verified product stories and real media will shape the next edition.",
-    footerNote: "UI review v0.4 · AI and WATCH open as separate applications. No live demo requests or account actions on this page.",
+    footerNote: "Catalog review v0.5 · AI and WATCH open as separate applications. Other program descriptions require owner verification.",
     categories: { all: "All products", intelligence: "Intelligence", media: "Film & media", business: "Business", connectivity: "Connectivity" },
   },
   tr: {
     eyebrow: "CINENTO EKOSİSTEMİ", title: "Ürünler & Platformlar",
     lead: "Sinema, medya ve dijital teknolojinin buluştuğu yeni bir bölüm. CINENTO için önerilen ürün portföyünü keşfedin.",
     explore: "Koleksiyonu keşfet", catalog: "Tek vizyon. Farklı olasılıklar.",
-    catalogIntro: "Bu tasarım incelemesi için bir araya getirilen altı ürün profili.",
+    catalogIntro: "CINENTO program portföyünü keşfedin. Erişim ve kullanılabilirlik yalnızca doğrulandığında gösterilir.",
     review: "Doğrulama bekliyor", notice: "Tasarım önizlemesi · AI’ın giriş sayfası ve çalışma alanı gözlemlendi; yetenekleri ve herkese açık kayıt test edilmedi. WATCH kataloğu gözlemlendi ve oynatma proje sahibi tarafından doğrulandı. Suite Dashboard’un yerel arayüzü gözlemlendi; işlemleri test edilmedi. Diğer profiller doğrulama bekliyor.",
     details: "Profili incele", audience: "Önerilen hedef kitle", scope: "Önerilen odak alanları",
-    related: "İlgili hizmet önerisi", linkNote: "Web sitesi ve demo bağlantıları doğrulamadan sonra eklenecek.",
+    related: "İlgili hizmet önerisi", linkNote: "Web sitesi ve demo bağlantıları doğrulamadan sonra eklenecek.", inquire: "Bu programı sorun",
     concept: "Konsept görsel · ürün ekran görüntüsü değildir", showing: "Gösterilen profiller", language: "Sayfa dili",
     footerTitle: "Ekrandan sisteme.",
     footerText: "Bu vitrin, CINENTO’nun sinema, medya ve teknoloji alanlarını ortak bir deneyimde buluşturur. Sonraki sürüm doğrulanmış ürün bilgileri ve gerçek görsellerle şekillenecek.",
-    footerNote: "Arayüz incelemesi v0.4 · AI ve WATCH bağımsız uygulamalarda açılır. Bu sayfada canlı demo talebi veya hesap işlemi yoktur.",
+    footerNote: "Katalog incelemesi v0.5 · AI ve WATCH bağımsız uygulamalarda açılır. Diğer program açıklamaları proje sahibinin onayını bekliyor.",
     categories: { all: "Tüm ürünler", intelligence: "Yapay zekâ", media: "Sinema & medya", business: "İş yönetimi", connectivity: "Bağlantı" },
   },
   fa: {
     eyebrow: "اکوسیستم سیننتو", title: "محصولات و پلتفرم‌ها",
     lead: "فصلی تازه در پیوند سینما، رسانه و فناوری دیجیتال. مجموعه پیشنهادی محصولات CINENTO را کشف کنید.",
     explore: "کاوش در محصولات", catalog: "یک چشم‌انداز؛ امکان‌های متفاوت.",
-    catalogIntro: "شش معرفی محصول در کنار هم، برای بررسی طراحی این مجموعه.",
+    catalogIntro: "برنامه‌های CINENTO را مرور کنید. دسترسی و آماده‌بودن هر محصول تنها پس از تأیید نمایش داده می‌شود.",
     review: "در انتظار تأیید", notice: "پیش‌نمایش طراحی · صفحه ورود و محیط AI مشاهده شده‌اند؛ قابلیت‌ها و ثبت‌نام عمومی آن آزمایش نشده‌اند. فهرست WATCH مشاهده و پخش توسط مالک پروژه تأیید شده است. رابط محلی Suite Dashboard مشاهده شده، اما عملیات آن آزمایش نشده است. سایر معرفی‌ها در انتظار بررسی‌اند.",
     details: "مشاهده معرفی", audience: "مخاطبان پیشنهادی", scope: "محورهای پیشنهادی",
-    related: "خدمت مرتبط پیشنهادی", linkNote: "لینک وب‌سایت و دمو پس از بررسی و تأیید اضافه می‌شود.",
+    related: "خدمت مرتبط پیشنهادی", linkNote: "لینک وب‌سایت و دمو پس از بررسی و تأیید اضافه می‌شود.", inquire: "درباره این برنامه بپرسید",
     concept: "تصویر مفهومی؛ نمای واقعی محصول نیست", showing: "تعداد معرفی‌های نمایان", language: "زبان صفحه",
     footerTitle: "از قاب سینما تا دنیای سیستم‌ها.",
     footerText: "این مجموعه، حوزه‌های سینما، رسانه و فناوری CINENTO را در تجربه‌ای منسجم معرفی می‌کند. نسخه بعدی با اطلاعات تأییدشده و تصاویر واقعی محصولات تکمیل خواهد شد.",
-    footerNote: "بررسی رابط نسخه ۰٫۴ · AI و WATCH در برنامه‌های مستقل باز می‌شوند. درخواست دموی واقعی و عملیات حساب کاربری در این صفحه فعال نیست.",
+    footerNote: "بررسی فهرست نسخه ۰٫۵ · AI و WATCH در برنامه‌های مستقل باز می‌شوند. متن سایر برنامه‌ها به تأیید مالک پروژه نیاز دارد.",
     categories: { all: "همه محصولات", intelligence: "هوش مصنوعی", media: "سینما و رسانه", business: "کسب‌وکار", connectivity: "ارتباطات" },
   },
 };
@@ -105,6 +107,7 @@ const PRODUCTS: Product[] = [
     tr: { description: "CINENTO bağlantı projesi için ayrılan profil. Ağın çalışması, hizmet erişimi ve güvenlik iddiaları inceleme bekliyor.", audience: "Teknik inceleme sonrası belirlenecek", scope: ["Bağlantı yaşam döngüsü", "Düğüm düzeni", "Hizmete erişim modeli"], service: "Bağlantı deneyimi tasarımı" },
     fa: { description: "معرفی پروژه ارتباطی CINENTO؛ عملکرد شبکه، دسترسی به سرویس و ادعاهای امنیتی همچنان نیازمند بررسی هستند.", audience: "پس از بررسی فنی تعیین می‌شود", scope: ["چرخه اتصال", "سازمان‌دهی گره‌ها", "مدل دسترسی به سرویس"], service: "طراحی تجربه ارتباطی" },
   } },
+  ...additionalPrograms as Product[],
 ];
 
 const CATEGORIES: Category[] = ["all", "intelligence", "media", "business", "connectivity"];
@@ -145,7 +148,7 @@ function ProductSymbol({ id }: { id: string }) {
     crm: "M16 24A8 8 0 1 0 16 8 8 8 0 1 0 16 24 M3 42V37C3 30 29 30 29 37V42 M34 10A7 7 0 0 1 34 24 M36 31C41 31 45 34 45 38V42",
     vpn: "M24 4 41 11V24C41 34 32 41 24 45 16 41 7 34 7 24V11Z M17 24 22 29 32 19",
   };
-  return <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[id]} /></svg>;
+  return <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[id] ?? "M8 8H40V40H8Z M16 16H32V32H16Z"} /></svg>;
 }
 
 export default function PlatformsPage() {
@@ -203,7 +206,7 @@ export default function PlatformsPage() {
       <aside className="cp-notice"><span aria-hidden="true">◇</span><p>{text.notice}</p></aside>
 
       <section className="cp-collection" id="collection" aria-labelledby="cp-catalog-title">
-        <div className="cp-section-heading"><div><p className="cp-eyebrow">CINENTO / 01—06</p><h2 id="cp-catalog-title">{text.catalog}</h2><p>{text.catalogIntro}</p></div><span className="cp-count" aria-live="polite">{text.showing} <strong>{count}</strong></span></div>
+        <div className="cp-section-heading"><div><p className="cp-eyebrow">CINENTO / 01—{String(PRODUCTS.length).padStart(2, "0")}</p><h2 id="cp-catalog-title">{text.catalog}</h2><p>{text.catalogIntro}</p></div><span className="cp-count" aria-live="polite">{text.showing} <strong>{count}</strong></span></div>
         <div className="cp-filters" role="group" aria-label={text.catalog}>
           {CATEGORIES.map((item) => <button key={item} type="button" aria-pressed={category === item} onClick={() => setCategory(item)}>{text.categories[item]}</button>)}
         </div>
@@ -214,6 +217,11 @@ export default function PlatformsPage() {
             const access = PRODUCT_ACCESS[product.id];
             const accessText = access?.copy[language];
             const profileText = accessText ?? (product.id === "enterprise" ? SUITE_PROFILE[language] : undefined);
+            const status = product.status === "desktop"
+              ? { en: "Desktop · Pending verification", tr: "Masaüstü · Doğrulama bekliyor", fa: "دسکتاپ · در انتظار تأیید" }[language]
+              : product.status === "development"
+                ? { en: "In development", tr: "Geliştiriliyor", fa: "در حال توسعه" }[language]
+                : undefined;
             return (
               <article className={`cp-card cp-card-${product.id}`} key={product.id} aria-labelledby={`cp-${product.id}`}>
                 <div className="cp-art" aria-hidden="true">
@@ -224,7 +232,7 @@ export default function PlatformsPage() {
                 </div>
                 <p className="cp-art-caption">{text.concept}</p>
                 <div className="cp-card-body">
-                  <div className="cp-card-meta"><span>{text.categories[product.category]}</span><span className="cp-status"><i />{profileText?.status ?? text.review}</span></div>
+                  <div className="cp-card-meta"><span>{text.categories[product.category]}</span><span className="cp-status"><i />{profileText?.status ?? status ?? text.review}</span></div>
                   <h3 id={`cp-${product.id}`} dir="ltr">{product.name}</h3>
                   <p className="cp-description">{content.description}</p>
                   <details className="cp-details">
@@ -236,7 +244,7 @@ export default function PlatformsPage() {
                       <a className="cp-access-link" href={access.url} target="_blank" rel="noopener noreferrer">{accessText.cta}<span aria-hidden="true">↗</span></a>
                       <p className="cp-link-note">{accessText.note}</p>
                     </div>
-                  ) : <p className="cp-link-note">{profileText?.note ?? text.linkNote}</p>}
+                  ) : <div className="cp-access"><a className="cp-access-link" href={`${homeUrl}#contact`}>{text.inquire}<span aria-hidden="true">↗</span></a><p className="cp-link-note">{profileText?.note ?? text.linkNote}</p></div>}
                 </div>
               </article>
             );
@@ -267,6 +275,7 @@ export default function PlatformsPage() {
     </main>
   );
 }
+
 
 
 
