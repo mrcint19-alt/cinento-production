@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { boundedJson, previewAuth, privateResponse, sameOrigin } from "../../../../lib/site-admin-auth";
+import { catalogSession } from "../../../../lib/program-catalog";
 
 export async function POST(request: NextRequest) {
   const reply = (message: string, status: number) => privateResponse(NextResponse.json({ success: false, message }, { status }));
   if (!sameOrigin(request)) return reply("Request origin is not allowed.", 403);
-  const auth = previewAuth(request);
-  if (!auth) return reply("Preview administrator access is not configured. Contact the site owner.", 503);
+  const auth = process.env.VERCEL_ENV === "preview" ? previewAuth(request) : catalogSession(request);
+  if (!auth) return reply("Administrator access is not configured. Contact the site owner.", 503);
   let email: string, password: string;
   try {
     const body = await boundedJson(request) as Record<string, unknown>;

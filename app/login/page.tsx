@@ -34,7 +34,7 @@ export default function LoginPage() {
       <form onSubmit={login} className="w-full max-w-md p-8 border border-neutral-800 rounded-2xl bg-neutral-950">
         <p className="text-yellow-500 tracking-[0.3em] text-sm mb-3">CINENTO</p>
         <h1 className="text-3xl font-bold mb-4 text-yellow-500">Administrator Login</h1>
-        <p className="text-sm text-gray-400 mb-6">Preview access: view the existing dashboard. Saving, uploading, deleting and CRM access are disabled.</p>
+        {process.env.NEXT_PUBLIC_VERCEL_ENV === "preview" && <p className="text-sm text-gray-400 mb-6">Preview access: view the existing dashboard. Saving, uploading, deleting and CRM access are disabled.</p>}
         <label htmlFor="email">Email</label>
         <input id="email" name="email" type="email" autoComplete="username" required maxLength={320}
           className="w-full mb-4 mt-2 p-3 bg-white text-black rounded" value={email} onChange={event => setEmail(event.target.value)} />
