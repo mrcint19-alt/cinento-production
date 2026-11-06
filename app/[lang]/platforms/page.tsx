@@ -142,7 +142,11 @@ export default function PlatformsPage() {
         if (!response.ok) throw new Error("Catalog unavailable");
         const payload = await response.json();
         if (!Array.isArray(payload.programs)) throw new Error("Invalid catalog");
-        setCatalog(payload.programs);
+        setCatalog(payload.programs.map((program: Product) => {
+          const preview = INITIAL_PRODUCTS.find(item => item.id === program.id);
+          // Older catalog responses omit artwork fields. Explicit null still removes an image.
+          return preview ? { ...preview, ...program } : program;
+        }));
       })
       .catch(error => { if (error.name !== "AbortError") { setCatalog([]); setCatalogError(true); } });
     return () => controller.abort();
