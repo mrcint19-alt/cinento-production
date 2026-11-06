@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @next/next/no-img-element -- Media URLs are edited in the dashboard and may use different approved hosts. */
 
 /**
  * File: app/[lang]/platforms/page.tsx
@@ -29,6 +30,9 @@ type Product = {
   id: string; name: string; mark: string; category: Exclude<Category, "all">;
   status?: "desktop" | "development";
   access_url?: string | null;
+  icon_url?: string | null;
+  logo_url?: string | null;
+  cover_url?: string | null;
   copy: Record<Language, ProductText>;
 };
 
@@ -77,7 +81,12 @@ const COPY: Record<Language, Copy> = {
   },
 };
 
-const INITIAL_PRODUCTS: Product[] = initialPrograms as Product[];
+const INITIAL_PRODUCTS: Product[] = (initialPrograms as Product[]).map(product => ({
+  ...product,
+  icon_url: `/images/programs/${product.id}-icon.svg`,
+  logo_url: `/images/programs/${product.id}-logo.svg`,
+  cover_url: `/images/programs/${product.id}-cover.svg`,
+}));
 
 const CATEGORIES: Category[] = ["all", "intelligence", "media", "business", "connectivity"];
 
@@ -133,7 +142,11 @@ export default function PlatformsPage() {
         if (!response.ok) throw new Error("Catalog unavailable");
         const payload = await response.json();
         if (!Array.isArray(payload.programs)) throw new Error("Invalid catalog");
-        setCatalog(payload.programs);
+        setCatalog(payload.programs.map((program: Product) => {
+          const preview = INITIAL_PRODUCTS.find(item => item.id === program.id);
+          // Older catalog responses omit artwork fields. Explicit null still removes an image.
+          return preview ? { ...preview, ...program } : program;
+        }));
       })
       .catch(error => { if (error.name !== "AbortError") { setCatalog([]); setCatalogError(true); } });
     return () => controller.abort();
@@ -207,13 +220,14 @@ export default function PlatformsPage() {
                 : undefined;
             return (
               <article className={`cp-card cp-card-${product.id}`} key={product.id} aria-labelledby={`cp-${product.id}`}>
-                <div className="cp-art" aria-hidden="true">
+                <div className={`cp-art${product.cover_url ? " cp-art-with-cover" : ""}`}>
+                  {product.cover_url && <img className="cp-cover" src={product.cover_url} alt="" loading="lazy" decoding="async" />}
                   <div className="cp-art-grid" /><div className="cp-art-orbit" />
                   <span className="cp-art-id">{String(catalog.indexOf(product) + 1).padStart(2, "0")} / CINENTO</span>
-                  <div className="cp-art-symbol"><ProductSymbol id={product.id} /></div>
-                  <span className="cp-art-mark">{product.mark}</span>
+                  <div className="cp-art-symbol">{product.icon_url ? <img src={product.icon_url} alt="" loading="lazy" decoding="async" /> : <ProductSymbol id={product.id} />}</div>
+                  {product.logo_url ? <img className="cp-art-logo" src={product.logo_url} alt="" loading="lazy" decoding="async" /> : <span className="cp-art-mark">{product.mark}</span>}
                 </div>
-                <p className="cp-art-caption">{text.concept}</p>
+                {(!product.cover_url || product.cover_url.includes("/images/programs/")) && <p className="cp-art-caption">{text.concept}</p>}
                 <div className="cp-card-body">
                   <div className="cp-card-meta"><span>{text.categories[product.category]}</span><span className="cp-status"><i />{profileText?.status ?? status ?? text.review}</span></div>
                   <h3 id={`cp-${product.id}`} dir="ltr">{product.name}</h3>
@@ -254,6 +268,13 @@ export default function PlatformsPage() {
         @media(min-width:1600px){.cp-hero{padding-top:100px;padding-bottom:100px}}@media(max-width:1100px){.cp-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.cp-notice,.cp-closing{margin-inline:32px}.cp-header,.cp-hero,.cp-collection{padding-inline:32px}.cp-hero{gap:20px}.cp-orbit{height:300px}.cp-orbit-ring{width:210px;height:210px}.cp-ring-two{width:265px;height:265px}.cp-hero h1{font-size:55px}.cp-description{min-height:78px}}
         @media(max-width:700px){.cp-header{min-height:82px;padding:17px 20px;flex-wrap:wrap;gap:12px}.cp-header-label{display:none}.cp-brand{font-size:20px}.cp-languages button{min-height:38px;padding:7px 9px}.cp-hero{grid-template-columns:1fr;padding:48px 20px 34px;gap:20px}.cp-hero h1{font-size:47px;max-width:480px;margin:18px 0}.cp-lead{font-size:14px}.cp-orbit{height:220px;max-width:400px;width:100%;margin:auto}.cp-orbit-core{width:105px;height:105px}.cp-orbit-core>span{font-size:58px}.cp-orbit-core small{font-size:7px}.cp-orbit-ring{width:160px;height:160px}.cp-ring-two{width:200px;height:200px}.cp-orbit-caption{font-size:7px}.cp-orbit-tag{font-size:8px;padding:6px 10px}.cp-tag-one{top:10px}.cp-tag-three{bottom:20px}.cp-notice{margin-inline:20px;padding:14px}.cp-notice p{font-size:11px}.cp-collection{padding:46px 20px}.cp-section-heading{align-items:start;flex-direction:column;gap:15px}.cp-count{font-size:10px}.cp-section-heading h2{font-size:27px}.cp-grid{grid-template-columns:1fr;gap:22px}.cp-card-body{padding:22px}.cp-description{min-height:0;font-size:13px}.cp-art{height:205px}.cp-filters{gap:7px;margin:22px 0}.cp-filters button{padding:9px 13px;min-height:42px;font-size:11px}.cp-card-meta,.cp-status{font-size:10px}.cp-closing{margin:0 20px 32px;padding:30px 0;grid-template-columns:1fr;gap:8px}.cp-closing-mark{font-size:65px;text-align:start}.cp-footer{padding:0 20px 28px;flex-wrap:wrap;gap:12px}.cp-footer p{order:3;flex-basis:100%}.cp[dir=rtl] h1{font-size:37px}.cp[dir=rtl] .cp-closing-mark{text-align:right}}
         @media(prefers-reduced-motion:reduce){.cp *{transition:none!important;scroll-behavior:auto!important}}
+        .cp-cover{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.76) saturate(.9)}
+        .cp-art-with-cover:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#08090b66,transparent 40%,#08090bcc);pointer-events:none}
+        .cp-art-with-cover .cp-art-grid,.cp-art-with-cover .cp-art-orbit{display:none}
+        .cp-art-with-cover .cp-art-symbol{background:#08090bc9;backdrop-filter:blur(8px)}
+        .cp-art-with-cover .cp-art-id,.cp-art-with-cover .cp-art-symbol,.cp-art-with-cover .cp-art-mark,.cp-art-logo{z-index:1}
+        .cp-art-symbol img{width:58px;height:58px;object-fit:contain}
+        .cp-art-logo{position:absolute;bottom:14px;right:18px;max-width:130px;max-height:38px;object-fit:contain;filter:drop-shadow(0 2px 6px #000)}
       `}</style>
     </main>
   );
