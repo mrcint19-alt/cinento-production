@@ -1,58 +1,511 @@
 [
   {
-    "id": "ai-studio-desktop", "name": "CINENTO AI Studio Desktop", "mark": "STUDIO", "category": "media", "status": "desktop",
+    "id": "ai",
+    "name": "CINENTO AI",
+    "mark": "AI",
+    "category": "intelligence",
     "copy": {
-      "en": { "description": "A desktop workspace for developing film and series ideas, screenplays, characters and pitch materials.", "audience": "Writers, producers and development teams", "scope": ["Story and screenplay development", "Character and series planning", "Presentation and export tools"], "service": "Creative development workflow" },
-      "tr": { "description": "Film ve dizi fikirleri, senaryolar, karakterler ve sunum materyalleri geliştirmek için masaüstü çalışma alanı.", "audience": "Yazarlar, yapımcılar ve geliştirme ekipleri", "scope": ["Hikâye ve senaryo geliştirme", "Karakter ve dizi planlama", "Sunum ve dışa aktarma araçları"], "service": "Yaratıcı geliştirme süreci" },
-      "fa": { "description": "محیط دسکتاپ برای توسعه ایده فیلم و سریال، فیلمنامه، شخصیت‌ها و مدارک ارائه پروژه.", "audience": "نویسندگان، تهیه‌کنندگان و تیم‌های توسعه", "scope": ["توسعه داستان و فیلمنامه", "طراحی شخصیت و سریال", "ابزارهای ارائه و خروجی"], "service": "فرایند توسعه خلاق" }
+      "en": {
+        "description": "An AI assistant workspace designed for film ideas, content, marketing, professional writing and document analysis. Access requires an account.",
+        "audience": "Creators, professionals and teams",
+        "scope": [
+          "Film ideas and project outlines",
+          "Marketing content",
+          "Letters and reports",
+          "Document summaries"
+        ],
+        "service": "AI experience design"
+      },
+      "tr": {
+        "description": "Film fikirleri, içerik, pazarlama, profesyonel yazım ve belge analizi için tasarlanan yapay zekâ asistanı çalışma alanı. Erişim için hesap gerekir.",
+        "audience": "Yaratıcılar, profesyoneller ve ekipler",
+        "scope": [
+          "Film fikirleri ve proje taslakları",
+          "Pazarlama içeriği",
+          "Yazışmalar ve raporlar",
+          "Belge özetleri"
+        ],
+        "service": "Yapay zekâ deneyimi tasarımı"
+      },
+      "fa": {
+        "description": "محیط دستیار هوش مصنوعی، طراحی‌شده برای ایده‌های فیلم، محتوا، بازاریابی، نگارش حرفه‌ای و تحلیل اسناد. دسترسی نیازمند حساب کاربری است.",
+        "audience": "تولیدکنندگان محتوا، متخصصان و تیم‌ها",
+        "scope": [
+          "ایده فیلم و طرح پروژه",
+          "محتوای بازاریابی",
+          "نامه‌ها و گزارش‌ها",
+          "خلاصه اسناد"
+        ],
+        "service": "طراحی تجربه هوش مصنوعی"
+      }
+    },
+    "access_url": "https://ai.cinento.net"
+  },
+  {
+    "id": "watch",
+    "name": "CINENTO WATCH",
+    "mark": "W",
+    "category": "media",
+    "copy": {
+      "en": {
+        "description": "CINENTO’s independent cinematic platform for discovering and watching selected titles. An early release with a limited catalog, evolving for audiences, filmmakers and media partners.",
+        "audience": "Audiences, filmmakers and media partners",
+        "scope": [
+          "Selected title catalog",
+          "Title information",
+          "Video playback"
+        ],
+        "service": "Film and media strategy"
+      },
+      "tr": {
+        "description": "Seçili yapımları keşfetmek ve izlemek için CINENTO’nun bağımsız sinema platformu. İzleyiciler, sinemacılar ve medya ortakları için geliştirilen, sınırlı kataloglu ilk sürüm.",
+        "audience": "İzleyiciler, sinemacılar ve medya ortakları",
+        "scope": [
+          "Seçili yapım kataloğu",
+          "Yapım bilgileri",
+          "Video oynatma"
+        ],
+        "service": "Sinema ve medya stratejisi"
+      },
+      "fa": {
+        "description": "پلتفرم مستقل سینمایی CINENTO برای کشف و تماشای آثار منتخب؛ نسخه‌ای اولیه با فهرست محدود که برای مخاطبان، فیلم‌سازان و شرکای رسانه‌ای توسعه می‌یابد.",
+        "audience": "مخاطبان، فیلم‌سازان و شرکای رسانه‌ای",
+        "scope": [
+          "فهرست آثار منتخب",
+          "اطلاعات آثار",
+          "پخش ویدئو"
+        ],
+        "service": "راهبرد سینما و رسانه"
+      }
+    },
+    "access_url": "https://watch.cinento.net"
+  },
+  {
+    "id": "enterprise",
+    "name": "CINENTO Suite Dashboard",
+    "mark": "SUITE",
+    "category": "business",
+    "copy": {
+      "en": {
+        "description": "A local dashboard designed to organize CINENTO software tools and their launch settings. Its Apps Manager brings application records, addresses and setup status into one workspace.",
+        "audience": "CINENTO administrators and development teams",
+        "scope": [
+          "Application registration form",
+          "Frontend, backend, executable and port settings",
+          "Setup status and active flags",
+          "Launch, Edit and Delete controls"
+        ],
+        "service": "Software workspace organization"
+      },
+      "tr": {
+        "description": "CINENTO yazılım araçlarını ve başlatma ayarlarını düzenlemek için tasarlanan yerel panel. Apps Manager, uygulama kayıtlarını, adresleri ve kurulum durumlarını tek çalışma alanında sunar.",
+        "audience": "CINENTO yöneticileri ve geliştirme ekipleri",
+        "scope": [
+          "Uygulama kayıt formu",
+          "Ön yüz, arka uç, çalıştırılabilir dosya ve port ayarları",
+          "Kurulum durumu ve etkinlik işaretleri",
+          "Launch, Edit ve Delete kontrolleri"
+        ],
+        "service": "Yazılım çalışma alanının düzenlenmesi"
+      },
+      "fa": {
+        "description": "داشبورد محلی برای سامان‌دهی ابزارهای نرم‌افزاری CINENTO و تنظیمات اجرای آن‌ها. بخش Apps Manager، مشخصات برنامه‌ها، آدرس‌ها و وضعیت راه‌اندازی را در یک محیط نمایش می‌دهد.",
+        "audience": "مدیران و تیم توسعه CINENTO",
+        "scope": [
+          "فرم ثبت مشخصات برنامه‌ها",
+          "تنظیمات فرانت‌اند، بک‌اند، فایل اجرایی و پورت",
+          "وضعیت راه‌اندازی و نشان فعال‌بودن",
+          "کنترل‌های Launch، Edit و Delete"
+        ],
+        "service": "سامان‌دهی محیط ابزارهای نرم‌افزاری"
+      }
     }
   },
   {
-    "id": "ai-studio-web", "name": "CINENTO AI Studio Web", "mark": "WEB", "category": "media", "status": "development",
+    "id": "autocall",
+    "name": "CINENTO AutoCall",
+    "mark": "AC",
+    "category": "connectivity",
     "copy": {
-      "en": { "description": "A web workspace for film development and production planning, including budget and presentation workflows.", "audience": "Film project teams", "scope": ["Project development", "Budget preparation", "Producer and investor materials"], "service": "Production development tools" },
-      "tr": { "description": "Bütçe ve sunum süreçleri de içeren, film geliştirme ve yapım planlamasına yönelik web çalışma alanı.", "audience": "Film proje ekipleri", "scope": ["Proje geliştirme", "Bütçe hazırlama", "Yapımcı ve yatırımcı materyalleri"], "service": "Yapım geliştirme araçları" },
-      "fa": { "description": "محیط تحت وب توسعه فیلم و برنامه‌ریزی تولید با فرایندهای بودجه و ارائه پروژه.", "audience": "تیم‌های پروژه‌های سینمایی", "scope": ["توسعه پروژه", "تهیه بودجه", "مستندات تهیه‌کننده و سرمایه‌گذار"], "service": "ابزارهای توسعه تولید" }
+      "en": {
+        "description": "A product story exploring coordinated calling workflows. Calling methods, regional support and automation require separate validation.",
+        "audience": "Outreach and customer communication teams",
+        "scope": [
+          "Call planning",
+          "Contact organization",
+          "Campaign workflows"
+        ],
+        "service": "Communication workflow design"
+      },
+      "tr": {
+        "description": "Koordineli arama akışlarını ele alan ürün hikâyesi. Arama yöntemleri, bölgesel destek ve otomasyon ayrıca doğrulanmalıdır.",
+        "audience": "Müşteri iletişimi ve erişim ekipleri",
+        "scope": [
+          "Arama planlaması",
+          "Kişi düzeni",
+          "Kampanya akışları"
+        ],
+        "service": "İletişim akışı tasarımı"
+      },
+      "fa": {
+        "description": "روایتی پیشنهادی برای مدیریت فرایند تماس؛ روش تماس، پشتیبانی منطقه‌ای و خودکارسازی نیازمند بررسی مستقل است.",
+        "audience": "تیم‌های ارتباط با مشتری و توسعه بازار",
+        "scope": [
+          "برنامه‌ریزی تماس",
+          "سازمان‌دهی مخاطبان",
+          "فرایند کمپین"
+        ],
+        "service": "طراحی فرایند ارتباطات"
+      }
     }
   },
   {
-    "id": "budget-studio", "name": "CINENTO Budget Studio", "mark": "BUDGET", "category": "business", "status": "desktop",
+    "id": "crm",
+    "name": "CINENTO CRM",
+    "mark": "CRM",
+    "category": "business",
     "copy": {
-      "en": { "description": "A budgeting workspace for film projects and financial presentation materials.", "audience": "Producers and production managers", "scope": ["Film budget planning", "Producer and investor views", "Budget reports"], "service": "Film finance planning" },
-      "tr": { "description": "Film projeleri ve mali sunum materyalleri için bütçeleme çalışma alanı.", "audience": "Yapımcılar ve yapım yöneticileri", "scope": ["Film bütçe planlaması", "Yapımcı ve yatırımcı görünümleri", "Bütçe raporları"], "service": "Film finansmanı planlaması" },
-      "fa": { "description": "محیط بودجه‌بندی پروژه‌های سینمایی و تهیه مدارک مالی ارائه پروژه.", "audience": "تهیه‌کنندگان و مدیران تولید", "scope": ["برنامه‌ریزی بودجه فیلم", "نمای تهیه‌کننده و سرمایه‌گذار", "گزارش‌های بودجه"], "service": "برنامه‌ریزی مالی فیلم" }
+      "en": {
+        "description": "A proposed customer relationship profile. The scope of a standalone product will be distinguished from the website’s internal CRM.",
+        "audience": "Sales, partnerships and client service teams",
+        "scope": [
+          "Relationship management",
+          "Inquiry follow-up",
+          "Partnership workflows"
+        ],
+        "service": "Customer journey design"
+      },
+      "tr": {
+        "description": "Müşteri ilişkileri için önerilen ürün profili. Bağımsız ürünün kapsamı, sitenin iç CRM sisteminden ayrı tanımlanacak.",
+        "audience": "Satış, iş ortaklığı ve müşteri hizmetleri ekipleri",
+        "scope": [
+          "İlişki yönetimi",
+          "Talep takibi",
+          "İş ortaklığı akışları"
+        ],
+        "service": "Müşteri yolculuğu tasarımı"
+      },
+      "fa": {
+        "description": "معرفی پیشنهادی مدیریت ارتباط با مشتری؛ محدوده محصول مستقل باید از CRM داخلی سایت تفکیک و تأیید شود.",
+        "audience": "تیم‌های فروش، مشارکت و خدمات مشتری",
+        "scope": [
+          "مدیریت ارتباطات",
+          "پیگیری درخواست‌ها",
+          "فرایند همکاری"
+        ],
+        "service": "طراحی مسیر مشتری"
+      }
     }
   },
   {
-    "id": "enterprise-os", "name": "CINENTO Enterprise OS", "mark": "OS", "category": "business", "status": "development",
+    "id": "vpn",
+    "name": "CINENTO VPN",
+    "mark": "VPN",
+    "category": "connectivity",
     "copy": {
-      "en": { "description": "A modular management system for CINENTO's internal workspaces and operational processes.", "audience": "CINENTO teams and administrators", "scope": ["Module and menu registry", "Roles and permissions", "Operational workspaces"], "service": "Enterprise operations" },
-      "tr": { "description": "CINENTO'nun iç çalışma alanları ve operasyonel süreçleri için modüler yönetim sistemi.", "audience": "CINENTO ekipleri ve yöneticileri", "scope": ["Modül ve menü kayıtları", "Roller ve izinler", "Operasyonel çalışma alanları"], "service": "Kurumsal operasyonlar" },
-      "fa": { "description": "سامانه مدیریت ماژولار برای محیط‌های کاری داخلی و فرایندهای عملیاتی CINENTO.", "audience": "تیم‌ها و مدیران CINENTO", "scope": ["ثبت ماژول و منو", "نقش‌ها و دسترسی‌ها", "محیط‌های عملیاتی"], "service": "عملیات سازمانی" }
+      "en": {
+        "description": "A profile reserved for CINENTO’s connectivity project. Network operation, service availability and security claims remain under review.",
+        "audience": "Audience to be defined after technical review",
+        "scope": [
+          "Connection lifecycle",
+          "Node organization",
+          "Service access model"
+        ],
+        "service": "Connectivity experience design"
+      },
+      "tr": {
+        "description": "CINENTO bağlantı projesi için ayrılan profil. Ağın çalışması, hizmet erişimi ve güvenlik iddiaları inceleme bekliyor.",
+        "audience": "Teknik inceleme sonrası belirlenecek",
+        "scope": [
+          "Bağlantı yaşam döngüsü",
+          "Düğüm düzeni",
+          "Hizmete erişim modeli"
+        ],
+        "service": "Bağlantı deneyimi tasarımı"
+      },
+      "fa": {
+        "description": "معرفی پروژه ارتباطی CINENTO؛ عملکرد شبکه، دسترسی به سرویس و ادعاهای امنیتی همچنان نیازمند بررسی هستند.",
+        "audience": "پس از بررسی فنی تعیین می‌شود",
+        "scope": [
+          "چرخه اتصال",
+          "سازمان‌دهی گره‌ها",
+          "مدل دسترسی به سرویس"
+        ],
+        "service": "طراحی تجربه ارتباطی"
+      }
     }
   },
   {
-    "id": "app-center", "name": "CINENTO App Center PRO", "mark": "APPS", "category": "business", "status": "desktop",
+    "id": "ai-studio-desktop",
+    "name": "CINENTO AI Studio Desktop",
+    "mark": "STUDIO",
+    "category": "media",
+    "status": "desktop",
     "copy": {
-      "en": { "description": "A local launcher that organizes CINENTO desktop and web applications in one workspace.", "audience": "CINENTO operators and developers", "scope": ["Application catalog", "Local launch settings", "Categories and management"], "service": "Software workspace organization" },
-      "tr": { "description": "CINENTO masaüstü ve web uygulamalarını tek çalışma alanında düzenleyen yerel başlatıcı.", "audience": "CINENTO operatörleri ve geliştiricileri", "scope": ["Uygulama kataloğu", "Yerel başlatma ayarları", "Kategoriler ve yönetim"], "service": "Yazılım çalışma alanı düzeni" },
-      "fa": { "description": "راه‌انداز محلی برای سامان‌دهی برنامه‌های دسکتاپ و وب CINENTO در یک محیط.", "audience": "اپراتورها و توسعه‌دهندگان CINENTO", "scope": ["فهرست برنامه‌ها", "تنظیمات اجرای محلی", "دسته‌بندی و مدیریت"], "service": "سامان‌دهی محیط نرم‌افزار" }
+      "en": {
+        "description": "A desktop workspace for developing film and series ideas, screenplays, characters and pitch materials.",
+        "audience": "Writers, producers and development teams",
+        "scope": [
+          "Story and screenplay development",
+          "Character and series planning",
+          "Presentation and export tools"
+        ],
+        "service": "Creative development workflow"
+      },
+      "tr": {
+        "description": "Film ve dizi fikirleri, senaryolar, karakterler ve sunum materyalleri geliştirmek için masaüstü çalışma alanı.",
+        "audience": "Yazarlar, yapımcılar ve geliştirme ekipleri",
+        "scope": [
+          "Hikâye ve senaryo geliştirme",
+          "Karakter ve dizi planlama",
+          "Sunum ve dışa aktarma araçları"
+        ],
+        "service": "Yaratıcı geliştirme süreci"
+      },
+      "fa": {
+        "description": "محیط دسکتاپ برای توسعه ایده فیلم و سریال، فیلمنامه، شخصیت‌ها و مدارک ارائه پروژه.",
+        "audience": "نویسندگان، تهیه‌کنندگان و تیم‌های توسعه",
+        "scope": [
+          "توسعه داستان و فیلمنامه",
+          "طراحی شخصیت و سریال",
+          "ابزارهای ارائه و خروجی"
+        ],
+        "service": "فرایند توسعه خلاق"
+      }
     }
   },
   {
-    "id": "cv-kart", "name": "CINENTO CV Kart", "mark": "CV", "category": "business", "status": "development",
+    "id": "ai-studio-web",
+    "name": "CINENTO AI Studio Web",
+    "mark": "WEB",
+    "category": "media",
+    "status": "development",
     "copy": {
-      "en": { "description": "A profile and CV presentation product with a public page and QR sharing workflow.", "audience": "Professionals and talent", "scope": ["CV editing", "Profile presentation", "QR sharing"], "service": "Professional profile design" },
-      "tr": { "description": "Açık profil sayfası ve QR paylaşımı içeren özgeçmiş sunum ürünü.", "audience": "Profesyoneller ve yetenekler", "scope": ["Özgeçmiş düzenleme", "Profil sunumu", "QR paylaşımı"], "service": "Profesyonel profil tasarımı" },
-      "fa": { "description": "محصول ارائه رزومه و پروفایل با صفحه عمومی و امکان اشتراک‌گذاری از راه QR.", "audience": "متخصصان و استعدادها", "scope": ["ویرایش رزومه", "نمایش پروفایل", "اشتراک‌گذاری QR"], "service": "طراحی پروفایل حرفه‌ای" }
+      "en": {
+        "description": "A web workspace for film development and production planning, including budget and presentation workflows.",
+        "audience": "Film project teams",
+        "scope": [
+          "Project development",
+          "Budget preparation",
+          "Producer and investor materials"
+        ],
+        "service": "Production development tools"
+      },
+      "tr": {
+        "description": "Bütçe ve sunum süreçleri de içeren, film geliştirme ve yapım planlamasına yönelik web çalışma alanı.",
+        "audience": "Film proje ekipleri",
+        "scope": [
+          "Proje geliştirme",
+          "Bütçe hazırlama",
+          "Yapımcı ve yatırımcı materyalleri"
+        ],
+        "service": "Yapım geliştirme araçları"
+      },
+      "fa": {
+        "description": "محیط تحت وب توسعه فیلم و برنامه‌ریزی تولید با فرایندهای بودجه و ارائه پروژه.",
+        "audience": "تیم‌های پروژه‌های سینمایی",
+        "scope": [
+          "توسعه پروژه",
+          "تهیه بودجه",
+          "مستندات تهیه‌کننده و سرمایه‌گذار"
+        ],
+        "service": "ابزارهای توسعه تولید"
+      }
     }
   },
   {
-    "id": "outreach-crm", "name": "CINENTO Outreach CRM", "mark": "OUTREACH", "category": "business", "status": "desktop",
+    "id": "budget-studio",
+    "name": "CINENTO Budget Studio",
+    "mark": "BUDGET",
+    "category": "business",
+    "status": "desktop",
     "copy": {
-      "en": { "description": "A local outreach workspace for organizing contacts, leads and follow-up activity.", "audience": "Partnership and business development teams", "scope": ["Lead organization", "Contact records", "Follow-up workflow"], "service": "Business outreach" },
-      "tr": { "description": "İletişim kişileri, adaylar ve takip çalışmalarını düzenlemek için yerel bir çalışma alanı.", "audience": "İş ortaklığı ve iş geliştirme ekipleri", "scope": ["Aday düzeni", "İletişim kayıtları", "Takip süreci"], "service": "İş geliştirme iletişimi" },
-      "fa": { "description": "محیط محلی برای سامان‌دهی سرنخ‌ها، مخاطبان و پیگیری ارتباطات تجاری.", "audience": "تیم‌های مشارکت و توسعه کسب‌وکار", "scope": ["سامان‌دهی سرنخ‌ها", "ثبت مخاطبان", "فرایند پیگیری"], "service": "ارتباطات توسعه بازار" }
+      "en": {
+        "description": "A budgeting workspace for film projects and financial presentation materials.",
+        "audience": "Producers and production managers",
+        "scope": [
+          "Film budget planning",
+          "Producer and investor views",
+          "Budget reports"
+        ],
+        "service": "Film finance planning"
+      },
+      "tr": {
+        "description": "Film projeleri ve mali sunum materyalleri için bütçeleme çalışma alanı.",
+        "audience": "Yapımcılar ve yapım yöneticileri",
+        "scope": [
+          "Film bütçe planlaması",
+          "Yapımcı ve yatırımcı görünümleri",
+          "Bütçe raporları"
+        ],
+        "service": "Film finansmanı planlaması"
+      },
+      "fa": {
+        "description": "محیط بودجه‌بندی پروژه‌های سینمایی و تهیه مدارک مالی ارائه پروژه.",
+        "audience": "تهیه‌کنندگان و مدیران تولید",
+        "scope": [
+          "برنامه‌ریزی بودجه فیلم",
+          "نمای تهیه‌کننده و سرمایه‌گذار",
+          "گزارش‌های بودجه"
+        ],
+        "service": "برنامه‌ریزی مالی فیلم"
+      }
+    }
+  },
+  {
+    "id": "enterprise-os",
+    "name": "CINENTO Enterprise OS",
+    "mark": "OS",
+    "category": "business",
+    "status": "development",
+    "copy": {
+      "en": {
+        "description": "A modular management system for CINENTO's internal workspaces and operational processes.",
+        "audience": "CINENTO teams and administrators",
+        "scope": [
+          "Module and menu registry",
+          "Roles and permissions",
+          "Operational workspaces"
+        ],
+        "service": "Enterprise operations"
+      },
+      "tr": {
+        "description": "CINENTO'nun iç çalışma alanları ve operasyonel süreçleri için modüler yönetim sistemi.",
+        "audience": "CINENTO ekipleri ve yöneticileri",
+        "scope": [
+          "Modül ve menü kayıtları",
+          "Roller ve izinler",
+          "Operasyonel çalışma alanları"
+        ],
+        "service": "Kurumsal operasyonlar"
+      },
+      "fa": {
+        "description": "سامانه مدیریت ماژولار برای محیط‌های کاری داخلی و فرایندهای عملیاتی CINENTO.",
+        "audience": "تیم‌ها و مدیران CINENTO",
+        "scope": [
+          "ثبت ماژول و منو",
+          "نقش‌ها و دسترسی‌ها",
+          "محیط‌های عملیاتی"
+        ],
+        "service": "عملیات سازمانی"
+      }
+    }
+  },
+  {
+    "id": "app-center",
+    "name": "CINENTO App Center PRO",
+    "mark": "APPS",
+    "category": "business",
+    "status": "desktop",
+    "copy": {
+      "en": {
+        "description": "A local launcher that organizes CINENTO desktop and web applications in one workspace.",
+        "audience": "CINENTO operators and developers",
+        "scope": [
+          "Application catalog",
+          "Local launch settings",
+          "Categories and management"
+        ],
+        "service": "Software workspace organization"
+      },
+      "tr": {
+        "description": "CINENTO masaüstü ve web uygulamalarını tek çalışma alanında düzenleyen yerel başlatıcı.",
+        "audience": "CINENTO operatörleri ve geliştiricileri",
+        "scope": [
+          "Uygulama kataloğu",
+          "Yerel başlatma ayarları",
+          "Kategoriler ve yönetim"
+        ],
+        "service": "Yazılım çalışma alanı düzeni"
+      },
+      "fa": {
+        "description": "راه‌انداز محلی برای سامان‌دهی برنامه‌های دسکتاپ و وب CINENTO در یک محیط.",
+        "audience": "اپراتورها و توسعه‌دهندگان CINENTO",
+        "scope": [
+          "فهرست برنامه‌ها",
+          "تنظیمات اجرای محلی",
+          "دسته‌بندی و مدیریت"
+        ],
+        "service": "سامان‌دهی محیط نرم‌افزار"
+      }
+    }
+  },
+  {
+    "id": "cv-kart",
+    "name": "CINENTO CV Kart",
+    "mark": "CV",
+    "category": "business",
+    "status": "development",
+    "copy": {
+      "en": {
+        "description": "A profile and CV presentation product with a public page and QR sharing workflow.",
+        "audience": "Professionals and talent",
+        "scope": [
+          "CV editing",
+          "Profile presentation",
+          "QR sharing"
+        ],
+        "service": "Professional profile design"
+      },
+      "tr": {
+        "description": "Açık profil sayfası ve QR paylaşımı içeren özgeçmiş sunum ürünü.",
+        "audience": "Profesyoneller ve yetenekler",
+        "scope": [
+          "Özgeçmiş düzenleme",
+          "Profil sunumu",
+          "QR paylaşımı"
+        ],
+        "service": "Profesyonel profil tasarımı"
+      },
+      "fa": {
+        "description": "محصول ارائه رزومه و پروفایل با صفحه عمومی و امکان اشتراک‌گذاری از راه QR.",
+        "audience": "متخصصان و استعدادها",
+        "scope": [
+          "ویرایش رزومه",
+          "نمایش پروفایل",
+          "اشتراک‌گذاری QR"
+        ],
+        "service": "طراحی پروفایل حرفه‌ای"
+      }
+    }
+  },
+  {
+    "id": "outreach-crm",
+    "name": "CINENTO Outreach CRM",
+    "mark": "OUTREACH",
+    "category": "business",
+    "status": "desktop",
+    "copy": {
+      "en": {
+        "description": "A local outreach workspace for organizing contacts, leads and follow-up activity.",
+        "audience": "Partnership and business development teams",
+        "scope": [
+          "Lead organization",
+          "Contact records",
+          "Follow-up workflow"
+        ],
+        "service": "Business outreach"
+      },
+      "tr": {
+        "description": "İletişim kişileri, adaylar ve takip çalışmalarını düzenlemek için yerel bir çalışma alanı.",
+        "audience": "İş ortaklığı ve iş geliştirme ekipleri",
+        "scope": [
+          "Aday düzeni",
+          "İletişim kayıtları",
+          "Takip süreci"
+        ],
+        "service": "İş geliştirme iletişimi"
+      },
+      "fa": {
+        "description": "محیط محلی برای سامان‌دهی سرنخ‌ها، مخاطبان و پیگیری ارتباطات تجاری.",
+        "audience": "تیم‌های مشارکت و توسعه کسب‌وکار",
+        "scope": [
+          "سامان‌دهی سرنخ‌ها",
+          "ثبت مخاطبان",
+          "فرایند پیگیری"
+        ],
+        "service": "ارتباطات توسعه بازار"
+      }
     }
   }
 ]

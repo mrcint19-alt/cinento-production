@@ -10,9 +10,9 @@
  * Local language switch includes Persian without adding a /fa route.
  * CMS integration and further product capability checks are subsequent work.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import additionalPrograms from "../../data/programs.json";
+import initialPrograms from "../../data/programs.json";
 
 type Language = "en" | "tr" | "fa";
 type Category = "all" | "intelligence" | "media" | "business" | "connectivity";
@@ -28,6 +28,7 @@ type ProductText = { description: string; audience: string; scope: string[]; ser
 type Product = {
   id: string; name: string; mark: string; category: Exclude<Category, "all">;
   status?: "desktop" | "development";
+  access_url?: string | null;
   copy: Record<Language, ProductText>;
 };
 
@@ -76,39 +77,7 @@ const COPY: Record<Language, Copy> = {
   },
 };
 
-const PRODUCTS: Product[] = [
-  { id: "ai", name: "CINENTO AI", mark: "AI", category: "intelligence", copy: {
-    en: { description: "An AI assistant workspace designed for film ideas, content, marketing, professional writing and document analysis. Access requires an account.", audience: "Creators, professionals and teams", scope: ["Film ideas and project outlines", "Marketing content", "Letters and reports", "Document summaries"], service: "AI experience design" },
-    tr: { description: "Film fikirleri, içerik, pazarlama, profesyonel yazım ve belge analizi için tasarlanan yapay zekâ asistanı çalışma alanı. Erişim için hesap gerekir.", audience: "Yaratıcılar, profesyoneller ve ekipler", scope: ["Film fikirleri ve proje taslakları", "Pazarlama içeriği", "Yazışmalar ve raporlar", "Belge özetleri"], service: "Yapay zekâ deneyimi tasarımı" },
-    fa: { description: "محیط دستیار هوش مصنوعی، طراحی‌شده برای ایده‌های فیلم، محتوا، بازاریابی، نگارش حرفه‌ای و تحلیل اسناد. دسترسی نیازمند حساب کاربری است.", audience: "تولیدکنندگان محتوا، متخصصان و تیم‌ها", scope: ["ایده فیلم و طرح پروژه", "محتوای بازاریابی", "نامه‌ها و گزارش‌ها", "خلاصه اسناد"], service: "طراحی تجربه هوش مصنوعی" },
-  } },
-  { id: "watch", name: "CINENTO WATCH", mark: "W", category: "media", copy: {
-    en: { description: "CINENTO’s independent cinematic platform for discovering and watching selected titles. An early release with a limited catalog, evolving for audiences, filmmakers and media partners.", audience: "Audiences, filmmakers and media partners", scope: ["Selected title catalog", "Title information", "Video playback"], service: "Film and media strategy" },
-    tr: { description: "Seçili yapımları keşfetmek ve izlemek için CINENTO’nun bağımsız sinema platformu. İzleyiciler, sinemacılar ve medya ortakları için geliştirilen, sınırlı kataloglu ilk sürüm.", audience: "İzleyiciler, sinemacılar ve medya ortakları", scope: ["Seçili yapım kataloğu", "Yapım bilgileri", "Video oynatma"], service: "Sinema ve medya stratejisi" },
-    fa: { description: "پلتفرم مستقل سینمایی CINENTO برای کشف و تماشای آثار منتخب؛ نسخه‌ای اولیه با فهرست محدود که برای مخاطبان، فیلم‌سازان و شرکای رسانه‌ای توسعه می‌یابد.", audience: "مخاطبان، فیلم‌سازان و شرکای رسانه‌ای", scope: ["فهرست آثار منتخب", "اطلاعات آثار", "پخش ویدئو"], service: "راهبرد سینما و رسانه" },
-  } },
-  { id: "enterprise", name: "CINENTO Suite Dashboard", mark: "SUITE", category: "business", copy: {
-    en: { description: "A local dashboard designed to organize CINENTO software tools and their launch settings. Its Apps Manager brings application records, addresses and setup status into one workspace.", audience: "CINENTO administrators and development teams", scope: ["Application registration form", "Frontend, backend, executable and port settings", "Setup status and active flags", "Launch, Edit and Delete controls"], service: "Software workspace organization" },
-    tr: { description: "CINENTO yazılım araçlarını ve başlatma ayarlarını düzenlemek için tasarlanan yerel panel. Apps Manager, uygulama kayıtlarını, adresleri ve kurulum durumlarını tek çalışma alanında sunar.", audience: "CINENTO yöneticileri ve geliştirme ekipleri", scope: ["Uygulama kayıt formu", "Ön yüz, arka uç, çalıştırılabilir dosya ve port ayarları", "Kurulum durumu ve etkinlik işaretleri", "Launch, Edit ve Delete kontrolleri"], service: "Yazılım çalışma alanının düzenlenmesi" },
-    fa: { description: "داشبورد محلی برای سامان‌دهی ابزارهای نرم‌افزاری CINENTO و تنظیمات اجرای آن‌ها. بخش Apps Manager، مشخصات برنامه‌ها، آدرس‌ها و وضعیت راه‌اندازی را در یک محیط نمایش می‌دهد.", audience: "مدیران و تیم توسعه CINENTO", scope: ["فرم ثبت مشخصات برنامه‌ها", "تنظیمات فرانت‌اند، بک‌اند، فایل اجرایی و پورت", "وضعیت راه‌اندازی و نشان فعال‌بودن", "کنترل‌های Launch، Edit و Delete"], service: "سامان‌دهی محیط ابزارهای نرم‌افزاری" },
-  } },
-  { id: "autocall", name: "CINENTO AutoCall", mark: "AC", category: "connectivity", copy: {
-    en: { description: "A product story exploring coordinated calling workflows. Calling methods, regional support and automation require separate validation.", audience: "Outreach and customer communication teams", scope: ["Call planning", "Contact organization", "Campaign workflows"], service: "Communication workflow design" },
-    tr: { description: "Koordineli arama akışlarını ele alan ürün hikâyesi. Arama yöntemleri, bölgesel destek ve otomasyon ayrıca doğrulanmalıdır.", audience: "Müşteri iletişimi ve erişim ekipleri", scope: ["Arama planlaması", "Kişi düzeni", "Kampanya akışları"], service: "İletişim akışı tasarımı" },
-    fa: { description: "روایتی پیشنهادی برای مدیریت فرایند تماس؛ روش تماس، پشتیبانی منطقه‌ای و خودکارسازی نیازمند بررسی مستقل است.", audience: "تیم‌های ارتباط با مشتری و توسعه بازار", scope: ["برنامه‌ریزی تماس", "سازمان‌دهی مخاطبان", "فرایند کمپین"], service: "طراحی فرایند ارتباطات" },
-  } },
-  { id: "crm", name: "CINENTO CRM", mark: "CRM", category: "business", copy: {
-    en: { description: "A proposed customer relationship profile. The scope of a standalone product will be distinguished from the website’s internal CRM.", audience: "Sales, partnerships and client service teams", scope: ["Relationship management", "Inquiry follow-up", "Partnership workflows"], service: "Customer journey design" },
-    tr: { description: "Müşteri ilişkileri için önerilen ürün profili. Bağımsız ürünün kapsamı, sitenin iç CRM sisteminden ayrı tanımlanacak.", audience: "Satış, iş ortaklığı ve müşteri hizmetleri ekipleri", scope: ["İlişki yönetimi", "Talep takibi", "İş ortaklığı akışları"], service: "Müşteri yolculuğu tasarımı" },
-    fa: { description: "معرفی پیشنهادی مدیریت ارتباط با مشتری؛ محدوده محصول مستقل باید از CRM داخلی سایت تفکیک و تأیید شود.", audience: "تیم‌های فروش، مشارکت و خدمات مشتری", scope: ["مدیریت ارتباطات", "پیگیری درخواست‌ها", "فرایند همکاری"], service: "طراحی مسیر مشتری" },
-  } },
-  { id: "vpn", name: "CINENTO VPN", mark: "VPN", category: "connectivity", copy: {
-    en: { description: "A profile reserved for CINENTO’s connectivity project. Network operation, service availability and security claims remain under review.", audience: "Audience to be defined after technical review", scope: ["Connection lifecycle", "Node organization", "Service access model"], service: "Connectivity experience design" },
-    tr: { description: "CINENTO bağlantı projesi için ayrılan profil. Ağın çalışması, hizmet erişimi ve güvenlik iddiaları inceleme bekliyor.", audience: "Teknik inceleme sonrası belirlenecek", scope: ["Bağlantı yaşam döngüsü", "Düğüm düzeni", "Hizmete erişim modeli"], service: "Bağlantı deneyimi tasarımı" },
-    fa: { description: "معرفی پروژه ارتباطی CINENTO؛ عملکرد شبکه، دسترسی به سرویس و ادعاهای امنیتی همچنان نیازمند بررسی هستند.", audience: "پس از بررسی فنی تعیین می‌شود", scope: ["چرخه اتصال", "سازمان‌دهی گره‌ها", "مدل دسترسی به سرویس"], service: "طراحی تجربه ارتباطی" },
-  } },
-  ...additionalPrograms as Product[],
-];
+const INITIAL_PRODUCTS: Product[] = initialPrograms as Product[];
 
 const CATEGORIES: Category[] = ["all", "intelligence", "media", "business", "connectivity"];
 
@@ -155,6 +124,20 @@ export default function PlatformsPage() {
   const params = useParams<{ lang: string }>();
   const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(null);
   const [category, setCategory] = useState<Category>("all");
+  const [catalog, setCatalog] = useState<Product[]>(INITIAL_PRODUCTS);
+  const [catalogError, setCatalogError] = useState(false);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/programs", { cache: "no-store", signal: controller.signal })
+      .then(async response => {
+        if (!response.ok) throw new Error("Catalog unavailable");
+        const payload = await response.json();
+        if (!Array.isArray(payload.programs)) throw new Error("Invalid catalog");
+        setCatalog(payload.programs);
+      })
+      .catch(error => { if (error.name !== "AbortError") { setCatalog([]); setCatalogError(true); } });
+    return () => controller.abort();
+  }, []);
   const language: Language = selectedLanguage ?? (params?.lang === "tr" ? "tr" : "en");
   const text = COPY[language];
   const siteLanguage = language === "tr" ? "tr" : language === "en" ? "en" : params?.lang === "tr" ? "tr" : "en";
@@ -164,7 +147,7 @@ export default function PlatformsPage() {
     tr: ["Ana Sayfa", "Hakkımızda", "Galeri", "Günlük", "İletişim"],
     fa: ["خانه", "درباره ما", "گالری", "مجله", "تماس"],
   }[language];
-  const products = PRODUCTS.filter((product) => category === "all" || product.category === category);
+  const products = catalog.filter((product) => category === "all" || product.category === category);
   const count = new Intl.NumberFormat(language).format(products.length);
 
   return (
@@ -203,10 +186,10 @@ export default function PlatformsPage() {
         </div>
       </section>
 
-      <aside className="cp-notice"><span aria-hidden="true">◇</span><p>{text.notice}</p></aside>
+      <aside className="cp-notice"><span aria-hidden="true">◇</span><p>{catalogError ? "Catalog is temporarily unavailable. Please try again later." : text.notice}</p></aside>
 
       <section className="cp-collection" id="collection" aria-labelledby="cp-catalog-title">
-        <div className="cp-section-heading"><div><p className="cp-eyebrow">CINENTO / 01—{String(PRODUCTS.length).padStart(2, "0")}</p><h2 id="cp-catalog-title">{text.catalog}</h2><p>{text.catalogIntro}</p></div><span className="cp-count" aria-live="polite">{text.showing} <strong>{count}</strong></span></div>
+        <div className="cp-section-heading"><div><p className="cp-eyebrow">CINENTO / 01—{String(catalog.length).padStart(2, "0")}</p><h2 id="cp-catalog-title">{text.catalog}</h2><p>{text.catalogIntro}</p></div><span className="cp-count" aria-live="polite">{text.showing} <strong>{count}</strong></span></div>
         <div className="cp-filters" role="group" aria-label={text.catalog}>
           {CATEGORIES.map((item) => <button key={item} type="button" aria-pressed={category === item} onClick={() => setCategory(item)}>{text.categories[item]}</button>)}
         </div>
@@ -214,8 +197,8 @@ export default function PlatformsPage() {
         <div className="cp-grid">
           {products.map((product) => {
             const content = product.copy[language];
-            const access = PRODUCT_ACCESS[product.id];
-            const accessText = access?.copy[language];
+            const access = product.access_url ? { url: product.access_url, copy: PRODUCT_ACCESS[product.id]?.copy } : undefined;
+            const accessText = access?.copy?.[language];
             const profileText = accessText ?? (product.id === "enterprise" ? SUITE_PROFILE[language] : undefined);
             const status = product.status === "desktop"
               ? { en: "Desktop · Pending verification", tr: "Masaüstü · Doğrulama bekliyor", fa: "دسکتاپ · در انتظار تأیید" }[language]
@@ -226,7 +209,7 @@ export default function PlatformsPage() {
               <article className={`cp-card cp-card-${product.id}`} key={product.id} aria-labelledby={`cp-${product.id}`}>
                 <div className="cp-art" aria-hidden="true">
                   <div className="cp-art-grid" /><div className="cp-art-orbit" />
-                  <span className="cp-art-id">{String(PRODUCTS.indexOf(product) + 1).padStart(2, "0")} / CINENTO</span>
+                  <span className="cp-art-id">{String(catalog.indexOf(product) + 1).padStart(2, "0")} / CINENTO</span>
                   <div className="cp-art-symbol"><ProductSymbol id={product.id} /></div>
                   <span className="cp-art-mark">{product.mark}</span>
                 </div>
@@ -239,10 +222,10 @@ export default function PlatformsPage() {
                     <summary>{text.details}<span aria-hidden="true">+</span></summary>
                     <div className="cp-detail-content"><h4>{profileText?.audience ?? text.audience}</h4><p>{content.audience}</p><h4>{profileText?.scope ?? text.scope}</h4><ul>{content.scope.map((item) => <li key={item}>{item}</li>)}</ul><h4>{text.related}</h4><p>{content.service}</p></div>
                   </details>
-                  {access && accessText ? (
+                  {access ? (
                     <div className="cp-access">
-                      <a className="cp-access-link" href={access.url} target="_blank" rel="noopener noreferrer">{accessText.cta}<span aria-hidden="true">↗</span></a>
-                      <p className="cp-link-note">{accessText.note}</p>
+                      <a className="cp-access-link" href={access.url} target="_blank" rel="noopener noreferrer">{accessText?.cta ?? product.name}<span aria-hidden="true">↗</span></a>
+                      <p className="cp-link-note">{accessText?.note ?? text.linkNote}</p>
                     </div>
                   ) : <div className="cp-access"><a className="cp-access-link" href={`${homeUrl}#contact`}>{text.inquire}<span aria-hidden="true">↗</span></a><p className="cp-link-note">{profileText?.note ?? text.linkNote}</p></div>}
                 </div>

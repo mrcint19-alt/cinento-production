@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { previewAuth, privateResponse } from "./lib/site-admin-auth";
 import homepage from "./app/data/homepage.json";
 import imageMetadata from "./app/data/images.json";
+import catalogSnapshot from "./app/data/programs.json";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -48,6 +49,9 @@ export async function proxy(request: NextRequest) {
         },
         active: { ...imageMetadata.active, projects: "" },
       }, { headers });
+    }
+    if (pathname === "/api/programs" && !request.nextUrl.searchParams.has("scope")) {
+      return NextResponse.json({ programs: catalogSnapshot }, { headers });
     }
     if (pathname === "/") {
       const url = request.nextUrl.clone();
