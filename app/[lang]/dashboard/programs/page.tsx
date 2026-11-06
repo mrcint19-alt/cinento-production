@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @next/next/no-img-element -- Dashboard previews owner-selected image URLs from arbitrary approved hosts. */
 
 import Link from "next/link";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
@@ -9,6 +10,7 @@ const blankCopy = () => ({ description: "", audience: "", scope: [] as string[],
 const blank = (): Program => ({
   id: "", name: "", mark: "", category: "business", status: "development",
   access_url: "", published: false, sort_order: 100,
+  icon_url: null, logo_url: null, cover_url: null,
   copy: { en: blankCopy(), tr: blankCopy(), fa: blankCopy() },
 });
 
@@ -87,6 +89,23 @@ export default function ProgramManager() {
   const updateCopy = (field: "description" | "audience" | "service" | "scope", value: string) => setForm(previous => ({
     ...previous, copy: { ...previous.copy, [language]: { ...previous.copy[language], [field]: field === "scope" ? value.split("\n").map(item => item.trim()).filter(Boolean) : value } },
   }));
+  async function uploadMedia(field: "icon_url" | "logo_url" | "cover_url", file?: File) {
+    if (!file || !form.id) return;
+    if (file.size > 4 * 1024 * 1024 || !["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+      setError("Use a PNG, JPG or WebP image up to 4 MB."); return;
+    }
+    const id = form.id;
+    setBusy(true); setError("");
+    try {
+      const body = new FormData();
+      body.set("id", id); body.set("kind", field.replace("_url", "")); body.set("file", file);
+      const response = await fetch("/api/programs/media", { method: "POST", credentials: "same-origin", body });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Image upload failed");
+      setForm(previous => previous.id === id ? { ...previous, [field]: result.url } : previous);
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Image upload failed"); }
+    finally { setBusy(false); }
+  }
 
   return <main className="min-h-screen bg-black px-5 py-12 text-white">
     <div className="mx-auto max-w-6xl">
@@ -122,6 +141,19 @@ export default function ProgramManager() {
               <label className={labelClass}>Category<select className={inputClass} value={form.category} onChange={e => update("category", e.target.value)}>{["intelligence", "media", "business", "connectivity"].map(item => <option key={item}>{item}</option>)}</select></label>
               <label className={labelClass}>Status<select className={inputClass} value={form.status ?? ""} onChange={e => update("status", e.target.value || undefined)}><option value="">Unspecified</option><option value="development">In development</option><option value="desktop">Desktop</option></select></label>
               <label className={labelClass}>Public link (HTTPS only)<input className={inputClass} type="url" value={form.access_url ?? ""} onChange={e => update("access_url", e.target.value)} /></label>
+              <fieldset className="grid gap-4 rounded-lg border border-neutral-700 p-4">
+                <legend className="px-2 text-yellow-400">Program visuals</legend>
+                <p className="text-xs text-neutral-400">Upload images, then click Save program. PNG, JPG or WebP, up to 4 MB each. For a new program, enter its ID first.</p>
+                {([[
+                  "icon_url", "Icon · square image, transparent background preferred"
+                ], ["logo_url", "Logo · horizontal, transparent background preferred"], ["cover_url", "Cover · landscape image, 16:9 recommended"]] as const).map(([field, label]) => <div key={field} className="grid gap-2">
+                  <label className={labelClass}>{label}
+                    <input className={inputClass} type="url" placeholder="https://..." maxLength={1000} value={form[field] ?? ""} onChange={e => update(field, e.target.value)} />
+                  </label>
+                  <input aria-label={`Upload ${label}`} type="file" accept="image/png,image/jpeg,image/webp" disabled={busy || !form.id} onChange={e => { void uploadMedia(field, e.target.files?.[0]); e.target.value = ""; }} className="text-sm text-neutral-300 file:mr-3 file:rounded file:border-0 file:bg-yellow-500 file:px-3 file:py-2 file:text-black disabled:opacity-50" />
+                  {form[field] && <img src={form[field]} alt={`${form.name || "Program"} ${label}`} className={`rounded border border-neutral-700 object-contain ${field === "cover_url" ? "aspect-video w-full" : "h-24 max-w-52"}`} />}
+                </div>)}
+              </fieldset>
               <label className={labelClass}>Order<input className={inputClass} type="number" min={0} max={9999} value={form.sort_order ?? 100} onChange={e => update("sort_order", Number(e.target.value))} /></label>
               <label className="flex gap-3"><input type="checkbox" checked={!!form.published} onChange={e => update("published", e.target.checked)} />Published</label>
               <div className="flex gap-3 border-b border-neutral-700 pb-3">{langs.map(lang => <button key={lang} type="button" onClick={() => setLanguage(lang)} aria-pressed={language === lang} className={`rounded px-3 py-2 ${language === lang ? "bg-yellow-500 text-black" : "border border-neutral-700"}`}>{lang.toUpperCase()}</button>)}</div>

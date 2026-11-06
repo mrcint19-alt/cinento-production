@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { catalogSession, publicCatalogClient, readBoundedJson, sameOrigin, staticPrograms, validateProgram } from "../../../lib/program-catalog";
 
 export const dynamic = "force-dynamic";
-const columns = "id,name,mark,category,status,copy,access_url,published,sort_order";
+const columns = "id,name,mark,category,status,copy,access_url,icon_url,logo_url,cover_url,published,sort_order";
 const noStore = { "Cache-Control": "no-store" };
 
 export async function GET(request: NextRequest) {
