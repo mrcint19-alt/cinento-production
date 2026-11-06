@@ -1,8 +1,8 @@
 /*
 File: app/[lang]/dashboard/page.tsx
-Version: v2.7.0
+Version: v2.7.0 + Preview read-only access
 Updated: 2026-05-01 [Europe/Istanbul]
-Status: Professional Dashboard UI Restored + Valid React Component + Stable Links
+Status: Existing dashboard preserved; Preview notice and logout added
 */
 
 import Link from "next/link";
@@ -11,6 +11,14 @@ export default function DashboardPage() {
   return (
     <main className="min-h-screen bg-black text-white px-8 py-16">
       <section className="mx-auto max-w-6xl">
+        {process.env.VERCEL_ENV === "preview" && (
+          <aside className="mb-8 rounded-xl border border-yellow-500/40 p-5 text-yellow-200">
+            <p>Read-only Preview. Content and images are repository snapshots. Saving, uploads, deletion, CRM and account editing are disabled.</p>
+            <form action="/api/auth/logout" method="post" className="mt-4">
+              <button type="submit" className="rounded border border-yellow-500 px-4 py-2">Log out</button>
+            </form>
+          </aside>
+        )}
         <div className="mb-14">
           <p className="mb-3 text-sm tracking-[0.35em] text-yellow-500">
             CINENTO
@@ -26,6 +34,13 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
+          <Link
+            href={process.env.VERCEL_ENV === "preview" ? "/en/platforms" : "/en/dashboard/programs"}
+            className="rounded-2xl border border-yellow-500/20 bg-neutral-950/80 p-6 transition hover:border-yellow-500 hover:bg-neutral-900"
+          >
+            <h2 className="text-xl font-semibold text-yellow-500">Products &amp; Platforms</h2>
+            <p className="mt-3 text-gray-400">{process.env.VERCEL_ENV === "preview" ? "Review the public catalog in read-only preview." : "Add, edit, publish and remove programs from the catalog."}</p>
+          </Link>
           <Link
             href="/admin/content"
             className="rounded-2xl border border-yellow-500/20 bg-neutral-950/80 p-6 transition hover:border-yellow-500 hover:bg-neutral-900"
@@ -139,3 +154,4 @@ export default function DashboardPage() {
     </main>
   );
 }
+
