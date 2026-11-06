@@ -151,4 +151,9 @@ export function validateProgram(input: unknown): Program | null {
   };
 }
 
-export const staticPrograms: Program[] = initialPrograms as Program[];
+export const staticPrograms: Program[] = (initialPrograms as Program[]).map(program => ({
+  ...program,
+  icon_url: `/images/programs/${program.id}-icon.svg`,
+  logo_url: `/images/programs/${program.id}-logo.svg`,
+  cover_url: `/images/programs/${program.id}-cover.svg`,
+}));
