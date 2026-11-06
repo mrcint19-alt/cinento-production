@@ -81,7 +81,12 @@ const COPY: Record<Language, Copy> = {
   },
 };
 
-const INITIAL_PRODUCTS: Product[] = initialPrograms as Product[];
+const INITIAL_PRODUCTS: Product[] = (initialPrograms as Product[]).map(product => ({
+  ...product,
+  icon_url: `/images/programs/${product.id}-icon.svg`,
+  logo_url: `/images/programs/${product.id}-logo.svg`,
+  cover_url: `/images/programs/${product.id}-cover.svg`,
+}));
 
 const CATEGORIES: Category[] = ["all", "intelligence", "media", "business", "connectivity"];
 
