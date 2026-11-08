@@ -210,6 +210,7 @@ export default function PlatformsPage() {
         <div className="cp-grid">
           {products.map((product) => {
             const content = product.copy[language];
+            const profileUrl = `/${siteLanguage}/platforms/${product.id}${language === "fa" ? "?view=fa" : ""}`;
             const access = product.access_url ? { url: product.access_url, copy: PRODUCT_ACCESS[product.id]?.copy } : undefined;
             const accessText = access?.copy?.[language];
             const profileText = accessText ?? (product.id === "enterprise" ? SUITE_PROFILE[language] : undefined);
@@ -220,17 +221,17 @@ export default function PlatformsPage() {
                 : undefined;
             return (
               <article className={`cp-card cp-card-${product.id}`} key={product.id} aria-labelledby={`cp-${product.id}`}>
-                <div className={`cp-art${product.cover_url ? " cp-art-with-cover" : ""}`}>
+                <a className={`cp-art${product.cover_url ? " cp-art-with-cover" : ""}`} href={profileUrl} aria-label={`${text.details}: ${product.name}`}>
                   {product.cover_url && <img className="cp-cover" src={product.cover_url} alt="" loading="lazy" decoding="async" />}
                   <div className="cp-art-grid" /><div className="cp-art-orbit" />
                   <span className="cp-art-id">{String(catalog.indexOf(product) + 1).padStart(2, "0")} / CINENTO</span>
                   <div className="cp-art-symbol">{product.icon_url ? <img src={product.icon_url} alt="" loading="lazy" decoding="async" /> : <ProductSymbol id={product.id} />}</div>
                   {product.logo_url ? <img className="cp-art-logo" src={product.logo_url} alt="" loading="lazy" decoding="async" /> : <span className="cp-art-mark">{product.mark}</span>}
-                </div>
+                </a>
                 {(!product.cover_url || product.cover_url.includes("/images/programs/")) && <p className="cp-art-caption">{text.concept}</p>}
                 <div className="cp-card-body">
                   <div className="cp-card-meta"><span>{text.categories[product.category]}</span><span className="cp-status"><i />{profileText?.status ?? status ?? text.review}</span></div>
-                  <h3 id={`cp-${product.id}`} dir="ltr">{product.name}</h3>
+                  <h3 id={`cp-${product.id}`} dir="ltr"><a href={profileUrl}>{product.name}</a></h3>
                   <p className="cp-description">{content.description}</p>
                   <details className="cp-details">
                     <summary>{text.details}<span aria-hidden="true">+</span></summary>
@@ -241,7 +242,7 @@ export default function PlatformsPage() {
                       <a className="cp-access-link" href={access.url} target="_blank" rel="noopener noreferrer">{accessText?.cta ?? product.name}<span aria-hidden="true">↗</span></a>
                       <p className="cp-link-note">{accessText?.note ?? text.linkNote}</p>
                     </div>
-                  ) : <div className="cp-access"><a className="cp-access-link" href={`${homeUrl}#contact`}>{text.inquire}<span aria-hidden="true">↗</span></a><p className="cp-link-note">{profileText?.note ?? text.linkNote}</p></div>}
+                  ) : <div className="cp-access"><a className="cp-access-link" href={profileUrl}>{text.details}<span aria-hidden="true">↗</span></a><p className="cp-link-note">{profileText?.note ?? text.linkNote}</p></div>}
                 </div>
               </article>
             );
