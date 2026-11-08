@@ -57,7 +57,9 @@ export default function ContentManager() {
   const [heroTitle, setHeroTitle] = useState("");
   const [heroDescription, setHeroDescription] = useState("");
   const [heroPrimaryCta, setHeroPrimaryCta] = useState("");
+  const [heroPrimaryCtaHref, setHeroPrimaryCtaHref] = useState("watch");
   const [heroSecondaryCta, setHeroSecondaryCta] = useState("");
+  const [heroSecondaryCtaHref, setHeroSecondaryCtaHref] = useState("/platforms");
   const [heroCardTitle, setHeroCardTitle] = useState("");
   const [heroCardSubtitle, setHeroCardSubtitle] = useState("");
 
@@ -101,6 +103,7 @@ export default function ContentManager() {
   const [footerLocation, setFooterLocation] = useState("");
   const [footerEmail, setFooterEmail] = useState("");
   const [footerWhatsappText, setFooterWhatsappText] = useState("");
+  const [footerWhatsappNumber, setFooterWhatsappNumber] = useState("");
   const [footerFollowTitle, setFooterFollowTitle] = useState("");
   const [footerInstagram, setFooterInstagram] = useState("");
   const [footerLinkedin, setFooterLinkedin] = useState("");
@@ -130,7 +133,9 @@ export default function ContentManager() {
     setHeroTitle(section.hero?.title || section.heroTitle || "");
     setHeroDescription(section.hero?.description || section.heroSubtitle || "");
     setHeroPrimaryCta(section.hero?.primaryCta || section.buttonPrimary || "");
+    setHeroPrimaryCtaHref(section.hero?.primaryCtaHref === "#contact" ? "#contact" : "watch");
     setHeroSecondaryCta(section.hero?.secondaryCta || section.buttonSecondary || "");
+    setHeroSecondaryCtaHref(section.hero?.secondaryCtaHref === "#contact" ? "#contact" : "/platforms");
     setHeroCardTitle(section.hero?.cardTitle || "CINENTO");
     setHeroCardSubtitle(section.hero?.cardSubtitle || "");
 
@@ -183,6 +188,7 @@ export default function ContentManager() {
     setFooterLocation(section.footer?.location || "");
     setFooterEmail(section.footer?.email || "");
     setFooterWhatsappText(section.footer?.whatsappText || "");
+    setFooterWhatsappNumber(section.footer?.whatsappNumber || "");
     setFooterFollowTitle(section.footer?.followTitle || "");
     setFooterInstagram(section.footer?.social?.instagram || "");
     setFooterLinkedin(section.footer?.social?.linkedin || "");
@@ -225,7 +231,9 @@ export default function ContentManager() {
             title: heroTitle,
             description: heroDescription,
             primaryCta: heroPrimaryCta,
+            primaryCtaHref: heroPrimaryCtaHref,
             secondaryCta: heroSecondaryCta,
+            secondaryCtaHref: heroSecondaryCtaHref,
             cardTitle: heroCardTitle,
             cardSubtitle: heroCardSubtitle,
           },
@@ -266,6 +274,7 @@ export default function ContentManager() {
             location: footerLocation,
             email: footerEmail,
             whatsappText: footerWhatsappText,
+            whatsappNumber: footerWhatsappNumber.replace(/\D/g, ""),
             followTitle: footerFollowTitle,
             social: {
               instagram: footerInstagram,
@@ -336,7 +345,19 @@ export default function ContentManager() {
           <Input label="Hero Title" value={heroTitle} onChange={setHeroTitle} />
           <Textarea label="Hero Description" value={heroDescription} onChange={setHeroDescription} />
           <Input label="Primary Button" value={heroPrimaryCta} onChange={setHeroPrimaryCta} />
+          <label className="block text-sm text-neutral-300">Primary Button Destination
+            <select value={heroPrimaryCtaHref} onChange={(event) => setHeroPrimaryCtaHref(event.target.value)} className="mt-2 w-full rounded-lg border border-neutral-700 bg-neutral-900 p-3 text-white">
+              <option value="watch">CINENTO Watch</option>
+              <option value="#contact">Contact form</option>
+            </select>
+          </label>
           <Input label="Secondary Button" value={heroSecondaryCta} onChange={setHeroSecondaryCta} />
+          <label className="block text-sm text-neutral-300">Secondary Button Destination
+            <select value={heroSecondaryCtaHref} onChange={(event) => setHeroSecondaryCtaHref(event.target.value)} className="mt-2 w-full rounded-lg border border-neutral-700 bg-neutral-900 p-3 text-white">
+              <option value="/platforms">Products & Platforms</option>
+              <option value="#contact">Contact form</option>
+            </select>
+          </label>
           <Input label="Hero Card Title" value={heroCardTitle} onChange={setHeroCardTitle} />
           <Input label="Hero Card Subtitle" value={heroCardSubtitle} onChange={setHeroCardSubtitle} />
         </Section>
@@ -399,6 +420,7 @@ export default function ContentManager() {
           <Input label="Location" value={footerLocation} onChange={setFooterLocation} />
           <Input label="Email" value={footerEmail} onChange={setFooterEmail} />
           <Input label="WhatsApp Text" value={footerWhatsappText} onChange={setFooterWhatsappText} />
+          <Input label="WhatsApp Number (country code, no +; leave blank to use email)" value={footerWhatsappNumber} onChange={setFooterWhatsappNumber} />
           <Input label="Follow Title" value={footerFollowTitle} onChange={setFooterFollowTitle} />
           <Input label="Instagram URL" value={footerInstagram} onChange={setFooterInstagram} />
           <Input label="LinkedIn URL" value={footerLinkedin} onChange={setFooterLinkedin} />
