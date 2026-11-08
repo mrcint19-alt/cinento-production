@@ -8,7 +8,9 @@
       "primaryCta": "Start Your Project",
       "secondaryCta": "Explore Platform",
       "cardTitle": "CINENTO",
-      "cardSubtitle": "Where Ideas Become Film-Ready Projects."
+      "cardSubtitle": "Where Ideas Become Film-Ready Projects.",
+      "secondaryCtaHref": "/platforms",
+      "primaryCtaHref": "#contact"
     },
     "contact": {
       "title": "Have a Film or Series Idea?",
@@ -16,14 +18,14 @@
       "namePlaceholder": "Your Name",
       "emailPlaceholder": "Your Email",
       "messagePlaceholder": "Tell us about your project...",
-      "buttonLabel": "Submit Your Project",
+      "buttonLabel": "Prepare message",
       "whatsappLabel": "Chat on WhatsApp"
     },
     "footer": {
       "brandLine": "From Idea to International Film Market",
       "contactTitle": "Start Your Project",
-      "location": "",
-      "email": "",
+      "location": "Istanbul, Turkey",
+      "email": "cinento.tv@gmail.com",
       "whatsappText": "",
       "followTitle": "Follow CINENTO",
       "social": {
@@ -31,7 +33,8 @@
         "linkedin": "https://www.linkedin.com/in/hamid-asghari-6335312a4/",
         "website": "https://cinento.net"
       },
-      "rights": "© 2026 CINENTO. All rights reserved."
+      "rights": "© 2026 CINENTO. All rights reserved.",
+      "whatsappNumber": ""
     },
     "whatWeDo": {
       "title": "What We Do",
@@ -72,9 +75,14 @@
       }
     ],
     "gallery": {
-      "title": "",
+      "title": "CINENTO Gallery",
       "subtitle": "",
-      "items": []
+      "items": [
+        "Film development",
+        "Cinematic production",
+        "Creative studio",
+        "International presentation"
+      ]
     },
     "journalSection": {
       "title": "Insights on Film Development"
@@ -103,7 +111,9 @@
       "primaryCta": "Projeni Başlat",
       "secondaryCta": "Platformu Keşfet",
       "cardTitle": "CINENTO",
-      "cardSubtitle": "Fikirlerin filme hazır projelere dönüştüğü yer."
+      "cardSubtitle": "Fikirlerin filme hazır projelere dönüştüğü yer.",
+      "secondaryCtaHref": "/platforms",
+      "primaryCtaHref": "#contact"
     },
     "contact": {
       "title": "Bir Film veya Dizi Fikriniz Var mı?",
@@ -111,7 +121,7 @@
       "namePlaceholder": "Adınız",
       "emailPlaceholder": "E-posta adresiniz",
       "messagePlaceholder": "Projenizi anlatın...",
-      "buttonLabel": "Projeni Gönder",
+      "buttonLabel": "Mesajı hazırla",
       "whatsappLabel": "WhatsApp ile Yaz"
     },
     "footer": {
@@ -123,7 +133,10 @@
         "instagram": "https://instagram.com/cinento",
         "linkedin": "https://linkedin.com/company/cinento",
         "website": "https://cinento.net"
-      }
+      },
+      "whatsappNumber": "",
+      "location": "Istanbul, Turkey",
+      "email": "cinento.tv@gmail.com"
     },
     "whatWeDo": {
       "title": "Ne Yapıyoruz",
@@ -164,9 +177,14 @@
       }
     ],
     "gallery": {
-      "title": "",
+      "title": "CINENTO Galeri",
       "subtitle": "",
-      "items": []
+      "items": [
+        "Film geliştirme",
+        "Sinematik yapım",
+        "Yaratıcı stüdyo",
+        "Uluslararası sunum"
+      ]
     },
     "journalSection": {
       "title": "Film Geliştirme Üzerine İçgörüler"

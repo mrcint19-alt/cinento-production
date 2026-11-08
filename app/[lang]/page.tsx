@@ -9,6 +9,7 @@ Status: PAGE54 BASE + CMS CONNECTED + IMAGE MANAGER ACTIVE HERO SYSTEM CONNECTED
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
 
 type Lang = "en" | "tr";
 
@@ -34,7 +35,9 @@ type PageContent = {
     title: string;
     description: string;
     primaryCta: string;
+    primaryCtaHref?: string;
     secondaryCta: string;
+    secondaryCtaHref?: string;
     cardTitle: string;
     cardSubtitle: string;
   };
@@ -51,6 +54,9 @@ type PageContent = {
     contactTitle: string;
     followTitle: string;
     rights: string;
+    location?: string;
+    email?: string;
+    whatsappNumber?: string;
     social?: { instagram?: string; linkedin?: string; website?: string };
   };
 };
@@ -250,7 +256,8 @@ export default function HomePage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-  const whatsappNumber = "905555555555";
+  const whatsappNumber = content.footer.whatsappNumber?.replace(/\D/g, "") || "";
+  const contactEmail = content.footer.email?.trim() || "cinento.tv@gmail.com";
 
   useEffect(() => {
     let isActive = true;
@@ -316,8 +323,16 @@ export default function HomePage() {
       alert(lang === "tr" ? "Lütfen tüm alanları doldurun." : "Please fill in all fields.");
       return;
     }
-    const whatsappText = encodeURIComponent(mailBody);
-    window.open(`https://wa.me/${whatsappNumber}?text=${whatsappText}`, "_blank");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      alert(lang === "tr" ? "Geçerli bir e-posta adresi girin." : "Enter a valid email address.");
+      return;
+    }
+    const subject = encodeURIComponent(content.contact.title);
+    if (whatsappNumber) {
+      window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(mailBody)}`, "_blank", "noopener,noreferrer");
+    } else {
+      window.location.href = `mailto:${contactEmail}?subject=${subject}&body=${encodeURIComponent(mailBody)}`;
+    }
   }
 
   return (
@@ -338,9 +353,9 @@ export default function HomePage() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <div className="hidden rounded-full border border-white/10 bg-white/5 p-1 sm:flex">
-              <button onClick={() => handleLanguageSwitch("en")} className={`rounded-full px-3 py-1 text-xs font-medium transition ${lang === "en" ? "bg-[#d4af37] text-black" : "text-neutral-300 hover:text-white"}`}>EN</button>
-              <button onClick={() => handleLanguageSwitch("tr")} className={`rounded-full px-3 py-1 text-xs font-medium transition ${lang === "tr" ? "bg-[#d4af37] text-black" : "text-neutral-300 hover:text-white"}`}>TR</button>
+            <div className="flex rounded-full border border-white/10 bg-white/5 p-1">
+              <button aria-label="English" aria-current={lang === "en" ? "page" : undefined} onClick={() => handleLanguageSwitch("en")} className={`rounded-full px-3 py-1 text-xs font-medium transition ${lang === "en" ? "bg-[#d4af37] text-black" : "text-neutral-300 hover:text-white"}`}>EN</button>
+              <button aria-label="Türkçe" aria-current={lang === "tr" ? "page" : undefined} onClick={() => handleLanguageSwitch("tr")} className={`rounded-full px-3 py-1 text-xs font-medium transition ${lang === "tr" ? "bg-[#d4af37] text-black" : "text-neutral-300 hover:text-white"}`}>TR</button>
             </div>
 
             <a href={WATCH_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-[#d4af37] px-4 py-2 text-sm font-semibold text-black transition hover:opacity-90">
@@ -357,12 +372,12 @@ export default function HomePage() {
           <p className="mt-6 max-w-xl text-base leading-8 text-neutral-400">{content.hero.description}</p>
 
           <div className="mt-8 flex flex-wrap gap-4">
-            <a href={WATCH_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-[#d4af37] px-6 py-3 font-semibold text-black transition hover:opacity-90">
-              {lang === "tr" ? "İzlemeye Başla" : "Watch Now"}
+            <a href={content.hero.primaryCtaHref === "#contact" ? "#contact" : WATCH_URL} target={content.hero.primaryCtaHref === "#contact" ? undefined : "_blank"} rel={content.hero.primaryCtaHref === "#contact" ? undefined : "noopener noreferrer"} className="rounded-xl bg-[#d4af37] px-6 py-3 font-semibold text-black transition hover:opacity-90">
+              {content.hero.primaryCta}
             </a>
-            <button onClick={() => handleNavClick("#contact")} className="rounded-xl border border-[#d4af37] px-6 py-3 font-semibold text-[#d4af37] transition hover:bg-[#d4af37] hover:text-black">
+            <a href={content.hero.secondaryCtaHref === "#contact" ? "#contact" : `/${lang}/platforms`} className="rounded-xl border border-[#d4af37] px-6 py-3 font-semibold text-[#d4af37] transition hover:bg-[#d4af37] hover:text-black">
               {content.hero.secondaryCta}
-            </button>
+            </a>
           </div>
         </div>
 
@@ -427,7 +442,7 @@ export default function HomePage() {
       </section>
 
       <section id="gallery" className="mx-auto max-w-7xl px-6 py-12">
-        <h2 className="mb-4 text-2xl font-semibold text-[#d4af37]">{content.gallery.title}</h2>
+        <h2 className="mb-4 text-2xl font-semibold text-[#d4af37]">{content.gallery.title || (lang === "tr" ? "CINENTO Galeri" : "CINENTO Gallery")}</h2>
         <p className="mb-8 max-w-4xl text-neutral-400 leading-8">{content.gallery.subtitle}</p>
         {activeGalleryImages.length > 0 ? (
           <div className="grid gap-5 md:grid-cols-3">
@@ -436,7 +451,7 @@ export default function HomePage() {
               return (
                 <div key={`${image}-${index}`} className="group overflow-hidden rounded-2xl border border-white/10 bg-[#0f0f0f] shadow-lg">
                   <div className="relative h-56 w-full overflow-hidden">
-                    <img src={image} alt={label} onError={() => handleImageError(image)} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                    <Image src={image} alt={label} fill sizes="(min-width: 768px) 33vw, 100vw" onError={() => handleImageError(image)} className="object-cover transition duration-500 group-hover:scale-105" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-5"><span className="text-sm font-medium text-neutral-100">{label}</span></div>
                   </div>
@@ -472,10 +487,14 @@ export default function HomePage() {
           <h2 className="mb-3 text-3xl font-bold text-[#d4af37]">{content.contact.title}</h2>
           <p className="mb-8 text-neutral-400 leading-8">{content.contact.subtitle}</p>
           <form onSubmit={handleSubmit} className="space-y-5">
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder={content.contact.namePlaceholder} className="w-full rounded-xl border border-[#d4af37]/20 bg-neutral-950 px-4 py-3 text-white placeholder-neutral-500 outline-none transition focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]" />
-            <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder={content.contact.emailPlaceholder} className="w-full rounded-xl border border-[#d4af37]/20 bg-neutral-950 px-4 py-3 text-white placeholder-neutral-500 outline-none transition focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]" />
-            <textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder={content.contact.messagePlaceholder} className="h-36 w-full rounded-xl border border-[#d4af37]/20 bg-neutral-950 px-4 py-3 text-white placeholder-neutral-500 outline-none transition focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]" />
+            <label className="block" htmlFor="project-name">{content.contact.namePlaceholder}</label>
+            <input id="project-name" name="name" required autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} placeholder={content.contact.namePlaceholder} className="w-full rounded-xl border border-[#d4af37]/20 bg-neutral-950 px-4 py-3 text-white placeholder-neutral-500 outline-none transition focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]" />
+            <label className="block" htmlFor="project-email">{content.contact.emailPlaceholder}</label>
+            <input id="project-email" name="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={content.contact.emailPlaceholder} className="w-full rounded-xl border border-[#d4af37]/20 bg-neutral-950 px-4 py-3 text-white placeholder-neutral-500 outline-none transition focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]" />
+            <label className="block" htmlFor="project-message">{content.contact.messagePlaceholder}</label>
+            <textarea id="project-message" name="message" required value={message} onChange={(e) => setMessage(e.target.value)} placeholder={content.contact.messagePlaceholder} className="h-36 w-full rounded-xl border border-[#d4af37]/20 bg-neutral-950 px-4 py-3 text-white placeholder-neutral-500 outline-none transition focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]" />
             <button type="submit" className="w-full rounded-xl bg-[#d4af37] py-3 font-semibold text-black transition hover:opacity-90">{content.contact.buttonLabel}</button>
+            <p className="text-sm text-neutral-400">{whatsappNumber ? (lang === "tr" ? "WhatsApp'ta bir taslak açılır. Göndermeyi oradan tamamlayın." : "A WhatsApp draft opens. Complete sending there.") : (lang === "tr" ? "E-posta uygulamanızda bir taslak açılır. Göndermeyi oradan tamamlayın." : "Your email app opens a draft. Complete sending there.")}</p>
           </form>
         </div>
       </section>
@@ -489,9 +508,9 @@ export default function HomePage() {
           <div>
             <div className="mb-3 font-semibold text-white">{content.footer.contactTitle}</div>
             <div className="space-y-2 text-sm text-neutral-400">
-              <div>Istanbul, Turkey</div>
-              <div>cinento.tv@gmail.com</div>
-              <a href={`https://wa.me/${whatsappNumber}`} target="_blank" className="block hover:text-[#d4af37]" rel="noreferrer">{content.contact.whatsappLabel}</a>
+              <div>{content.footer.location?.trim() || "Istanbul, Turkey"}</div>
+              <a href={`mailto:${contactEmail}`} className="block hover:text-[#d4af37]">{contactEmail}</a>
+              {whatsappNumber && <a href={`https://wa.me/${whatsappNumber}`} target="_blank" className="block hover:text-[#d4af37]" rel="noreferrer">{content.contact.whatsappLabel}</a>}
             </div>
           </div>
           <div>

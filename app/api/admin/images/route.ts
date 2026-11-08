@@ -8,6 +8,7 @@ Status: Upload + List + Active Image + Delete Image
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs/promises";
 import path from "path";
+import { catalogSession, sameOrigin } from "../../../../lib/program-catalog";
 
 export const runtime = "nodejs";
 
@@ -137,7 +138,24 @@ export async function GET() {
   }
 }
 
+async function authorizedMutation(req: NextRequest, run: () => Promise<NextResponse>) {
+  if (process.env.VERCEL_ENV === "preview" || !sameOrigin(req)) return NextResponse.json({ success: false, message: "Forbidden" }, { status: 403 });
+  const session = catalogSession(req);
+  if (!session) return NextResponse.json({ success: false, message: "Administrator access is not configured" }, { status: 503 });
+  try {
+    const { data, error } = await session.client.auth.getUser();
+    if (error || !data.user || !session.allowed(data.user.id)) return session.finish(NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 }));
+    return session.finish(await run());
+  } catch {
+    return session.finish(NextResponse.json({ success: false, message: "Request failed" }, { status: 500 }));
+  }
+}
+
 export async function POST(req: NextRequest) {
+  return authorizedMutation(req, () => uploadImage(req));
+}
+
+async function uploadImage(req: NextRequest) {
   try {
     const formData = await req.formData();
 
@@ -195,6 +213,10 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  return authorizedMutation(req, () => setActiveImage(req));
+}
+
+async function setActiveImage(req: NextRequest) {
   try {
     const body = await req.json();
 
@@ -235,6 +257,10 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  return authorizedMutation(req, () => deleteImage(req));
+}
+
+async function deleteImage(req: NextRequest) {
   try {
     const body = await req.json();
 
