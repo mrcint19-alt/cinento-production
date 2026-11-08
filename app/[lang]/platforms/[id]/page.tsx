@@ -1,0 +1,75 @@
+import { notFound } from "next/navigation";
+import { publicCatalogClient, staticPrograms, type Language, type Program } from "../../../../lib/program-catalog";
+
+export const dynamic = "force-dynamic";
+
+const labels = {
+  en: { back: "All products", audience: "Audience", focus: "Focus areas", service: "Related service", open: "Open program", pending: "A public program link has not been confirmed yet.", category: "Category" },
+  tr: { back: "Tüm ürünler", audience: "Hedef kitle", focus: "Odak alanları", service: "İlgili hizmet", open: "Programı aç", pending: "Bu program için herkese açık bir bağlantı henüz doğrulanmadı.", category: "Kategori" },
+  fa: { back: "همهٔ برنامه‌ها", audience: "مخاطبان", focus: "حوزه‌های فعالیت", service: "خدمت مرتبط", open: "ورود به برنامه", pending: "لینک عمومی این برنامه هنوز تأیید نشده است.", category: "دسته‌بندی" },
+} as const;
+
+const categories = {
+  intelligence: { en: "Intelligence", tr: "Yapay zekâ", fa: "هوش مصنوعی" },
+  media: { en: "Film & media", tr: "Sinema ve medya", fa: "سینما و رسانه" },
+  business: { en: "Business", tr: "İş yönetimi", fa: "کسب‌وکار" },
+  connectivity: { en: "Connectivity", tr: "Bağlantı", fa: "ارتباطات" },
+} as const;
+
+async function getProgram(id: string): Promise<Program | null> {
+  if (process.env.VERCEL_ENV === "preview") return staticPrograms.find(program => program.id === id) ?? null;
+  const client = publicCatalogClient();
+  if (!client) return staticPrograms.find(program => program.id === id) ?? null;
+  const { data, error } = await client.from("site_programs")
+    .select("id,name,mark,category,status,copy,access_url,icon_url,logo_url,cover_url,published,sort_order")
+    .eq("id", id).eq("published", true).maybeSingle();
+  return error || !data ? null : data as Program;
+}
+
+export default async function ProgramProfile({ params, searchParams }: { params: Promise<{ lang: string; id: string }>; searchParams: Promise<{ view?: string }> }) {
+  const { lang, id } = await params;
+  const { view } = await searchParams;
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) notFound();
+  const language: Language = view === "fa" ? "fa" : lang === "tr" ? "tr" : "en";
+  const text = labels[language];
+  const program = await getProgram(id);
+  if (!program) notFound();
+  const copy = program.copy[language];
+  if (!copy) notFound();
+  const catalogUrl = `/${lang}/platforms`;
+
+  return (
+    <main className="profile" lang={language} dir={language === "fa" ? "rtl" : "ltr"}>
+      <header className="profile-header">
+        <a className="brand" href={`/${lang}`}>CINENTO<span>•</span></a>
+        <a className="back" href={catalogUrl}>← {text.back}</a>
+      </header>
+      <article className="profile-content">
+        <div className="cover">
+          {program.cover_url && <img src={program.cover_url} alt="" />}
+          <span className="cover-label">CINENTO / {program.mark}</span>
+        </div>
+        <div className="intro">
+          {program.icon_url && <img className="icon" src={program.icon_url} alt="" />}
+          <div>
+            <p className="category">{categories[program.category]?.[language] ?? text.category}</p>
+            <h1>{program.name}</h1>
+          </div>
+          {program.logo_url && <img className="logo" src={program.logo_url} alt="" />}
+        </div>
+        <p className="description">{copy.description}</p>
+        <div className="information">
+          <section><h2>{text.audience}</h2><p>{copy.audience}</p></section>
+          <section><h2>{text.focus}</h2><ul>{copy.scope.map((item, index) => <li key={index}>{item}</li>)}</ul></section>
+          <section><h2>{text.service}</h2><p>{copy.service}</p></section>
+        </div>
+        {program.access_url
+          ? <a className="action" href={program.access_url} target="_blank" rel="noopener noreferrer">{text.open} ↗</a>
+          : <p className="pending">{text.pending}</p>}
+      </article>
+      <style>{`
+        *{box-sizing:border-box}.profile{min-height:100vh;background:#090c10;color:#f3f0e8;font-family:Arial,Helvetica,sans-serif;padding:0 24px 80px}.profile a{color:inherit;text-decoration:none}.profile-header{max-width:1120px;margin:auto;min-height:96px;display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{font-size:22px;font-weight:800;letter-spacing:.15em}.brand span{color:#d6b453}.back{border:1px solid #bfa66355;border-radius:6px;padding:11px 16px;font-size:13px;color:#dfca8b!important}.back:hover,.action:hover{background:#d6b45322}.profile-content{max-width:1120px;margin:auto;border:1px solid #ffffff20;background:#11161c;border-radius:14px;overflow:hidden}.cover{height:min(45vw,440px);min-height:240px;position:relative;display:grid;place-items:center;background:radial-gradient(circle at 70% 40%,#23394b,#0d1117 70%)}.cover>img{width:100%;height:100%;object-fit:cover}.cover-label{position:absolute;left:30px;top:28px;letter-spacing:.22em;font-size:11px;color:#f3e6c6;text-shadow:0 1px 8px #000}.intro{display:flex;align-items:center;gap:22px;padding:32px 44px 0}.icon{width:84px;height:84px;object-fit:contain;border-radius:18px}.category{color:#d8b85d;font-size:12px;letter-spacing:.12em;text-transform:uppercase}.intro h1{font-size:clamp(30px,4vw,54px);line-height:1.15;margin:8px 0}.logo{width:160px;max-height:80px;object-fit:contain;margin-left:auto}.description{font-size:clamp(16px,2vw,20px);line-height:1.75;color:#d9dfdf;margin:26px 44px 36px;max-width:850px}.information{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;padding:0 44px}.information section{border-top:1px solid #d6b45366;padding:24px 0;color:#b9c4ca}.information h2{font-size:14px;color:#e9cd81;margin:0 0 14px}.information p,.information li{font-size:15px;line-height:1.7}.information p{margin:0}.information ul{margin:0;padding-left:20px}.action,.pending{display:inline-block;margin:34px 44px 44px}.action{border:1px solid #d6b453;color:#f3d788!important;border-radius:6px;padding:14px 22px}.pending{font-size:14px;color:#a8b4ba}@media(max-width:700px){.profile{padding:0 14px 48px}.profile-header{min-height:72px}.brand{font-size:17px}.back{font-size:12px}.cover{min-height:210px}.intro{padding:22px 22px 0;gap:15px;flex-wrap:wrap}.icon{width:62px;height:62px}.logo{width:112px;margin-left:0}.description{margin:22px;font-size:16px}.information{grid-template-columns:1fr;padding:0 22px;gap:0}.action,.pending{margin:24px 22px 34px}}
+      `}</style>
+    </main>
+  );
+}
