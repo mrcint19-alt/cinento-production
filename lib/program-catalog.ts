@@ -11,6 +11,9 @@ export type Program = {
   status?: "desktop" | "development";
   copy: Record<Language, ProgramCopy>;
   access_url?: string | null;
+  icon_url?: string | null;
+  logo_url?: string | null;
+  cover_url?: string | null;
   published?: boolean;
   sort_order?: number;
 };
@@ -120,6 +123,15 @@ export function validateProgram(input: unknown): Program | null {
     if (!str(value.access_url, 500)) return null;
     try { if (new URL(value.access_url as string).protocol !== "https:") return null; } catch { return null; }
   }
+  for (const field of ["icon_url", "logo_url", "cover_url"]) {
+    const image = value[field];
+    if (image == null || image === "") continue;
+    if (!str(image, 1000)) return null;
+    try {
+      const url = new URL(image as string);
+      if (url.protocol !== "https:" || url.username || url.password) return null;
+    } catch { return null; }
+  }
   const copy = value.copy as Record<string, Record<string, unknown>> | null;
   if (!copy || typeof copy !== "object" || Array.isArray(copy)) return null;
   for (const lang of ["en", "tr", "fa"]) {
@@ -134,7 +146,14 @@ export function validateProgram(input: unknown): Program | null {
     category: value.category as Program["category"], status: value.status as Program["status"],
     published: value.published as boolean, sort_order: value.sort_order as number,
     access_url: (value.access_url as string) || null, copy: value.copy as Program["copy"],
+    icon_url: (value.icon_url as string) || null, logo_url: (value.logo_url as string) || null,
+    cover_url: (value.cover_url as string) || null,
   };
 }
 
-export const staticPrograms: Program[] = initialPrograms as Program[];
+export const staticPrograms: Program[] = (initialPrograms as Program[]).map(program => ({
+  ...program,
+  icon_url: `/images/programs/${program.id}-icon.svg`,
+  logo_url: `/images/programs/${program.id}-logo.svg`,
+  cover_url: `/images/programs/${program.id}-cover.svg`,
+}));
