@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
-import { catalogSession, sameOrigin } from "../../../../lib/program-catalog";
+import snapshot from "../../../data/homepage.json";
+import { catalogSession, publicCatalogClient, readBoundedJson, sameOrigin } from "../../../../lib/program-catalog";
 
-const filePath = path.join(process.cwd(), "app/data/homepage.json");
+export const dynamic = "force-dynamic";
+const TABLE = "site_homepage_content";
+const headers = { "Cache-Control": "no-store" };
 
 export async function GET() {
-  try {
-    const file = fs.readFileSync(filePath, "utf-8");
-    return NextResponse.json(JSON.parse(file));
-  } catch {
-    return NextResponse.json({ error: "Failed to read content" }, { status: 500 });
-  }
+  if (process.env.VERCEL_ENV === "preview") return NextResponse.json(snapshot, { headers });
+  const client = publicCatalogClient();
+  if (!client) return NextResponse.json(snapshot, { headers });
+  const { data, error } = await client.from(TABLE).select("content").eq("id", "main").maybeSingle();
+  // The repository snapshot keeps the public page intact until the migration runs.
+  if (error) return NextResponse.json(snapshot, { headers: { ...headers, "X-CINENTO-Source": "snapshot" } });
+  return NextResponse.json(data?.content ?? snapshot, { headers });
 }
 
 export async function POST(req: NextRequest) {
@@ -21,12 +23,12 @@ export async function POST(req: NextRequest) {
   try {
     const { data, error } = await session.client.auth.getUser();
     if (error || !data.user || !session.allowed(data.user.id)) return session.finish(NextResponse.json({ error: "Unauthorized" }, { status: 401 }));
-    if ((Number(req.headers.get("content-length")) || 0) > 131072) return session.finish(NextResponse.json({ error: "Content too large" }, { status: 413 }));
-    const raw = await req.text();
-    if (raw.length > 131072) return session.finish(NextResponse.json({ error: "Content too large" }, { status: 413 }));
-    const body = JSON.parse(raw);
-    if (!body || typeof body !== "object" || !body.en || !body.tr) return session.finish(NextResponse.json({ error: "Invalid content" }, { status: 400 }));
-    fs.writeFileSync(filePath, JSON.stringify(body, null, 2));
+    const body = await readBoundedJson(req, 131072);
+    if (!body.en || typeof body.en !== "object" || Array.isArray(body.en) ||
+        !body.tr || typeof body.tr !== "object" || Array.isArray(body.tr))
+      return session.finish(NextResponse.json({ error: "Invalid content" }, { status: 400 }));
+    const saved = await session.client.from(TABLE).upsert({ id: "main", content: body }, { onConflict: "id" });
+    if (saved.error) return session.finish(NextResponse.json({ error: "Persistent content storage is unavailable" }, { status: 503 }));
     return session.finish(NextResponse.json({ success: true }));
   } catch {
     return session.finish(NextResponse.json({ error: "Failed to save content" }, { status: 500 }));

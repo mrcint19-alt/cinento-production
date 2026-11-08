@@ -451,7 +451,7 @@ export default function HomePage() {
               return (
                 <div key={`${image}-${index}`} className="group overflow-hidden rounded-2xl border border-white/10 bg-[#0f0f0f] shadow-lg">
                   <div className="relative h-56 w-full overflow-hidden">
-                    <Image src={image} alt={label} fill sizes="(min-width: 768px) 33vw, 100vw" onError={() => handleImageError(image)} className="object-cover transition duration-500 group-hover:scale-105" />
+                    <Image src={image} alt={label} fill sizes="(min-width: 768px) 33vw, 100vw" unoptimized={image.startsWith("https://")} onError={() => handleImageError(image)} className="object-cover transition duration-500 group-hover:scale-105" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-5"><span className="text-sm font-medium text-neutral-100">{label}</span></div>
                   </div>

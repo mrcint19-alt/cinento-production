@@ -93,6 +93,10 @@ export default function ImageManagerPage() {
       setMessage("Please choose an image first.");
       return;
     }
+    if (file.size > 4 * 1024 * 1024) {
+      setMessage("Choose a PNG, JPG or WebP image under 4 MB.");
+      return;
+    }
 
     setLoading(true);
     setMessage("");
@@ -233,7 +237,7 @@ export default function ImageManagerPage() {
 
             <input
               type="file"
-              accept="image/*"
+              accept="image/png,image/jpeg,image/webp"
               onChange={(e) => handleFileChange(e.target.files?.[0] || null)}
               className="rounded-xl border border-white/10 bg-black px-4 py-3 text-white outline-none focus:border-[#d4af37]"
             />
@@ -260,7 +264,7 @@ export default function ImageManagerPage() {
                   This image will be uploaded to:
                 </div>
                 <div className="mt-2 text-sm font-semibold text-white">
-                  /public/images/{folder}
+                  CINENTO SITE image storage / {folder}
                 </div>
               </div>
             </div>
@@ -359,7 +363,7 @@ export default function ImageManagerPage() {
                               Open
                             </a>
 
-                            <button
+                            {!src.startsWith("/images/") && <button
                               type="button"
                               onClick={() => deleteImage(section, src)}
                               disabled={actionLoading === `delete-${src}`}
@@ -368,7 +372,7 @@ export default function ImageManagerPage() {
                               {actionLoading === `delete-${src}`
                                 ? "Deleting..."
                                 : "Delete"}
-                            </button>
+                            </button>}
                           </div>
                         </div>
                       </div>

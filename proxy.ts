@@ -44,7 +44,7 @@ export async function proxy(request: NextRequest) {
         success: true,
         images: {
           hero: [imageMetadata.active.hero, "/images/hero/1777547550890-cinento-app-icon-design.png"],
-          gallery: ["/images/gallery/gallery-1.JPG", "/images/gallery/gallery-2.jpg", "/images/gallery/gallery-3.jpg", "/images/gallery/gallery-4.jpg"],
+          gallery: ["/images/gallery/gallery-1.JPG", "/images/gallery/gallery-2.jpg", "/images/gallery/gallery-4.jpg"],
           projects: [],
         },
         active: { ...imageMetadata.active, projects: "" },
