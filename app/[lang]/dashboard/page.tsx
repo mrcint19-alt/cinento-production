@@ -65,6 +65,11 @@ export default function DashboardPage() {
             </p>
           </Link>
 
+          <Link href="/en/dashboard/inquiries" className="rounded-2xl border border-yellow-500/20 bg-neutral-950/80 p-6 transition hover:border-yellow-500 hover:bg-neutral-900">
+            <h2 className="text-xl font-semibold text-yellow-500">Project Inquiries</h2>
+            <p className="mt-3 text-gray-400">View requests sent through the homepage project form.</p>
+          </Link>
+
           <Link
             href="/en/admin/images"
             className="rounded-2xl border border-yellow-500/20 bg-neutral-950/80 p-6 transition hover:border-yellow-500 hover:bg-neutral-900"

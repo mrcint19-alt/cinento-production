@@ -16,6 +16,8 @@ type Lang = "en" | "tr";
 type NavItem = { label: string; href: string };
 type PlatformItem = { title: string; description: string };
 type JournalItem = { title: string; description: string };
+type ServiceItem = { title: string; description: string };
+type ProjectItem = { title: string; role: string; status: string; description: string; image?: string };
 type FeaturedProgram = {
   id: string;
   name: string;
@@ -52,6 +54,9 @@ type PageContent = {
     cardSubtitle: string;
   };
   whatWeDo: { title: string; items: string[] };
+  services: { title: string; subtitle: string; items: ServiceItem[] };
+  featuredProjects: { title: string; subtitle: string; items: ProjectItem[] };
+  process: { title: string; subtitle: string; steps: ServiceItem[] };
   whyCinento: { title: string; items: string[] };
   ecosystem: { title: string; subtitle: string };
   platforms: PlatformItem[];
@@ -111,6 +116,17 @@ const CONTENT: Record<Lang, PageContent> = {
       title: "What We Do",
       items: ["Film & Series Development", "Co-Production Strategy", "Investor Packaging"],
     },
+    services: { title: "How We Help", subtitle: "Focused support for projects moving from a promising idea to a professional presentation.", items: [
+      { title: "Story & Screenplay Development", description: "Shape the concept, characters, structure and screenplay for film or series." },
+      { title: "Pitch & Investor Materials", description: "Prepare a clear pitch deck, project dossier and presentation materials." },
+      { title: "Production & Co-Production Strategy", description: "Define the production path, potential partners and international positioning." },
+    ] },
+    featuredProjects: { title: "Selected Projects", subtitle: "A closer look at CINENTO's film and series work.", items: [] },
+    process: { title: "Work With CINENTO", subtitle: "A clear path from first conversation to a presentation-ready project.", steps: [
+      { title: "Share your idea", description: "Tell us the format, story and current stage of your project." },
+      { title: "Define the development plan", description: "We review the material and agree on the right scope of work." },
+      { title: "Build the package", description: "Develop the story and presentation materials for the next conversation." },
+    ] },
     whyCinento: {
       title: "Why CINENTO",
       items: ["Turkey–GCC Bridge", "Creative + Financial Integration", "Scalable Media System", "Investor-Ready Output"],
@@ -174,6 +190,17 @@ const CONTENT: Record<Lang, PageContent> = {
       cardSubtitle: "Uluslararası Pazar İçin Sinematik Geliştirme",
     },
     whatWeDo: { title: "Ne Yapıyoruz", items: ["Film ve Dizi Geliştirme", "Ortak Yapım Stratejisi", "Yatırımcı Paketleme"] },
+    services: { title: "Nasıl Yardımcı Oluyoruz", subtitle: "Fikirden profesyonel sunuma uzanan film ve dizi projeleri için odaklı destek.", items: [
+      { title: "Hikâye ve Senaryo Geliştirme", description: "Film veya dizi fikrini, karakterlerini, yapısını ve senaryosunu geliştirme." },
+      { title: "Pitch ve Yatırımcı Dosyası", description: "Proje dosyası, pitch deck ve profesyonel sunum materyalleri hazırlama." },
+      { title: "Yapım ve Ortak Yapım Stratejisi", description: "Yapım yolunu, olası ortakları ve uluslararası konumlandırmayı belirleme." },
+    ] },
+    featuredProjects: { title: "Seçili Projeler", subtitle: "CINENTO'nun film ve dizi çalışmalarından seçmeler.", items: [] },
+    process: { title: "CINENTO ile Çalışın", subtitle: "İlk görüşmeden sunuma hazır projeye uzanan net bir yol.", steps: [
+      { title: "Fikrinizi paylaşın", description: "Projenizin türünü, hikâyesini ve mevcut aşamasını anlatın." },
+      { title: "Geliştirme planını belirleyin", description: "Materyali inceleyip çalışma kapsamını birlikte netleştirelim." },
+      { title: "Proje dosyasını hazırlayın", description: "Hikâyeyi ve bir sonraki görüşme için sunum materyallerini geliştirelim." },
+    ] },
     whyCinento: { title: "Neden CINENTO", items: ["Türkiye–Körfez Köprüsü", "Yaratıcı + Finansal Entegrasyon", "Ölçeklenebilir Medya Sistemi", "Yatırımcıya Hazır Çıktı"] },
     ecosystem: { title: "CINENTO Ekosistemi", subtitle: "Yaratıcı geliştirme, proje kabulü, iş büyümesi ve geleceğe dönük dağıtımı tek bir marka sistemi altında birleştiren bağlantılı bir yapı." },
     platforms: [
@@ -228,6 +255,9 @@ function mergeHomepageContent(fallback: PageContent, dynamic?: DynamicHomepageCo
       secondaryCta: dynamic.buttonSecondary || dynamic.hero?.secondaryCta || fallback.hero.secondaryCta,
     },
     whatWeDo: { ...fallback.whatWeDo, ...(dynamic.whatWeDo || {}), items: dynamic.whatWeDo?.items || fallback.whatWeDo.items },
+    services: { ...fallback.services, ...(dynamic.services || {}), items: dynamic.services?.items || fallback.services.items },
+    featuredProjects: { ...fallback.featuredProjects, ...(dynamic.featuredProjects || {}), items: dynamic.featuredProjects?.items || fallback.featuredProjects.items },
+    process: { ...fallback.process, ...(dynamic.process || {}), steps: dynamic.process?.steps || fallback.process.steps },
     whyCinento: { ...fallback.whyCinento, ...(dynamic.whyCinento || {}), items: dynamic.whyCinento?.items || fallback.whyCinento.items },
     ecosystem: { ...fallback.ecosystem, ...(dynamic.ecosystem || {}) },
     platforms: dynamic.platforms || fallback.platforms,
@@ -267,6 +297,8 @@ export default function HomePage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [inquiryState, setInquiryState] = useState<"idle" | "sent" | "unavailable">("idle");
   const whatsappNumber = content.footer.whatsappNumber?.replace(/\D/g, "") || "";
   const contactEmail = content.footer.email?.trim() || "cinento.tv@gmail.com";
 
@@ -343,7 +375,7 @@ export default function HomePage() {
     setBrokenImages((current) => ({ ...current, [src]: true }));
   }
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !message.trim()) {
       alert(lang === "tr" ? "Lütfen tüm alanları doldurun." : "Please fill in all fields.");
@@ -353,11 +385,21 @@ export default function HomePage() {
       alert(lang === "tr" ? "Geçerli bir e-posta adresi girin." : "Enter a valid email address.");
       return;
     }
-    const subject = encodeURIComponent(content.contact.title);
-    if (whatsappNumber) {
-      window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(mailBody)}`, "_blank", "noopener,noreferrer");
-    } else {
-      window.location.href = `mailto:${contactEmail}?subject=${subject}&body=${encodeURIComponent(mailBody)}`;
+    if (message.trim().length < 20) {
+      alert(lang === "tr" ? "Lütfen projenizi en az 20 karakterle açıklayın." : "Please describe your project in at least 20 characters.");
+      return;
+    }
+    setSubmitting(true);
+    setInquiryState("idle");
+    try {
+      const response = await fetch("/api/project-inquiries", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, email, message, language: lang, website: "" }) });
+      if (!response.ok) throw new Error("Inquiry could not be saved");
+      setInquiryState("sent");
+      setName(""); setEmail(""); setMessage("");
+    } catch {
+      setInquiryState("unavailable");
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -440,6 +482,20 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="border-y border-white/5 bg-[#0d0d0d] py-20" aria-labelledby="services-title">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="mb-10 max-w-3xl"><div className="mb-4 h-px w-14 bg-[#d4af37]" /><h2 id="services-title" className="text-3xl font-semibold md:text-4xl">{content.services.title}</h2><p className="mt-4 leading-8 text-neutral-400">{content.services.subtitle}</p></div>
+          <div className="grid gap-5 md:grid-cols-3">
+            {content.services.items.filter(item => item.title.trim()).map((item, index) => (
+              <article key={`${item.title}-${index}`} className="border border-white/10 bg-[#151515] p-7 transition hover:border-[#d4af37]/50">
+                <div className="mb-12 text-sm tracking-[0.25em] text-[#d4af37]">{String(index + 1).padStart(2, "0")} / 03</div>
+                <h3 className="text-xl font-semibold leading-7">{item.title}</h3><p className="mt-4 text-sm leading-7 text-neutral-400">{item.description}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="mx-auto max-w-7xl px-6 py-12">
         <h2 className="mb-6 text-2xl font-semibold text-[#d4af37]">{content.whyCinento.title}</h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -473,6 +529,24 @@ export default function HomePage() {
           )}
         </div>
       </section>
+
+      {content.featuredProjects.items.some(item => item.title.trim()) && (
+        <section className="mx-auto max-w-7xl px-6 py-20" aria-labelledby="projects-title">
+          <div className="mb-10 max-w-3xl"><div className="mb-4 h-px w-14 bg-[#d4af37]" /><h2 id="projects-title" className="text-3xl font-semibold md:text-4xl">{content.featuredProjects.title}</h2><p className="mt-4 leading-8 text-neutral-400">{content.featuredProjects.subtitle}</p></div>
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {content.featuredProjects.items.filter(item => item.title.trim()).map((item, index) => {
+              const rawImage = item.image?.trim() || "";
+              const image = rawImage.startsWith("/") && !rawImage.startsWith("//") || /^https:\/\/[^\s]+$/i.test(rawImage) ? rawImage : "";
+              return <article key={`${item.title}-${index}`} className="overflow-hidden border border-white/10 bg-[#131313]">
+                <div className="relative h-56 bg-[radial-gradient(circle_at_60%_25%,#373022,#111_70%)]">
+                  {image && !brokenImages[image] ? <Image src={image} alt={item.title} fill sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw" unoptimized={image.startsWith("https://")} onError={() => handleImageError(image)} className="object-cover" /> : <div className="flex h-full items-center justify-center text-4xl tracking-[0.3em] text-[#d4af37]/45">CINENTO</div>}
+                </div>
+                <div className="p-6"><div className="mb-3 text-xs uppercase tracking-[0.18em] text-[#d4af37]">{item.status}</div><h3 className="text-xl font-semibold">{item.title}</h3>{item.role && <p className="mt-3 text-sm text-[#e6c878]">{item.role}</p>}<p className="mt-4 text-sm leading-7 text-neutral-400">{item.description}</p></div>
+              </article>;
+            })}
+          </div>
+        </section>
+      )}
 
       <section id="gallery" className="mx-auto max-w-7xl px-6 py-12">
         <h2 className="mb-4 text-2xl font-semibold text-[#d4af37]">{content.gallery.title || (lang === "tr" ? "CINENTO Galeri" : "CINENTO Gallery")}</h2>
@@ -515,6 +589,13 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="border-y border-white/5 bg-[#0d0d0d] py-20" aria-labelledby="process-title">
+        <div className="mx-auto max-w-7xl px-6"><div className="mb-10 max-w-3xl"><div className="mb-4 h-px w-14 bg-[#d4af37]" /><h2 id="process-title" className="text-3xl font-semibold md:text-4xl">{content.process.title}</h2><p className="mt-4 leading-8 text-neutral-400">{content.process.subtitle}</p></div>
+          <div className="grid gap-5 md:grid-cols-3">{content.process.steps.filter(step => step.title.trim()).map((step, index) => <div key={`${step.title}-${index}`} className="border-t border-[#d4af37]/60 pt-6"><div className="mb-7 text-4xl font-light text-[#d4af37]/60">{String(index + 1).padStart(2, "0")}</div><h3 className="text-xl font-semibold">{step.title}</h3><p className="mt-3 text-sm leading-7 text-neutral-400">{step.description}</p></div>)}</div>
+          <a href="#contact" className="mt-10 inline-flex rounded-xl bg-[#d4af37] px-6 py-3 font-semibold text-black transition hover:opacity-90">{content.hero.primaryCtaHref === "#contact" ? content.hero.primaryCta : content.contact.title}</a>
+        </div>
+      </section>
+
       <section id="contact" className="mx-auto max-w-4xl px-6 py-16">
         <div className="rounded-3xl border border-[#d4af37]/20 bg-neutral-900/80 p-8 shadow-2xl md:p-10">
           <h2 className="mb-3 text-3xl font-bold text-[#d4af37]">{content.contact.title}</h2>
@@ -525,9 +606,11 @@ export default function HomePage() {
             <label className="block" htmlFor="project-email">{content.contact.emailPlaceholder}</label>
             <input id="project-email" name="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={content.contact.emailPlaceholder} className="w-full rounded-xl border border-[#d4af37]/20 bg-neutral-950 px-4 py-3 text-white placeholder-neutral-500 outline-none transition focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]" />
             <label className="block" htmlFor="project-message">{content.contact.messagePlaceholder}</label>
-            <textarea id="project-message" name="message" required value={message} onChange={(e) => setMessage(e.target.value)} placeholder={content.contact.messagePlaceholder} className="h-36 w-full rounded-xl border border-[#d4af37]/20 bg-neutral-950 px-4 py-3 text-white placeholder-neutral-500 outline-none transition focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]" />
-            <button type="submit" className="w-full rounded-xl bg-[#d4af37] py-3 font-semibold text-black transition hover:opacity-90">{content.contact.buttonLabel}</button>
-            <p className="text-sm text-neutral-400">{whatsappNumber ? (lang === "tr" ? "WhatsApp'ta bir taslak açılır. Göndermeyi oradan tamamlayın." : "A WhatsApp draft opens. Complete sending there.") : (lang === "tr" ? "E-posta uygulamanızda bir taslak açılır. Göndermeyi oradan tamamlayın." : "Your email app opens a draft. Complete sending there.")}</p>
+            <textarea id="project-message" name="message" required minLength={20} maxLength={4000} value={message} onChange={(e) => setMessage(e.target.value)} placeholder={content.contact.messagePlaceholder} className="h-36 w-full rounded-xl border border-[#d4af37]/20 bg-neutral-950 px-4 py-3 text-white placeholder-neutral-500 outline-none transition focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]" />
+            <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px]" />
+            <button type="submit" disabled={submitting} className="w-full rounded-xl bg-[#d4af37] py-3 font-semibold text-black transition hover:opacity-90 disabled:opacity-60">{submitting ? (lang === "tr" ? "Gönderiliyor…" : "Sending…") : content.contact.buttonLabel}</button>
+            <div role="status" aria-live="polite" className="text-sm text-neutral-300">{inquiryState === "sent" ? (lang === "tr" ? "Mesajınız alındı. Ekibimiz projenizi inceleyecek." : "Your inquiry was received. Our team will review your project.") : inquiryState === "unavailable" ? (lang === "tr" ? "Şu anda form gönderilemiyor. Lütfen e-posta ile iletişime geçin." : "The form is unavailable right now. Please contact us by email.") : (lang === "tr" ? "Bilgileriniz CINENTO proje ekibine iletilir." : "Your details are sent to the CINENTO project team.")}</div>
+            {inquiryState === "unavailable" && <a href={`mailto:${contactEmail}?subject=${encodeURIComponent(content.contact.title)}&body=${encodeURIComponent(mailBody)}`} className="inline-block border-b border-[#d4af37] pb-1 text-sm text-[#d4af37]">{lang === "tr" ? "E-posta taslağı aç" : "Open email draft"}</a>}
           </form>
         </div>
       </section>
