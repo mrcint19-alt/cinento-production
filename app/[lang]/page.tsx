@@ -356,7 +356,7 @@ export default function HomePage() {
             subtitle: selected?.featuredProjects?.subtitle || CONTENT[lang].featuredProjects.subtitle,
             items: mergedProjects,
           },
-          footer: { ...data?.en?.footer, ...selected?.footer },
+          footer: { ...data?.en?.footer, ...CONTENT[lang].footer, ...selected?.footer },
         } : selected);
       })
       .catch(() => {
