@@ -21,7 +21,7 @@ type JournalItem = {
   description: string;
 };
 type ServiceItem = { title: string; description: string };
-type ProjectItem = { title: string; role: string; status: string; description: string; image: string };
+type ProjectItem = { id?: string; title: string; role: string; status: string; description: string; image: string };
 const emptyService: ServiceItem = { title: "", description: "" };
 const emptyProject: ProjectItem = { title: "", role: "", status: "", description: "", image: "" };
 const serviceDefaults: Record<Lang, { title: string; subtitle: string; items: ServiceItem[]; processTitle: string; processSubtitle: string; steps: ServiceItem[]; projectsTitle: string; projectsSubtitle: string }> = {
@@ -199,7 +199,16 @@ export default function ContentManager() {
     setServices(threeItems(section.services?.items ?? defaults.items, emptyService));
     setProjectsTitle(section.featuredProjects?.title ?? defaults.projectsTitle);
     setProjectsSubtitle(section.featuredProjects?.subtitle ?? defaults.projectsSubtitle);
-    setProjects(threeItems(section.featuredProjects?.items, emptyProject));
+    const savedProjects: ProjectItem[] = Array.isArray(section.featuredProjects?.items) ? section.featuredProjects.items : [];
+    const englishProjects: ProjectItem[] = Array.isArray(json?.en?.featuredProjects?.items) ? json.en.featuredProjects.items : [];
+    setProjects(selectedLang === "tr" && englishProjects.length
+      ? threeItems(englishProjects, emptyProject).map((source, index) => {
+          const id = source.id || `project-${index + 1}`;
+          const translated = savedProjects.find(item => item.id === id)
+            || (!savedProjects.some(item => item.id) ? savedProjects[index] : undefined);
+          return { ...emptyProject, ...translated, id, image: source.image || "" };
+        })
+      : threeItems(savedProjects, emptyProject));
     setProcessTitle(section.process?.title ?? defaults.processTitle);
     setProcessSubtitle(section.process?.subtitle ?? defaults.processSubtitle);
     setProcessSteps(threeItems(section.process?.steps ?? defaults.steps, emptyService));
@@ -301,7 +310,9 @@ export default function ContentManager() {
             items: linesToArray(whatItems),
           },
           services: { title: servicesTitle, subtitle: servicesSubtitle, items: services.filter(item => item.title.trim()) },
-          featuredProjects: { title: projectsTitle, subtitle: projectsSubtitle, items: projects.filter(item => item.title.trim()) },
+          featuredProjects: { title: projectsTitle, subtitle: projectsSubtitle, items: lang === "tr"
+            ? projects.map((item, index) => ({ ...item, id: item.id || `project-${index + 1}`, image: data?.en?.featuredProjects?.items?.[index]?.image || "" }))
+            : projects.filter(item => item.title.trim()).map((item, index) => ({ ...item, id: item.id || `project-${index + 1}` })) },
           process: { title: processTitle, subtitle: processSubtitle, steps: processSteps.filter(item => item.title.trim()) },
           whyCinento: {
             title: whyTitle,
@@ -445,14 +456,14 @@ export default function ContentManager() {
           <Textarea label="Introduction" value={projectsSubtitle} onChange={setProjectsSubtitle} />
           <datalist id="project-images">{projectImages.map(image => <option key={image} value={image} />)}</datalist>
           {projects.map((item, index) => <div key={index} className="space-y-4 rounded-2xl border border-yellow-600/20 p-4">
-            <div className="text-sm text-yellow-400">Project {index + 1}</div>
-            <Input label="Project title" value={item.title} onChange={value => updateItem(setProjects, index, "title", value)} />
+            <div className="text-sm text-yellow-400">Project {index + 1}{lang === "tr" && data?.en?.featuredProjects?.items?.[index]?.title ? ` · ${data.en.featuredProjects.items[index].title}` : ""}</div>
+            <Input label={lang === "tr" ? "Turkish project title" : "Project title"} value={item.title} onChange={value => updateItem(setProjects, index, "title", value)} />
             <Input label="CINENTO role" value={item.role} onChange={value => updateItem(setProjects, index, "role", value)} />
             <Input label="Verified status" value={item.status} onChange={value => updateItem(setProjects, index, "status", value)} />
             <Textarea label="Short description" value={item.description} onChange={value => updateItem(setProjects, index, "description", value)} />
-            <label className="block space-y-2"><span className="text-sm text-neutral-400">Image URL (choose an uploaded project image)</span><input list="project-images" value={item.image || ""} onChange={event => updateItem(setProjects, index, "image", event.target.value)} className="w-full rounded-xl border border-yellow-600/20 bg-black px-4 py-3 text-white" /></label>
+            <label className="block space-y-2"><span className="text-sm text-neutral-400">{lang === "tr" ? "Shared image (edit in EN)" : "Image URL (choose an uploaded project image)"}</span><input list="project-images" value={item.image || ""} readOnly={lang === "tr"} onChange={event => updateItem(setProjects, index, "image", event.target.value)} className="w-full rounded-xl border border-yellow-600/20 bg-black px-4 py-3 text-white" /></label>
             {item.image && <img src={item.image} alt={`${item.title || `Project ${index + 1}`} selected artwork`} className="h-36 w-full rounded-xl border border-yellow-600/30 object-contain bg-black" />}
-            <details className="rounded-xl border border-yellow-600/20 p-3">
+            {lang === "en" && <details className="rounded-xl border border-yellow-600/20 p-3">
               <summary className="cursor-pointer text-sm text-yellow-400">Choose from project image library ({projectImages.length})</summary>
               {projectImages.length ? <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {projectImages.map((image, imageIndex) => <button key={image} type="button" onClick={() => updateItem(setProjects, index, "image", image)} aria-label={`Use project image ${imageIndex + 1} for project ${index + 1}`} aria-pressed={item.image === image} className={`rounded-xl border p-2 text-left text-xs ${item.image === image ? "border-yellow-400 text-yellow-400" : "border-white/20 text-neutral-300"}`}>
@@ -460,7 +471,7 @@ export default function ContentManager() {
                   <span>Project image {imageIndex + 1}{item.image === image ? " · Selected" : ""}</span>
                 </button>)}
               </div> : <p className="mt-3 text-xs text-neutral-400">No project images loaded yet. Upload in Image Manager → Projects, then refresh this page.</p>}
-            </details>
+            </details>}
             {item.image && <div className="break-all text-xs text-neutral-500">{item.image}</div>}
           </div>)}
         </Section>
