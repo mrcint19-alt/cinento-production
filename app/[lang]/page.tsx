@@ -275,6 +275,7 @@ export default function HomePage() {
   const lang = (params?.lang === "tr" ? "tr" : "en") as Lang;
 
   const [dynamicContent, setDynamicContent] = useState<DynamicHomepageContent | null>(null);
+  const [showEnglishProjectDetails, setShowEnglishProjectDetails] = useState(false);
   const [featuredPrograms, setFeaturedPrograms] = useState<FeaturedProgram[]>([]);
   const [uploadedImages, setUploadedImages] = useState<UploadedImages>({ hero: [], gallery: [], projects: [], active: { hero: "", gallery: "", projects: "" } });
   const [brokenImages, setBrokenImages] = useState<Record<string, boolean>>({});
@@ -308,10 +309,24 @@ export default function HomePage() {
       .then((res) => res.json())
       .then((data) => {
         if (!isActive) return;
-        setDynamicContent(data && data[lang] ? data[lang] : null);
+        const selected = data?.[lang] || null;
+        const englishProjects = data?.en?.featuredProjects?.items;
+        const translatedProjects = selected?.featuredProjects?.items;
+        const needsEnglishFallback = lang === "tr" &&
+          !translatedProjects?.some((item: ProjectItem) => item?.title?.trim()) &&
+          Array.isArray(englishProjects) && englishProjects.some((item: ProjectItem) => item?.title?.trim());
+        setShowEnglishProjectDetails(needsEnglishFallback);
+        setDynamicContent(needsEnglishFallback ? {
+          ...selected,
+          featuredProjects: {
+            title: selected?.featuredProjects?.title || CONTENT.tr.featuredProjects.title,
+            subtitle: selected?.featuredProjects?.subtitle || CONTENT.tr.featuredProjects.subtitle,
+            items: englishProjects,
+          },
+        } : selected);
       })
       .catch(() => {
-        if (isActive) setDynamicContent(null);
+        if (isActive) { setDynamicContent(null); setShowEnglishProjectDetails(false); }
       });
     return () => {
       isActive = false;
@@ -532,7 +547,7 @@ export default function HomePage() {
 
       {content.featuredProjects.items.some(item => item.title.trim()) && (
         <section className="mx-auto max-w-7xl px-6 py-20" aria-labelledby="projects-title">
-          <div className="mb-10 max-w-3xl"><div className="mb-4 h-px w-14 bg-[#d4af37]" /><h2 id="projects-title" className="text-3xl font-semibold md:text-4xl">{content.featuredProjects.title}</h2><p className="mt-4 leading-8 text-neutral-400">{content.featuredProjects.subtitle}</p></div>
+          <div className="mb-10 max-w-3xl"><div className="mb-4 h-px w-14 bg-[#d4af37]" /><h2 id="projects-title" className="text-3xl font-semibold md:text-4xl">{content.featuredProjects.title}</h2><p className="mt-4 leading-8 text-neutral-400">{content.featuredProjects.subtitle}</p>{showEnglishProjectDetails && <p className="mt-3 text-sm text-[#e6c878]">Proje ayrıntıları Türkçe çevirileri kaydedilene kadar İngilizce gösterilir.</p>}</div>
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {content.featuredProjects.items.filter(item => item.title.trim()).map((item, index) => {
               const rawImage = item.image?.trim() || "";

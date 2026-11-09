@@ -26,12 +26,14 @@ function imageType(bytes: Uint8Array) {
 }
 
 export async function GET() {
+  const started = performance.now();
   const client = publicCatalogClient();
   if (process.env.VERCEL_ENV === "preview" || !client)
     return NextResponse.json({ success: true, images: legacy, active: legacyMeta.active }, { headers: { "Cache-Control": "no-store" } });
   const { data, error } = await client.from(TABLE).select("url,folder,storage_path,is_active").order("created_at", { ascending: false });
+  const timing = { "Server-Timing": `media-db;dur=${(performance.now() - started).toFixed(1)}` };
   // Show the built-in images while the persistent media table is being provisioned.
-  if (error) return NextResponse.json({ success: true, images: legacy, active: legacyMeta.active }, { headers: { "Cache-Control": "no-store", "X-CINENTO-Source": "snapshot" } });
+  if (error) return NextResponse.json({ success: true, images: legacy, active: legacyMeta.active }, { headers: { "Cache-Control": "no-store", "X-CINENTO-Source": "snapshot", ...timing } });
   const rows = data as Media[];
   const images: Record<Folder, string[]> = { hero: [], gallery: [], projects: [] };
   const active: Record<Folder, string> = { ...legacyMeta.active };
@@ -40,7 +42,7 @@ export async function GET() {
     const selected = rows.find(row => row.folder === folder && row.is_active);
     if (selected) active[folder] = selected.url;
   }
-  return NextResponse.json({ success: true, images, active }, { headers: { "Cache-Control": "no-store" } });
+  return NextResponse.json({ success: true, images, active }, { headers: { "Cache-Control": "no-store", ...timing } });
 }
 
 async function authorize(request: NextRequest) {
@@ -59,7 +61,9 @@ async function currentActive(client: NonNullable<ReturnType<typeof publicCatalog
 }
 
 export async function POST(request: NextRequest) {
+  const started = performance.now();
   const session = await authorize(request);
+  const authDone = performance.now();
   if (!session) return NextResponse.json({ success: false, message: "Administrator login required" }, { status: 401 });
   const length = Number(request.headers.get("content-length"));
   if (!Number.isFinite(length) || length <= 0 || length > MAX_BYTES + 100_000)
@@ -71,20 +75,26 @@ export async function POST(request: NextRequest) {
     if (!isFolder(folder) || !(file instanceof File) || file.size === 0 || file.size > MAX_BYTES)
       return session.finish(NextResponse.json({ success: false, message: "Select a PNG, JPG or WebP image under 4 MB" }, { status: 400 }));
     const bytes = new Uint8Array(await file.arrayBuffer());
+    const parsed = performance.now();
     const type = imageType(bytes);
     if (!type || type.mime !== file.type)
       return session.finish(NextResponse.json({ success: false, message: "Invalid image format" }, { status: 400 }));
     const storagePath = `${folder}/${crypto.randomUUID()}.${type.ext}`;
     const uploaded = await session.client.storage.from(BUCKET).upload(storagePath, bytes, { contentType: type.mime, upsert: false });
+    const stored = performance.now();
     if (uploaded.error) return session.finish(NextResponse.json({ success: false, message: "Image storage is unavailable" }, { status: 503 }));
     const { data: publicImage } = session.client.storage.from(BUCKET).getPublicUrl(storagePath);
     const url = publicImage.publicUrl;
     const saved = await session.client.from(TABLE).insert({ url, folder, storage_path: storagePath });
+    const recorded = performance.now();
     if (saved.error) {
       await session.client.storage.from(BUCKET).remove([storagePath]);
       return session.finish(NextResponse.json({ success: false, message: "Image record could not be saved" }, { status: 503 }));
     }
-    return session.finish(NextResponse.json({ success: true, url, active: await currentActive(session.client) }));
+    const active = await currentActive(session.client);
+    return session.finish(NextResponse.json({ success: true, url, active }, {
+      headers: { "Server-Timing": `auth;dur=${(authDone - started).toFixed(1)}, parse;dur=${(parsed - authDone).toFixed(1)}, storage;dur=${(stored - parsed).toFixed(1)}, media-db;dur=${(recorded - stored).toFixed(1)}, active-db;dur=${(performance.now() - recorded).toFixed(1)}` },
+    }));
   } catch {
     return session.finish(NextResponse.json({ success: false, message: "Invalid upload" }, { status: 400 }));
   }
