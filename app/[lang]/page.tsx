@@ -16,6 +16,16 @@ type Lang = "en" | "tr";
 type NavItem = { label: string; href: string };
 type PlatformItem = { title: string; description: string };
 type JournalItem = { title: string; description: string };
+type FeaturedProgram = {
+  id: string;
+  name: string;
+  mark: string;
+  category: string;
+  cover_url?: string | null;
+  icon_url?: string | null;
+  logo_url?: string | null;
+  copy?: { en?: { description?: string }; tr?: { description?: string } };
+};
 
 type ContactContent = {
   title: string;
@@ -235,6 +245,7 @@ export default function HomePage() {
   const lang = (params?.lang === "tr" ? "tr" : "en") as Lang;
 
   const [dynamicContent, setDynamicContent] = useState<DynamicHomepageContent | null>(null);
+  const [featuredPrograms, setFeaturedPrograms] = useState<FeaturedProgram[]>([]);
   const [uploadedImages, setUploadedImages] = useState<UploadedImages>({ hero: [], gallery: [], projects: [], active: { hero: "", gallery: "", projects: "" } });
   const [brokenImages, setBrokenImages] = useState<Record<string, boolean>>({});
 
@@ -296,6 +307,21 @@ export default function HomePage() {
     return () => {
       isActive = false;
     };
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/programs", { cache: "no-store", signal: controller.signal })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => {
+        if (Array.isArray(data?.programs)) {
+          setFeaturedPrograms(data.programs.filter((program: FeaturedProgram) =>
+            typeof program.id === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(program.id)
+          ).slice(0, 6));
+        }
+      })
+      .catch(() => {});
+    return () => controller.abort();
   }, []);
 
   const mailBody = useMemo(() => {
@@ -365,11 +391,13 @@ export default function HomePage() {
         </div>
       </header>
 
-      <section id="home" className="mx-auto grid max-w-7xl gap-12 px-6 py-20 md:grid-cols-2 md:py-28">
+      <section id="home" className="relative isolate overflow-hidden border-b border-white/5 bg-[radial-gradient(ellipse_at_78%_25%,rgba(166,120,43,.15),transparent_42%)]">
+        <div className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(90deg,transparent_49.9%,rgba(212,175,55,.07)_50%,transparent_50.1%)]" />
+        <div className="mx-auto grid max-w-7xl gap-12 px-6 py-20 md:grid-cols-2 md:items-center md:py-28 lg:gap-20">
         <div className="flex flex-col justify-center">
-          <div className="mb-4 text-xs font-semibold uppercase tracking-[0.35em] text-[#d4af37]">{content.hero.eyebrow}</div>
-          <h1 className="max-w-xl text-4xl font-bold leading-tight md:text-6xl">{content.hero.title}</h1>
-          <p className="mt-6 max-w-xl text-base leading-8 text-neutral-400">{content.hero.description}</p>
+          <div className="mb-7 flex items-center gap-4 text-xs font-semibold uppercase tracking-[0.35em] text-[#d4af37]"><span className="h-px w-10 bg-[#d4af37]" />{content.hero.eyebrow}</div>
+          <h1 className="max-w-2xl text-5xl font-semibold leading-[1.08] tracking-tight md:text-6xl lg:text-7xl">{content.hero.title}</h1>
+          <p className="mt-7 max-w-xl border-l border-[#d4af37]/60 pl-5 text-base leading-8 text-neutral-300">{content.hero.description}</p>
 
           <div className="mt-8 flex flex-wrap gap-4">
             <a href={content.hero.primaryCtaHref === "#contact" ? "#contact" : WATCH_URL} target={content.hero.primaryCtaHref === "#contact" ? undefined : "_blank"} rel={content.hero.primaryCtaHref === "#contact" ? undefined : "noopener noreferrer"} className="rounded-xl bg-[#d4af37] px-6 py-3 font-semibold text-black transition hover:opacity-90">
@@ -382,29 +410,31 @@ export default function HomePage() {
         </div>
 
         <div className="flex items-center">
-          <div className="w-full rounded-3xl border border-[#d4af37]/20 bg-neutral-900/80 p-6 shadow-2xl">
-            <div className="relative min-h-[320px] overflow-hidden rounded-2xl bg-gradient-to-br from-[#111111] via-[#1a1a1a] to-[#0b0b0b] p-8">
+          <div className="relative w-full border border-[#d4af37]/30 bg-neutral-900/80 p-2 shadow-[0_35px_100px_rgba(0,0,0,.65)] sm:p-3">
+            <div className="relative min-h-[430px] overflow-hidden bg-gradient-to-br from-[#1d1a16] via-[#101010] to-[#080808] p-8 sm:min-h-[520px]">
               {activeHeroImage && (
                 <>
-                  <img src={activeHeroImage} alt="CINENTO Hero" onError={() => handleImageError(activeHeroImage)} className="absolute inset-0 h-full w-full object-cover opacity-45" />
-                  <div className="absolute inset-0 bg-gradient-to-br from-black/85 via-black/45 to-black/70" />
+                  <Image src={activeHeroImage} alt="" fill priority sizes="(min-width: 768px) 50vw, 100vw" unoptimized={activeHeroImage.startsWith("https://")} onError={() => handleImageError(activeHeroImage)} className="object-cover opacity-45" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-black/10" />
                 </>
               )}
-              <div className="relative z-10 flex min-h-[260px] flex-col justify-end">
-                <div className="mb-3 text-sm uppercase tracking-[0.25em] text-[#d4af37]">{content.hero.cardTitle}</div>
-                <div className="text-2xl font-semibold leading-snug text-white">{content.hero.cardSubtitle}</div>
+              <div className="relative z-10 flex min-h-[366px] flex-col justify-between sm:min-h-[456px]">
+                <div className="flex items-start justify-between gap-4 text-xs font-semibold uppercase tracking-[0.28em] text-[#e6c878]"><span>{content.hero.cardTitle}</span><span aria-hidden="true">✦</span></div>
+                <div className="max-w-sm border-t border-white/40 pt-5 text-2xl font-semibold leading-snug text-white sm:text-3xl">{content.hero.cardSubtitle}</div>
               </div>
             </div>
           </div>
+        </div>
         </div>
       </section>
 
       <section id="about" className="mx-auto max-w-7xl px-6 py-12">
         <h2 className="mb-6 text-2xl font-semibold text-[#d4af37]">{content.whatWeDo.title}</h2>
         <div className="grid gap-6 md:grid-cols-3">
-          {content.whatWeDo.items.map((item) => (
+          {content.whatWeDo.items.map((item, index) => (
             <div key={item} className="rounded-2xl border border-[#d4af37]/15 bg-neutral-900/80 p-6 text-white shadow-lg transition hover:border-[#d4af37]/40">
-              <div className="font-medium leading-7">{item}</div>
+              <div className="mb-10 text-xs font-semibold tracking-[0.25em] text-[#d4af37]">{String(index + 1).padStart(2, "0")}</div>
+              <div className="border-t border-white/10 pt-5 text-lg font-medium leading-7">{item}</div>
             </div>
           ))}
         </div>
@@ -419,25 +449,29 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-12">
-        <div className="rounded-3xl border border-[#d4af37]/20 bg-neutral-900/80 p-8 shadow-xl">
-          <h2 className="mb-4 text-2xl font-semibold text-[#d4af37]">{content.ecosystem.title}</h2>
-          <p className="max-w-4xl text-neutral-300 leading-8">{content.ecosystem.subtitle}</p>
-          <a href={`/${lang}/platforms`} className="mt-6 inline-flex min-h-11 items-center gap-3 rounded-xl border border-[#d4af37]/50 px-5 py-3 text-sm font-semibold text-[#d4af37] transition hover:bg-[#d4af37] hover:text-black">
-            {lang === "tr" ? "Ürünler & Platformları Keşfet" : "Explore Products & Platforms"}
-            <span aria-hidden="true">↗</span>
-          </a>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 py-12">
-        <div className="grid gap-6 md:grid-cols-2">
-          {content.platforms.map((item) => (
-            <div key={item.title} className="rounded-2xl border border-[#d4af37]/15 bg-neutral-900/80 p-6 shadow-lg">
-              <h3 className="mb-3 text-lg font-semibold text-white">{item.title}</h3>
-              <p className="text-sm leading-7 text-neutral-400">{item.description}</p>
+      <section className="border-y border-white/5 bg-[#0b0b0b] py-20">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
+            <div><div className="mb-4 h-px w-14 bg-[#d4af37]" /><h2 className="text-3xl font-semibold tracking-tight text-white md:text-4xl">{content.ecosystem.title}</h2><p className="mt-4 max-w-3xl leading-8 text-neutral-400">{content.ecosystem.subtitle}</p></div>
+            <a href={`/${lang}/platforms`} className="inline-flex min-h-11 items-center gap-3 border-b border-[#d4af37] pb-2 text-sm font-semibold text-[#e6c878] transition hover:text-white">{lang === "tr" ? "Tüm platformlar" : "All platforms"}<span aria-hidden="true">↗</span></a>
+          </div>
+          {featuredPrograms.length > 0 ? (
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {featuredPrograms.map((program, index) => (
+                <a key={program.id} href={`/${lang}/platforms/${program.id}`} className="group overflow-hidden border border-white/10 bg-[#131313] transition hover:border-[#d4af37]/60 hover:bg-[#191919]">
+                  <div className="relative flex h-48 items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_50%_40%,#2d2b27,#101010_70%)]">
+                    {program.cover_url && !brokenImages[program.cover_url] && <Image src={program.cover_url} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw" unoptimized={program.cover_url.startsWith("https://")} onError={() => handleImageError(program.cover_url!)} className="object-cover opacity-80 transition duration-500 group-hover:scale-105" />}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#131313] via-transparent to-black/10" />
+                    <span className="absolute left-5 top-5 z-10 text-xs tracking-[0.25em] text-white/70">{String(index + 1).padStart(2, "0")} / CINENTO</span>
+                    {program.icon_url && !brokenImages[program.icon_url] ? <Image src={program.icon_url} alt="" width={64} height={64} unoptimized={program.icon_url.startsWith("https://")} onError={() => handleImageError(program.icon_url!)} className="relative z-10 h-16 w-16 object-contain drop-shadow-xl" /> : <span className="relative z-10 border border-[#d4af37]/60 bg-black/60 px-4 py-3 text-xl font-semibold text-[#e6c878]">{program.mark}</span>}
+                  </div>
+                  <div className="p-6"><div className="mb-3 text-xs uppercase tracking-[0.2em] text-[#d4af37]">{program.category}</div><h3 className="text-xl font-semibold text-white">{program.name}</h3><p className="mt-3 min-h-20 text-sm leading-7 text-neutral-400">{program.copy?.[lang]?.description}</p><div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4 text-sm font-medium text-[#e6c878]"><span>{lang === "tr" ? "Profili incele" : "Explore profile"}</span><span aria-hidden="true" className="transition group-hover:translate-x-1">↗</span></div></div>
+                </a>
+              ))}
             </div>
-          ))}
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2">{content.platforms.map((item) => <div key={item.title} className="border border-[#d4af37]/15 bg-neutral-900/80 p-6"><h3 className="mb-3 text-lg font-semibold text-white">{item.title}</h3><p className="text-sm leading-7 text-neutral-400">{item.description}</p></div>)}</div>
+          )}
         </div>
       </section>
 
