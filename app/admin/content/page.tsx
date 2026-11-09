@@ -20,6 +20,30 @@ type JournalItem = {
   title: string;
   description: string;
 };
+type ServiceItem = { title: string; description: string };
+type ProjectItem = { title: string; role: string; status: string; description: string; image: string };
+const emptyService: ServiceItem = { title: "", description: "" };
+const emptyProject: ProjectItem = { title: "", role: "", status: "", description: "", image: "" };
+const serviceDefaults: Record<Lang, { title: string; subtitle: string; items: ServiceItem[]; processTitle: string; processSubtitle: string; steps: ServiceItem[]; projectsTitle: string; projectsSubtitle: string }> = {
+  en: { title: "How We Help", subtitle: "Focused support for projects moving from a promising idea to a professional presentation.", items: [
+    { title: "Story & Screenplay Development", description: "Shape the concept, characters, structure and screenplay for film or series." },
+    { title: "Pitch & Investor Materials", description: "Prepare a clear pitch deck, project dossier and presentation materials." },
+    { title: "Production & Co-Production Strategy", description: "Define the production path, potential partners and international positioning." },
+  ], processTitle: "Work With CINENTO", processSubtitle: "A clear path from first conversation to a presentation-ready project.", steps: [
+    { title: "Share your idea", description: "Tell us the format, story and current stage of your project." },
+    { title: "Define the development plan", description: "We review the material and agree on the right scope of work." },
+    { title: "Build the package", description: "Develop the story and presentation materials for the next conversation." },
+  ], projectsTitle: "Selected Projects", projectsSubtitle: "A closer look at CINENTO's film and series work." },
+  tr: { title: "Nasıl Yardımcı Oluyoruz", subtitle: "Fikirden profesyonel sunuma uzanan film ve dizi projeleri için odaklı destek.", items: [
+    { title: "Hikâye ve Senaryo Geliştirme", description: "Film veya dizi fikrini, karakterlerini, yapısını ve senaryosunu geliştirme." },
+    { title: "Pitch ve Yatırımcı Dosyası", description: "Proje dosyası, pitch deck ve profesyonel sunum materyalleri hazırlama." },
+    { title: "Yapım ve Ortak Yapım Stratejisi", description: "Yapım yolunu, olası ortakları ve uluslararası konumlandırmayı belirleme." },
+  ], processTitle: "CINENTO ile Çalışın", processSubtitle: "İlk görüşmeden sunuma hazır projeye uzanan net bir yol.", steps: [
+    { title: "Fikrinizi paylaşın", description: "Projenizin türünü, hikâyesini ve mevcut aşamasını anlatın." },
+    { title: "Geliştirme planını belirleyin", description: "Materyali inceleyip çalışma kapsamını birlikte netleştirelim." },
+    { title: "Proje dosyasını hazırlayın", description: "Hikâyeyi ve bir sonraki görüşme için sunum materyallerini geliştirelim." },
+  ], projectsTitle: "Seçili Projeler", projectsSubtitle: "CINENTO'nun film ve dizi çalışmalarından seçmeler." },
+};
 
 const emptyPlatform: PlatformItem = { title: "", description: "" };
 const emptyJournal: JournalItem = { title: "", description: "" };
@@ -44,8 +68,13 @@ function normalizeJournal(value?: JournalItem[]) {
   const items = Array.isArray(value) ? value : [];
   return [0, 1, 2].map((index) => items[index] || emptyJournal);
 }
+function threeItems<T>(value: T[] | undefined, fallback: T): T[] {
+  return [0, 1, 2].map(index => value?.[index] || fallback);
+}
 
 export default function ContentManager() {
+  // The legacy CMS payload contains several historical shapes alongside the current sections.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -65,6 +94,16 @@ export default function ContentManager() {
 
   const [whatTitle, setWhatTitle] = useState("");
   const [whatItems, setWhatItems] = useState("");
+  const [servicesTitle, setServicesTitle] = useState("");
+  const [servicesSubtitle, setServicesSubtitle] = useState("");
+  const [services, setServices] = useState<ServiceItem[]>(threeItems(undefined, emptyService));
+  const [projectsTitle, setProjectsTitle] = useState("");
+  const [projectsSubtitle, setProjectsSubtitle] = useState("");
+  const [projects, setProjects] = useState<ProjectItem[]>(threeItems(undefined, emptyProject));
+  const [projectImages, setProjectImages] = useState<string[]>([]);
+  const [processTitle, setProcessTitle] = useState("");
+  const [processSubtitle, setProcessSubtitle] = useState("");
+  const [processSteps, setProcessSteps] = useState<ServiceItem[]>(threeItems(undefined, emptyService));
 
   const [whyTitle, setWhyTitle] = useState("");
   const [whyItems, setWhyItems] = useState("");
@@ -124,6 +163,13 @@ export default function ContentManager() {
       });
   }, []);
 
+  useEffect(() => {
+    fetch("/api/admin/images", { cache: "no-store" }).then(res => res.json())
+      .then(json => setProjectImages(Array.isArray(json?.images?.projects) ? json.images.projects : []))
+      .catch(() => {});
+  }, []);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const loadLang = (json: any, selectedLang: Lang) => {
     const section = json?.[selectedLang] || {};
 
@@ -147,6 +193,16 @@ export default function ContentManager() {
             .filter(Boolean)
             .join("\n")
     );
+    const defaults = serviceDefaults[selectedLang];
+    setServicesTitle(section.services?.title ?? defaults.title);
+    setServicesSubtitle(section.services?.subtitle ?? defaults.subtitle);
+    setServices(threeItems(section.services?.items ?? defaults.items, emptyService));
+    setProjectsTitle(section.featuredProjects?.title ?? defaults.projectsTitle);
+    setProjectsSubtitle(section.featuredProjects?.subtitle ?? defaults.projectsSubtitle);
+    setProjects(threeItems(section.featuredProjects?.items, emptyProject));
+    setProcessTitle(section.process?.title ?? defaults.processTitle);
+    setProcessSubtitle(section.process?.subtitle ?? defaults.processSubtitle);
+    setProcessSteps(threeItems(section.process?.steps ?? defaults.steps, emptyService));
 
     setWhyTitle(section.whyCinento?.title || section.whyTitle || "");
     setWhyItems(
@@ -216,6 +272,9 @@ export default function ContentManager() {
       )
     );
   };
+  const updateItem = <T extends ServiceItem | ProjectItem>(setter: React.Dispatch<React.SetStateAction<T[]>>, index: number, key: keyof T, value: string) => {
+    setter(prev => prev.map((item, itemIndex) => itemIndex === index ? { ...item, [key]: value } : item));
+  };
 
   const handleSave = async () => {
     try {
@@ -241,6 +300,9 @@ export default function ContentManager() {
             title: whatTitle,
             items: linesToArray(whatItems),
           },
+          services: { title: servicesTitle, subtitle: servicesSubtitle, items: services.filter(item => item.title.trim()) },
+          featuredProjects: { title: projectsTitle, subtitle: projectsSubtitle, items: projects.filter(item => item.title.trim()) },
+          process: { title: processTitle, subtitle: processSubtitle, steps: processSteps.filter(item => item.title.trim()) },
           whyCinento: {
             title: whyTitle,
             items: linesToArray(whyItems),
@@ -365,6 +427,42 @@ export default function ContentManager() {
         <Section title="What We Do">
           <Input label="Section Title" value={whatTitle} onChange={setWhatTitle} />
           <Textarea label="Items - each line is one card" value={whatItems} onChange={setWhatItems} />
+        </Section>
+
+        <Section title="Services / خدمات اصلی">
+          <Input label="Section title" value={servicesTitle} onChange={setServicesTitle} />
+          <Textarea label="Introduction" value={servicesSubtitle} onChange={setServicesSubtitle} />
+          {services.map((item, index) => <div key={index} className="rounded-2xl border border-yellow-600/20 p-4">
+            <div className="mb-3 text-sm text-yellow-400">Service {index + 1}</div>
+            <Input label="Title" value={item.title} onChange={value => updateItem(setServices, index, "title", value)} />
+            <Textarea label="Description" value={item.description} onChange={value => updateItem(setServices, index, "description", value)} />
+          </div>)}
+        </Section>
+
+        <Section title="Selected Projects / پروژه‌های منتخب">
+          <p className="text-sm leading-6 text-neutral-400">Only projects with a title appear publicly. Enter a verified title, your role and status. Upload images in Image Manager → Projects, then choose their URL below. Edit EN and TR separately.</p>
+          <Input label="Section title" value={projectsTitle} onChange={setProjectsTitle} />
+          <Textarea label="Introduction" value={projectsSubtitle} onChange={setProjectsSubtitle} />
+          <datalist id="project-images">{projectImages.map(image => <option key={image} value={image} />)}</datalist>
+          {projects.map((item, index) => <div key={index} className="space-y-4 rounded-2xl border border-yellow-600/20 p-4">
+            <div className="text-sm text-yellow-400">Project {index + 1}</div>
+            <Input label="Project title" value={item.title} onChange={value => updateItem(setProjects, index, "title", value)} />
+            <Input label="CINENTO role" value={item.role} onChange={value => updateItem(setProjects, index, "role", value)} />
+            <Input label="Verified status" value={item.status} onChange={value => updateItem(setProjects, index, "status", value)} />
+            <Textarea label="Short description" value={item.description} onChange={value => updateItem(setProjects, index, "description", value)} />
+            <label className="block space-y-2"><span className="text-sm text-neutral-400">Image URL (choose an uploaded project image)</span><input list="project-images" value={item.image || ""} onChange={event => updateItem(setProjects, index, "image", event.target.value)} className="w-full rounded-xl border border-yellow-600/20 bg-black px-4 py-3 text-white" /></label>
+            {item.image && <div className="break-all text-xs text-neutral-500">{item.image}</div>}
+          </div>)}
+        </Section>
+
+        <Section title="How It Works / مراحل همکاری">
+          <Input label="Section title" value={processTitle} onChange={setProcessTitle} />
+          <Textarea label="Introduction" value={processSubtitle} onChange={setProcessSubtitle} />
+          {processSteps.map((item, index) => <div key={index} className="rounded-2xl border border-yellow-600/20 p-4">
+            <div className="mb-3 text-sm text-yellow-400">Step {index + 1}</div>
+            <Input label="Title" value={item.title} onChange={value => updateItem(setProcessSteps, index, "title", value)} />
+            <Textarea label="Description" value={item.description} onChange={value => updateItem(setProcessSteps, index, "description", value)} />
+          </div>)}
         </Section>
 
         <Section title="Why CINENTO">
