@@ -10,6 +10,15 @@ export async function proxy(request: NextRequest) {
   const locale = pathname.match(/^\/(en|tr|fa|ar)(?:\/|$)/)?.[1];
   const routeHeaders = new Headers(request.headers);
   if (locale) routeHeaders.set("x-cinento-locale", locale);
+  // The older standalone pages only have EN/TR copy; RTL visitors use the
+  // equivalent dashboard-managed section on their localized homepage.
+  const rtlSection = pathname.match(/^\/(fa|ar)\/(about|gallery|journal|contact)\/?$/);
+  if (rtlSection) {
+    const target = request.nextUrl.clone();
+    target.pathname = `/${rtlSection[1]}`;
+    target.hash = `#${rtlSection[2]}`;
+    return NextResponse.redirect(target);
+  }
   if (process.env.VERCEL_ENV === "preview") {
     const headers = {
       "X-Robots-Tag": "noindex, nofollow, noarchive",
