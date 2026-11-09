@@ -17,7 +17,7 @@ type NavItem = { label: string; href: string };
 type PlatformItem = { title: string; description: string };
 type JournalItem = { title: string; description: string };
 type ServiceItem = { title: string; description: string };
-type ProjectItem = { title: string; role: string; status: string; description: string; image?: string };
+type ProjectItem = { id?: string; title: string; role: string; status: string; description: string; image?: string };
 type FeaturedProgram = {
   id: string;
   name: string;
@@ -311,17 +311,31 @@ export default function HomePage() {
         if (!isActive) return;
         const selected = data?.[lang] || null;
         const englishProjects = data?.en?.featuredProjects?.items;
-        const translatedProjects = selected?.featuredProjects?.items;
-        const needsEnglishFallback = lang === "tr" &&
-          !translatedProjects?.some((item: ProjectItem) => item?.title?.trim()) &&
-          Array.isArray(englishProjects) && englishProjects.some((item: ProjectItem) => item?.title?.trim());
+        const translatedProjects: ProjectItem[] = Array.isArray(selected?.featuredProjects?.items) ? selected.featuredProjects.items : [];
+        const hasEnglishProjects = Array.isArray(englishProjects) && englishProjects.some((item: ProjectItem) => item?.title?.trim());
+        let needsEnglishFallback = false;
+        const mergedProjects: ProjectItem[] = lang === "tr" && hasEnglishProjects
+          ? englishProjects.map((item: ProjectItem, index: number) => {
+              const translation = translatedProjects.find((candidate) => candidate.id === (item.id || `project-${index + 1}`))
+                || (!translatedProjects.some(candidate => candidate.id) ? translatedProjects[index] : undefined);
+              if (item.title?.trim() && (!translation?.title?.trim() || !translation?.role?.trim() || !translation?.status?.trim() || !translation?.description?.trim())) needsEnglishFallback = true;
+              return {
+                ...item,
+                title: translation?.title?.trim() || item.title,
+                role: translation?.role?.trim() || item.role,
+                status: translation?.status?.trim() || item.status,
+                description: translation?.description?.trim() || item.description,
+                image: item.image, // Artwork is shared across languages.
+              };
+            })
+          : translatedProjects;
         setShowEnglishProjectDetails(needsEnglishFallback);
-        setDynamicContent(needsEnglishFallback ? {
+        setDynamicContent(lang === "tr" && hasEnglishProjects ? {
           ...selected,
           featuredProjects: {
             title: selected?.featuredProjects?.title || CONTENT.tr.featuredProjects.title,
             subtitle: selected?.featuredProjects?.subtitle || CONTENT.tr.featuredProjects.subtitle,
-            items: englishProjects,
+            items: mergedProjects,
           },
         } : selected);
       })
