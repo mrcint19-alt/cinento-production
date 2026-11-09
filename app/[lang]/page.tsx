@@ -356,7 +356,7 @@ export default function HomePage() {
             subtitle: selected?.featuredProjects?.subtitle || CONTENT[lang].featuredProjects.subtitle,
             items: mergedProjects,
           },
-          footer: { ...data?.en?.footer, ...selected?.footer },
+          footer: { ...data?.en?.footer, ...CONTENT[lang].footer, ...selected?.footer },
         } : selected);
       })
       .catch(() => {
@@ -658,7 +658,7 @@ export default function HomePage() {
             <input id="project-email" name="email" type="email" required autoComplete="email" maxLength={254} value={email} onChange={(e) => setEmail(e.target.value)} placeholder={content.contact.emailPlaceholder} style={{ backgroundColor: "#0a0a0a", color: "#fff" }} className="w-full rounded-xl border border-[#d4af37]/20 px-4 py-3 placeholder-neutral-500 outline-none transition focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]" />
             <label className="block" htmlFor="project-message">{content.contact.messagePlaceholder}</label>
             <textarea id="project-message" name="message" required minLength={20} maxLength={4000} value={message} onChange={(e) => setMessage(e.target.value)} placeholder={content.contact.messagePlaceholder} style={{ backgroundColor: "#0a0a0a", color: "#fff" }} className="h-36 w-full rounded-xl border border-[#d4af37]/20 px-4 py-3 placeholder-neutral-500 outline-none transition focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]" />
-            <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px]" />
+            <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="sr-only" />
             <button type="submit" disabled={submitting} className="w-full rounded-xl bg-[#d4af37] py-3 font-semibold text-black transition hover:opacity-90 disabled:opacity-60">{submitting ? ui[lang].sending : lang === "en" && (content.contact.buttonLabel === "Prepare message" || content.contact.buttonLabel === "Submit Project") ? "Send project inquiry" : lang === "tr" && content.contact.buttonLabel === "Mesaj hazırla" ? "Proje talebini gönder" : content.contact.buttonLabel}</button>
             <div role="status" aria-live="polite" className="text-sm text-neutral-300">{inquiryState === "sent" ? ui[lang].sent : inquiryState === "unavailable" ? ui[lang].unavailable : ui[lang].privacy}</div>
             {inquiryState === "unavailable" && <a href={`mailto:${contactEmail}?subject=${encodeURIComponent(content.contact.title)}&body=${encodeURIComponent(mailBody)}`} className="inline-block border-b border-[#d4af37] pb-1 text-sm text-[#d4af37]">{ui[lang].email}</a>}
