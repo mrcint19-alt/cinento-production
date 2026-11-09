@@ -7,6 +7,9 @@ import catalogSnapshot from "./app/data/programs.json";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const locale = pathname.match(/^\/(en|tr|fa|ar)(?:\/|$)/)?.[1];
+  const routeHeaders = new Headers(request.headers);
+  if (locale) routeHeaders.set("x-cinento-locale", locale);
   if (process.env.VERCEL_ENV === "preview") {
     const headers = {
       "X-Robots-Tag": "noindex, nofollow, noarchive",
@@ -70,7 +73,7 @@ export async function proxy(request: NextRequest) {
     if (!allowed) {
       return NextResponse.json({ error: "This route is disabled in the UI-only preview." }, { status: 403, headers });
     }
-    const response = NextResponse.next();
+    const response = NextResponse.next({ request: { headers: routeHeaders } });
     Object.entries(headers).forEach(([key, value]) => response.headers.set(key, value));
     return response;
   }
@@ -80,7 +83,7 @@ export async function proxy(request: NextRequest) {
     url.pathname = "/en";
     return NextResponse.redirect(url);
   }
-  return NextResponse.next();
+  return NextResponse.next({ request: { headers: routeHeaders } });
 }
 
 export const config = { matcher: ["/:path*"] };

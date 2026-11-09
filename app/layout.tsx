@@ -6,6 +6,7 @@
  */
 
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -25,14 +26,17 @@ export const metadata: Metadata = {
     "CINENTO is a next-generation film development platform connecting storytelling, financing, cinematic packaging, and international market positioning.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = (await headers()).get("x-cinento-locale") || "en";
+  const lang = ["en", "tr", "fa", "ar"].includes(locale) ? locale : "en";
   return (
     <html
-      lang="en"
+      lang={lang}
+      dir={lang === "fa" || lang === "ar" ? "rtl" : "ltr"}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-black text-white">
