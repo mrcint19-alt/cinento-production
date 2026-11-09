@@ -71,6 +71,8 @@ export default function ImageManagerPage() {
   }
 
   useEffect(() => {
+    // The request resolves asynchronously before updating image state.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadImages();
   }, []);
 
@@ -100,6 +102,7 @@ export default function ImageManagerPage() {
 
     setLoading(true);
     setMessage("");
+    const started = performance.now();
 
     const formData = new FormData();
     formData.append("folder", folder);
@@ -114,10 +117,12 @@ export default function ImageManagerPage() {
       const data = await res.json();
 
       if (data.success) {
-        setMessage(`Uploaded successfully: ${data.url}`);
+        const seconds = ((performance.now() - started) / 1000).toFixed(1);
+        setMessage(`Uploaded successfully in ${seconds}s. Refreshing the image list… ${data.url}`);
         setFile(null);
         setPreview("");
-        await loadImages();
+        setLoading(false);
+        void loadImages();
       } else {
         setMessage(data.message || "Upload failed.");
       }
