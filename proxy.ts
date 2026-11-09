@@ -61,8 +61,8 @@ export async function proxy(request: NextRequest) {
       return response;
     }
     const allowed =
-      /^\/(en|tr)(\/(about|gallery|journal|contact|platforms))?\/?$/.test(pathname) ||
-      /^\/(en|tr)\/platforms\/[a-z0-9]+(?:-[a-z0-9]+)*\/?$/.test(pathname) ||
+      /^\/(en|tr|fa|ar)(\/(about|gallery|journal|contact|platforms))?\/?$/.test(pathname) ||
+      /^\/(en|tr|fa|ar)\/platforms\/[a-z0-9]+(?:-[a-z0-9]+)*\/?$/.test(pathname) ||
       pathname.startsWith("/_next/static/") ||
       pathname === "/_next/image" ||
       pathname.startsWith("/images/") ||
