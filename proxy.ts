@@ -7,6 +7,18 @@ import catalogSnapshot from "./app/data/programs.json";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const locale = pathname.match(/^\/(en|tr|fa|ar)(?:\/|$)/)?.[1];
+  const routeHeaders = new Headers(request.headers);
+  if (locale) routeHeaders.set("x-cinento-locale", locale);
+  // The older standalone pages only have EN/TR copy; RTL visitors use the
+  // equivalent dashboard-managed section on their localized homepage.
+  const rtlSection = pathname.match(/^\/(fa|ar)\/(about|gallery|journal|contact)\/?$/);
+  if (rtlSection) {
+    const target = request.nextUrl.clone();
+    target.pathname = `/${rtlSection[1]}`;
+    target.hash = `#${rtlSection[2]}`;
+    return NextResponse.redirect(target);
+  }
   if (process.env.VERCEL_ENV === "preview") {
     const headers = {
       "X-Robots-Tag": "noindex, nofollow, noarchive",
@@ -61,8 +73,8 @@ export async function proxy(request: NextRequest) {
       return response;
     }
     const allowed =
-      /^\/(en|tr)(\/(about|gallery|journal|contact|platforms))?\/?$/.test(pathname) ||
-      /^\/(en|tr)\/platforms\/[a-z0-9]+(?:-[a-z0-9]+)*\/?$/.test(pathname) ||
+      /^\/(en|tr|fa|ar)(\/(about|gallery|journal|contact|platforms))?\/?$/.test(pathname) ||
+      /^\/(en|tr|fa|ar)\/platforms\/[a-z0-9]+(?:-[a-z0-9]+)*\/?$/.test(pathname) ||
       pathname.startsWith("/_next/static/") ||
       pathname === "/_next/image" ||
       pathname.startsWith("/images/") ||
@@ -70,7 +82,7 @@ export async function proxy(request: NextRequest) {
     if (!allowed) {
       return NextResponse.json({ error: "This route is disabled in the UI-only preview." }, { status: 403, headers });
     }
-    const response = NextResponse.next();
+    const response = NextResponse.next({ request: { headers: routeHeaders } });
     Object.entries(headers).forEach(([key, value]) => response.headers.set(key, value));
     return response;
   }
@@ -80,7 +92,7 @@ export async function proxy(request: NextRequest) {
     url.pathname = "/en";
     return NextResponse.redirect(url);
   }
-  return NextResponse.next();
+  return NextResponse.next({ request: { headers: routeHeaders } });
 }
 
 export const config = { matcher: ["/:path*"] };

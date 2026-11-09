@@ -8,8 +8,9 @@ Status: HERO + WHAT WE DO + WHY + ECOSYSTEM + PLATFORMS + GALLERY + JOURNAL + CO
 */
 
 import { useEffect, useState } from "react";
+import rtlHomepage from "../../data/rtl-homepage.json";
 
-type Lang = "en" | "tr";
+type Lang = "en" | "tr" | "fa" | "ar";
 
 type PlatformItem = {
   title: string;
@@ -43,6 +44,8 @@ const serviceDefaults: Record<Lang, { title: string; subtitle: string; items: Se
     { title: "Geliştirme planını belirleyin", description: "Materyali inceleyip çalışma kapsamını birlikte netleştirelim." },
     { title: "Proje dosyasını hazırlayın", description: "Hikâyeyi ve bir sonraki görüşme için sunum materyallerini geliştirelim." },
   ], projectsTitle: "Seçili Projeler", projectsSubtitle: "CINENTO'nun film ve dizi çalışmalarından seçmeler." },
+  fa: { title: rtlHomepage.fa.services.title, subtitle: rtlHomepage.fa.services.subtitle, items: rtlHomepage.fa.services.items, processTitle: rtlHomepage.fa.process.title, processSubtitle: rtlHomepage.fa.process.subtitle, steps: rtlHomepage.fa.process.steps, projectsTitle: rtlHomepage.fa.featuredProjects.title, projectsSubtitle: rtlHomepage.fa.featuredProjects.subtitle },
+  ar: { title: rtlHomepage.ar.services.title, subtitle: rtlHomepage.ar.services.subtitle, items: rtlHomepage.ar.services.items, processTitle: rtlHomepage.ar.process.title, processSubtitle: rtlHomepage.ar.process.subtitle, steps: rtlHomepage.ar.process.steps, projectsTitle: rtlHomepage.ar.featuredProjects.title, projectsSubtitle: rtlHomepage.ar.featuredProjects.subtitle },
 };
 
 const emptyPlatform: PlatformItem = { title: "", description: "" };
@@ -158,7 +161,7 @@ export default function ContentManager() {
         setLoading(false);
       })
       .catch(() => {
-        setData({ en: {}, tr: {} });
+        setData({ en: {}, tr: {}, fa: {}, ar: {} });
         setLoading(false);
       });
   }, []);
@@ -171,7 +174,10 @@ export default function ContentManager() {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const loadLang = (json: any, selectedLang: Lang) => {
-    const section = json?.[selectedLang] || {};
+    const rtlDefaults = selectedLang === "fa" || selectedLang === "ar" ? rtlHomepage[selectedLang] : null;
+    const section = rtlDefaults
+      ? { ...rtlDefaults, ...json?.[selectedLang], footer: { ...json?.en?.footer, ...rtlDefaults.footer, ...json?.[selectedLang]?.footer } }
+      : json?.[selectedLang] || {};
 
     setBrand(section.brand || "CINENTO");
 
@@ -201,7 +207,7 @@ export default function ContentManager() {
     setProjectsSubtitle(section.featuredProjects?.subtitle ?? defaults.projectsSubtitle);
     const savedProjects: ProjectItem[] = Array.isArray(section.featuredProjects?.items) ? section.featuredProjects.items : [];
     const englishProjects: ProjectItem[] = Array.isArray(json?.en?.featuredProjects?.items) ? json.en.featuredProjects.items : [];
-    setProjects(selectedLang === "tr" && englishProjects.length
+    setProjects(selectedLang !== "en" && englishProjects.length
       ? threeItems(englishProjects, emptyProject).map((source, index) => {
           const id = source.id || `project-${index + 1}`;
           const translated = savedProjects.find(item => item.id === id)
@@ -310,7 +316,7 @@ export default function ContentManager() {
             items: linesToArray(whatItems),
           },
           services: { title: servicesTitle, subtitle: servicesSubtitle, items: services.filter(item => item.title.trim()) },
-          featuredProjects: { title: projectsTitle, subtitle: projectsSubtitle, items: lang === "tr"
+          featuredProjects: { title: projectsTitle, subtitle: projectsSubtitle, items: lang !== "en"
             ? projects.map((item, index) => ({ ...item, id: item.id || `project-${index + 1}`, image: data?.en?.featuredProjects?.items?.[index]?.image || "" }))
             : projects.filter(item => item.title.trim()).map((item, index) => ({ ...item, id: item.id || `project-${index + 1}` })) },
           process: { title: processTitle, subtitle: processSubtitle, steps: processSteps.filter(item => item.title.trim()) },
@@ -381,30 +387,19 @@ export default function ContentManager() {
   if (loading) return <div className="min-h-screen bg-black p-10 text-white">Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-black p-6 text-white md:p-10">
+    <div dir={lang === "fa" || lang === "ar" ? "rtl" : "ltr"} lang={lang} className="min-h-screen bg-black p-6 text-white md:p-10">
       <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <div className="text-xs uppercase tracking-[0.35em] text-yellow-600">CINENTO CMS</div>
           <h1 className="mt-2 text-3xl font-bold text-yellow-500">Content Manager</h1>
         </div>
 
-        <div className="flex gap-3">
-          <button
-            onClick={() => handleLangChange("en")}
-            className={`rounded-xl px-5 py-2 font-semibold ${
-              lang === "en" ? "bg-yellow-500 text-black" : "bg-neutral-800 text-white"
-            }`}
-          >
-            EN
-          </button>
-          <button
-            onClick={() => handleLangChange("tr")}
-            className={`rounded-xl px-5 py-2 font-semibold ${
-              lang === "tr" ? "bg-yellow-500 text-black" : "bg-neutral-800 text-white"
-            }`}
-          >
-            TR
-          </button>
+        <div className="flex flex-wrap gap-3">
+          {(["en", "tr", "fa", "ar"] as Lang[]).map(locale => <button key={locale}
+            onClick={() => handleLangChange(locale)} aria-pressed={lang === locale}
+            className={`rounded-xl px-5 py-2 font-semibold ${lang === locale ? "bg-yellow-500 text-black" : "bg-neutral-800 text-white"}`}>
+            {locale.toUpperCase()}
+          </button>)}
         </div>
       </div>
 
@@ -456,12 +451,12 @@ export default function ContentManager() {
           <Textarea label="Introduction" value={projectsSubtitle} onChange={setProjectsSubtitle} />
           <datalist id="project-images">{projectImages.map(image => <option key={image} value={image} />)}</datalist>
           {projects.map((item, index) => <div key={index} className="space-y-4 rounded-2xl border border-yellow-600/20 p-4">
-            <div className="text-sm text-yellow-400">Project {index + 1}{lang === "tr" && data?.en?.featuredProjects?.items?.[index]?.title ? ` · ${data.en.featuredProjects.items[index].title}` : ""}</div>
-            <Input label={lang === "tr" ? "Turkish project title" : "Project title"} value={item.title} onChange={value => updateItem(setProjects, index, "title", value)} />
+            <div className="text-sm text-yellow-400">Project {index + 1}{lang !== "en" && data?.en?.featuredProjects?.items?.[index]?.title ? ` · ${data.en.featuredProjects.items[index].title}` : ""}</div>
+            <Input label={lang === "tr" ? "Turkish project title" : lang === "fa" ? "عنوان فارسی پروژه" : lang === "ar" ? "عنوان المشروع بالعربية" : "Project title"} value={item.title} onChange={value => updateItem(setProjects, index, "title", value)} />
             <Input label="CINENTO role" value={item.role} onChange={value => updateItem(setProjects, index, "role", value)} />
             <Input label="Verified status" value={item.status} onChange={value => updateItem(setProjects, index, "status", value)} />
             <Textarea label="Short description" value={item.description} onChange={value => updateItem(setProjects, index, "description", value)} />
-            <label className="block space-y-2"><span className="text-sm text-neutral-400">{lang === "tr" ? "Shared image (edit in EN)" : "Image URL (choose an uploaded project image)"}</span><input list="project-images" value={item.image || ""} readOnly={lang === "tr"} onChange={event => updateItem(setProjects, index, "image", event.target.value)} className="w-full rounded-xl border border-yellow-600/20 bg-black px-4 py-3 text-white" /></label>
+            <label className="block space-y-2"><span className="text-sm text-neutral-400">{lang !== "en" ? "Shared image (edit in EN)" : "Image URL (choose an uploaded project image)"}</span><input dir="ltr" list="project-images" value={item.image || ""} readOnly={lang !== "en"} onChange={event => updateItem(setProjects, index, "image", event.target.value)} className="w-full rounded-xl border border-yellow-600/20 bg-black px-4 py-3 text-white" /></label>
             {item.image && <img src={item.image} alt={`${item.title || `Project ${index + 1}`} selected artwork`} className="h-36 w-full rounded-xl border border-yellow-600/30 object-contain bg-black" />}
             {lang === "en" && <details className="rounded-xl border border-yellow-600/20 p-3">
               <summary className="cursor-pointer text-sm text-yellow-400">Choose from project image library ({projectImages.length})</summary>

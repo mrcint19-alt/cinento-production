@@ -10,8 +10,16 @@ Status: PAGE54 BASE + CMS CONNECTED + IMAGE MANAGER ACTIVE HERO SYSTEM CONNECTED
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
+import rtlHomepage from "../data/rtl-homepage.json";
 
-type Lang = "en" | "tr";
+type Lang = "en" | "tr" | "fa" | "ar";
+const isRtl = (lang: Lang) => lang === "fa" || lang === "ar";
+const ui = {
+  en: { menu: "Main navigation", platforms: "Products & Platforms", watch: "Watch Now", all: "All platforms", profile: "Explore profile", gallery: "CINENTO Gallery", sending: "Sending…", sent: "Your inquiry was received. Our team will review your project.", unavailable: "The form is unavailable right now. Please contact us by email.", privacy: "Your details will be sent to the CINENTO project team.", email: "Open email draft", required: "Please fill in all fields.", invalidEmail: "Enter a valid email address.", short: "Please describe your project in at least 20 characters.", translation: "Project details appear in English until translations are saved." },
+  tr: { menu: "Ana menü", platforms: "Ürünler & Platformlar", watch: "İzlemeye Başla", all: "Tüm platformlar", profile: "Profili incele", gallery: "CINENTO Galeri", sending: "Gönderiliyor…", sent: "Mesajınız alındı. Ekibimiz projenizi inceleyecek.", unavailable: "Şu anda form gönderilemiyor. Lütfen e-posta ile iletişime geçin.", privacy: "Bilgileriniz CINENTO proje ekibine iletilecektir.", email: "E-posta taslağı aç", required: "Lütfen tüm alanları doldurun.", invalidEmail: "Geçerli bir e-posta adresi girin.", short: "Lütfen projenizi en az 20 karakterle açıklayın.", translation: "Proje ayrıntıları Türkçe çevirileri kaydedilene kadar İngilizce gösterilir." },
+  fa: { menu: "منوی اصلی", platforms: "محصولات و پلتفرم‌ها", watch: "تماشای CINENTO WATCH", all: "همه پلتفرم‌ها", profile: "مشاهده معرفی", gallery: "گالری CINENTO", sending: "در حال ارسال…", sent: "درخواست شما دریافت شد. تیم ما پروژه را بررسی می‌کند.", unavailable: "فرم موقتاً در دسترس نیست. لطفاً از راه ایمیل تماس بگیرید.", privacy: "اطلاعات شما به تیم پروژه CINENTO ارسال می‌شود.", email: "بازکردن پیش‌نویس ایمیل", required: "لطفاً همه فیلدها را تکمیل کنید.", invalidEmail: "یک نشانی ایمیل معتبر وارد کنید.", short: "لطفاً پروژه را در دست‌کم ۲۰ نویسه توضیح دهید.", translation: "تا ثبت ترجمه در داشبورد، اطلاعات برخی پروژه‌ها به انگلیسی نمایش داده می‌شود." },
+  ar: { menu: "القائمة الرئيسية", platforms: "المنتجات والمنصات", watch: "شاهد CINENTO WATCH", all: "جميع المنصات", profile: "استكشف الملف", gallery: "معرض CINENTO", sending: "جارٍ الإرسال…", sent: "وصل طلبك. سيراجع فريقنا مشروعك.", unavailable: "النموذج غير متاح حالياً. يرجى التواصل عبر البريد الإلكتروني.", privacy: "ستُرسل بياناتك إلى فريق مشاريع CINENTO.", email: "فتح مسودة البريد", required: "يرجى ملء جميع الحقول.", invalidEmail: "يرجى إدخال بريد إلكتروني صالح.", short: "يرجى وصف مشروعك في ٢٠ حرفاً على الأقل.", translation: "تُعرض بعض تفاصيل المشاريع بالإنجليزية إلى حين حفظ ترجمتها في لوحة التحكم." },
+} as const;
 
 type NavItem = { label: string; href: string };
 type PlatformItem = { title: string; description: string };
@@ -26,7 +34,7 @@ type FeaturedProgram = {
   cover_url?: string | null;
   icon_url?: string | null;
   logo_url?: string | null;
-  copy?: { en?: { description?: string }; tr?: { description?: string } };
+  copy?: Partial<Record<Lang, { description?: string }>>;
 };
 
 type ContactContent = {
@@ -92,7 +100,7 @@ type UploadedImages = {
 
 const WATCH_URL = "https://watch.cinento.net";
 
-const CONTENT: Record<Lang, PageContent> = {
+const BASE_CONTENT: Record<"en" | "tr", PageContent> = {
   en: {
     brand: "CINENTO",
     nav: [
@@ -240,6 +248,12 @@ const CONTENT: Record<Lang, PageContent> = {
   },
 };
 
+const CONTENT: Record<Lang, PageContent> = {
+  ...BASE_CONTENT,
+  fa: { ...BASE_CONTENT.en, ...rtlHomepage.fa, gallery: { ...BASE_CONTENT.en.gallery, ...rtlHomepage.fa.gallery }, footer: { ...BASE_CONTENT.en.footer, ...rtlHomepage.fa.footer } } as PageContent,
+  ar: { ...BASE_CONTENT.en, ...rtlHomepage.ar, gallery: { ...BASE_CONTENT.en.gallery, ...rtlHomepage.ar.gallery }, footer: { ...BASE_CONTENT.en.footer, ...rtlHomepage.ar.footer } } as PageContent,
+};
+
 function mergeHomepageContent(fallback: PageContent, dynamic?: DynamicHomepageContent | null): PageContent {
   if (!dynamic) return fallback;
   return {
@@ -272,7 +286,12 @@ function mergeHomepageContent(fallback: PageContent, dynamic?: DynamicHomepageCo
 export default function HomePage() {
   const params = useParams();
   const router = useRouter();
-  const lang = (params?.lang === "tr" ? "tr" : "en") as Lang;
+  const lang: Lang = params?.lang === "tr" || params?.lang === "fa" || params?.lang === "ar" ? params.lang : "en";
+
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.documentElement.dir = isRtl(lang) ? "rtl" : "ltr";
+  }, [lang]);
 
   const [dynamicContent, setDynamicContent] = useState<DynamicHomepageContent | null>(null);
   const [showEnglishProjectDetails, setShowEnglishProjectDetails] = useState(false);
@@ -314,7 +333,7 @@ export default function HomePage() {
         const translatedProjects: ProjectItem[] = Array.isArray(selected?.featuredProjects?.items) ? selected.featuredProjects.items : [];
         const hasEnglishProjects = Array.isArray(englishProjects) && englishProjects.some((item: ProjectItem) => item?.title?.trim());
         let needsEnglishFallback = false;
-        const mergedProjects: ProjectItem[] = lang === "tr" && hasEnglishProjects
+        const mergedProjects: ProjectItem[] = lang !== "en" && hasEnglishProjects
           ? englishProjects.map((item: ProjectItem, index: number) => {
               const translation = translatedProjects.find((candidate) => candidate.id === (item.id || `project-${index + 1}`))
                 || (!translatedProjects.some(candidate => candidate.id) ? translatedProjects[index] : undefined);
@@ -330,13 +349,14 @@ export default function HomePage() {
             })
           : translatedProjects;
         setShowEnglishProjectDetails(needsEnglishFallback);
-        setDynamicContent(lang === "tr" && hasEnglishProjects ? {
+        setDynamicContent(lang !== "en" && hasEnglishProjects ? {
           ...selected,
           featuredProjects: {
-            title: selected?.featuredProjects?.title || CONTENT.tr.featuredProjects.title,
-            subtitle: selected?.featuredProjects?.subtitle || CONTENT.tr.featuredProjects.subtitle,
+            title: selected?.featuredProjects?.title || CONTENT[lang].featuredProjects.title,
+            subtitle: selected?.featuredProjects?.subtitle || CONTENT[lang].featuredProjects.subtitle,
             items: mergedProjects,
           },
+          footer: { ...data?.en?.footer, ...selected?.footer },
         } : selected);
       })
       .catch(() => {
@@ -407,15 +427,15 @@ export default function HomePage() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !message.trim()) {
-      alert(lang === "tr" ? "Lütfen tüm alanları doldurun." : "Please fill in all fields.");
+      alert(ui[lang].required);
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      alert(lang === "tr" ? "Geçerli bir e-posta adresi girin." : "Enter a valid email address.");
+      alert(ui[lang].invalidEmail);
       return;
     }
     if (message.trim().length < 20) {
-      alert(lang === "tr" ? "Lütfen projenizi en az 20 karakterle açıklayın." : "Please describe your project in at least 20 characters.");
+      alert(ui[lang].short);
       return;
     }
     setSubmitting(true);
@@ -433,19 +453,19 @@ export default function HomePage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#070707] text-white">
+    <main lang={lang} dir={isRtl(lang) ? "rtl" : "ltr"} className="min-h-screen bg-[#070707] text-white">
       <header className="sticky top-0 z-50 border-b border-white/10 bg-black/70 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-4">
           <div className="text-lg font-bold tracking-wide text-white">{content.brand}</div>
 
-          <nav aria-label={lang === "tr" ? "Ana menü" : "Main navigation"} className="order-3 flex w-full flex-wrap items-center gap-x-5 gap-y-3 lg:order-none lg:w-auto">
+          <nav aria-label={ui[lang].menu} className="order-3 flex w-full flex-wrap items-center gap-x-5 gap-y-3 lg:order-none lg:w-auto">
             {content.nav.map((item) => (
               <button key={item.label} onClick={() => handleNavClick(item.href)} className="text-sm text-neutral-300 transition hover:text-[#d4af37]">
                 {item.label}
               </button>
             ))}
             <a href={`/${lang}/platforms`} className="text-sm font-semibold text-[#d4af37] transition hover:text-white">
-              {lang === "tr" ? "Ürünler & Platformlar" : "Products & Platforms"}
+              {ui[lang].platforms}
             </a>
           </nav>
 
@@ -453,10 +473,12 @@ export default function HomePage() {
             <div className="flex rounded-full border border-white/10 bg-white/5 p-1">
               <button aria-label="English" aria-current={lang === "en" ? "page" : undefined} onClick={() => handleLanguageSwitch("en")} className={`rounded-full px-3 py-1 text-xs font-medium transition ${lang === "en" ? "bg-[#d4af37] text-black" : "text-neutral-300 hover:text-white"}`}>EN</button>
               <button aria-label="Türkçe" aria-current={lang === "tr" ? "page" : undefined} onClick={() => handleLanguageSwitch("tr")} className={`rounded-full px-3 py-1 text-xs font-medium transition ${lang === "tr" ? "bg-[#d4af37] text-black" : "text-neutral-300 hover:text-white"}`}>TR</button>
+              <button aria-label="فارسی" aria-current={lang === "fa" ? "page" : undefined} onClick={() => handleLanguageSwitch("fa")} className={`rounded-full px-3 py-1 text-xs font-medium transition ${lang === "fa" ? "bg-[#d4af37] text-black" : "text-neutral-300 hover:text-white"}`}>FA</button>
+              <button aria-label="العربية" aria-current={lang === "ar" ? "page" : undefined} onClick={() => handleLanguageSwitch("ar")} className={`rounded-full px-3 py-1 text-xs font-medium transition ${lang === "ar" ? "bg-[#d4af37] text-black" : "text-neutral-300 hover:text-white"}`}>AR</button>
             </div>
 
             <a href={WATCH_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-[#d4af37] px-4 py-2 text-sm font-semibold text-black transition hover:opacity-90">
-              {lang === "tr" ? "İzlemeye Başla" : "Watch Now"}
+              {ui[lang].watch}
             </a>
           </div>
         </div>
@@ -468,7 +490,7 @@ export default function HomePage() {
         <div className="flex flex-col justify-center">
           <div className="mb-7 flex items-center gap-4 text-xs font-semibold uppercase tracking-[0.35em] text-[#d4af37]"><span className="h-px w-10 bg-[#d4af37]" />{content.hero.eyebrow}</div>
           <h1 className="max-w-2xl text-5xl font-semibold leading-[1.08] tracking-tight md:text-6xl lg:text-7xl">{content.hero.title}</h1>
-          <p className="mt-7 max-w-xl border-l border-[#d4af37]/60 pl-5 text-base leading-8 text-neutral-300">{content.hero.description}</p>
+          <p className="mt-7 max-w-xl border-s border-[#d4af37]/60 ps-5 text-base leading-8 text-neutral-300">{content.hero.description}</p>
 
           <div className="mt-8 flex flex-wrap gap-4">
             <a href={content.hero.primaryCtaHref === "#contact" ? "#contact" : WATCH_URL} target={content.hero.primaryCtaHref === "#contact" ? undefined : "_blank"} rel={content.hero.primaryCtaHref === "#contact" ? undefined : "noopener noreferrer"} className="rounded-xl bg-[#d4af37] px-6 py-3 font-semibold text-black transition hover:opacity-90">
@@ -538,7 +560,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
             <div><div className="mb-4 h-px w-14 bg-[#d4af37]" /><h2 className="text-3xl font-semibold tracking-tight text-white md:text-4xl">{content.ecosystem.title}</h2><p className="mt-4 max-w-3xl leading-8 text-neutral-400">{content.ecosystem.subtitle}</p></div>
-            <a href={`/${lang}/platforms`} className="inline-flex min-h-11 items-center gap-3 border-b border-[#d4af37] pb-2 text-sm font-semibold text-[#e6c878] transition hover:text-white">{lang === "tr" ? "Tüm platformlar" : "All platforms"}<span aria-hidden="true">↗</span></a>
+            <a href={`/${lang}/platforms`} className="inline-flex min-h-11 items-center gap-3 border-b border-[#d4af37] pb-2 text-sm font-semibold text-[#e6c878] transition hover:text-white">{ui[lang].all}<span aria-hidden="true">↗</span></a>
           </div>
           {featuredPrograms.length > 0 ? (
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -549,7 +571,7 @@ export default function HomePage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-[#131313] via-transparent to-black/10" />
                     {(!program.cover_url || brokenImages[program.cover_url]) && (program.icon_url && !brokenImages[program.icon_url] ? <Image src={program.icon_url} alt="" width={64} height={64} unoptimized={program.icon_url.startsWith("https://")} onError={() => handleImageError(program.icon_url!)} className="relative z-10 h-16 w-16 object-contain drop-shadow-xl" /> : <span className="relative z-10 border border-[#d4af37]/60 bg-black/60 px-4 py-3 text-xl font-semibold text-[#e6c878]">{program.mark}</span>)}
                   </div>
-                  <div className="p-6"><div className="mb-3 flex items-center justify-between text-xs uppercase tracking-[0.2em] text-[#d4af37]"><span>{program.category}</span><span>{String(index + 1).padStart(2, "0")}</span></div><h3 className="text-xl font-semibold text-white">{program.name}</h3><p className="mt-3 min-h-20 text-sm leading-7 text-neutral-400">{program.copy?.[lang]?.description}</p><div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4 text-sm font-medium text-[#e6c878]"><span>{lang === "tr" ? "Profili incele" : "Explore profile"}</span><span aria-hidden="true" className="transition group-hover:translate-x-1">↗</span></div></div>
+                  <div className="p-6"><div className="mb-3 flex items-center justify-between text-xs uppercase tracking-[0.2em] text-[#d4af37]"><span>{program.category}</span><span>{String(index + 1).padStart(2, "0")}</span></div><h3 className="text-xl font-semibold text-white">{program.name}</h3><p className="mt-3 min-h-20 text-sm leading-7 text-neutral-400">{program.copy?.[lang]?.description || program.copy?.en?.description}</p><div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4 text-sm font-medium text-[#e6c878]"><span>{ui[lang].profile}</span><span aria-hidden="true" className="transition group-hover:translate-x-1">↗</span></div></div>
                 </a>
               ))}
             </div>
@@ -561,7 +583,7 @@ export default function HomePage() {
 
       {content.featuredProjects.items.some(item => item.title.trim()) && (
         <section className="mx-auto max-w-7xl px-6 py-20" aria-labelledby="projects-title">
-          <div className="mb-10 max-w-3xl"><div className="mb-4 h-px w-14 bg-[#d4af37]" /><h2 id="projects-title" className="text-3xl font-semibold md:text-4xl">{content.featuredProjects.title}</h2><p className="mt-4 leading-8 text-neutral-400">{content.featuredProjects.subtitle}</p>{showEnglishProjectDetails && <p className="mt-3 text-sm text-[#e6c878]">Proje ayrıntıları Türkçe çevirileri kaydedilene kadar İngilizce gösterilir.</p>}</div>
+          <div className="mb-10 max-w-3xl"><div className="mb-4 h-px w-14 bg-[#d4af37]" /><h2 id="projects-title" className="text-3xl font-semibold md:text-4xl">{content.featuredProjects.title}</h2><p className="mt-4 leading-8 text-neutral-400">{content.featuredProjects.subtitle}</p>{showEnglishProjectDetails && <p className="mt-3 text-sm text-[#e6c878]">{ui[lang].translation}</p>}</div>
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {content.featuredProjects.items.filter(item => item.title.trim()).map((item, index) => {
               const rawImage = item.image?.trim() || "";
@@ -578,7 +600,7 @@ export default function HomePage() {
       )}
 
       <section id="gallery" className="mx-auto max-w-7xl px-6 py-12">
-        <h2 className="mb-4 text-2xl font-semibold text-[#d4af37]">{content.gallery.title || (lang === "tr" ? "CINENTO Galeri" : "CINENTO Gallery")}</h2>
+        <h2 className="mb-4 text-2xl font-semibold text-[#d4af37]">{content.gallery.title || ui[lang].gallery}</h2>
         <p className="mb-8 max-w-4xl text-neutral-400 leading-8">{content.gallery.subtitle}</p>
         {activeGalleryImages.length > 0 ? (
           <div className="grid gap-5 md:grid-cols-3">
@@ -637,9 +659,9 @@ export default function HomePage() {
             <label className="block" htmlFor="project-message">{content.contact.messagePlaceholder}</label>
             <textarea id="project-message" name="message" required minLength={20} maxLength={4000} value={message} onChange={(e) => setMessage(e.target.value)} placeholder={content.contact.messagePlaceholder} style={{ backgroundColor: "#0a0a0a", color: "#fff" }} className="h-36 w-full rounded-xl border border-[#d4af37]/20 px-4 py-3 placeholder-neutral-500 outline-none transition focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]" />
             <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px]" />
-            <button type="submit" disabled={submitting} className="w-full rounded-xl bg-[#d4af37] py-3 font-semibold text-black transition hover:opacity-90 disabled:opacity-60">{submitting ? (lang === "tr" ? "Gönderiliyor…" : "Sending…") : content.contact.buttonLabel === "Prepare message" || content.contact.buttonLabel === "Submit Project" ? "Send project inquiry" : content.contact.buttonLabel === "Mesaj hazırla" ? "Proje talebini gönder" : content.contact.buttonLabel}</button>
-            <div role="status" aria-live="polite" className="text-sm text-neutral-300">{inquiryState === "sent" ? (lang === "tr" ? "Mesajınız alındı. Ekibimiz projenizi inceleyecek." : "Your inquiry was received. Our team will review your project.") : inquiryState === "unavailable" ? (lang === "tr" ? "Şu anda form gönderilemiyor. Lütfen e-posta ile iletişime geçin." : "The form is unavailable right now. Please contact us by email.") : (lang === "tr" ? "Bilgileriniz CINENTO proje ekibine iletilecektir." : "Your details will be sent to the CINENTO project team.")}</div>
-            {inquiryState === "unavailable" && <a href={`mailto:${contactEmail}?subject=${encodeURIComponent(content.contact.title)}&body=${encodeURIComponent(mailBody)}`} className="inline-block border-b border-[#d4af37] pb-1 text-sm text-[#d4af37]">{lang === "tr" ? "E-posta taslağı aç" : "Open email draft"}</a>}
+            <button type="submit" disabled={submitting} className="w-full rounded-xl bg-[#d4af37] py-3 font-semibold text-black transition hover:opacity-90 disabled:opacity-60">{submitting ? ui[lang].sending : lang === "en" && (content.contact.buttonLabel === "Prepare message" || content.contact.buttonLabel === "Submit Project") ? "Send project inquiry" : lang === "tr" && content.contact.buttonLabel === "Mesaj hazırla" ? "Proje talebini gönder" : content.contact.buttonLabel}</button>
+            <div role="status" aria-live="polite" className="text-sm text-neutral-300">{inquiryState === "sent" ? ui[lang].sent : inquiryState === "unavailable" ? ui[lang].unavailable : ui[lang].privacy}</div>
+            {inquiryState === "unavailable" && <a href={`mailto:${contactEmail}?subject=${encodeURIComponent(content.contact.title)}&body=${encodeURIComponent(mailBody)}`} className="inline-block border-b border-[#d4af37] pb-1 text-sm text-[#d4af37]">{ui[lang].email}</a>}
           </form>
         </div>
       </section>

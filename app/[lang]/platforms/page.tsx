@@ -8,14 +8,14 @@
  * WATCH catalog observed; playback confirmed by owner on 2026-10-18.
  * Suite Dashboard local Apps Manager UI observed; actions not tested.
  * Additional profiles are editorial drafts. No API, database or analytics integration.
- * Local language switch includes Persian without adding a /fa route.
+ * The language switch preserves each locale's own catalog route.
  * CMS integration and further product capability checks are subsequent work.
  */
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import initialPrograms from "../../data/programs.json";
 
-type Language = "en" | "tr" | "fa";
+type Language = "en" | "tr" | "fa" | "ar";
 type Category = "all" | "intelligence" | "media" | "business" | "connectivity";
 type Copy = {
   eyebrow: string; title: string; lead: string; explore: string;
@@ -33,7 +33,7 @@ type Product = {
   icon_url?: string | null;
   logo_url?: string | null;
   cover_url?: string | null;
-  copy: Record<Language, ProductText>;
+  copy: Record<"en" | "tr" | "fa", ProductText> & { ar?: ProductText };
 };
 
 const COPY: Record<Language, Copy> = {
@@ -79,6 +79,19 @@ const COPY: Record<Language, Copy> = {
     footerNote: "بررسی فهرست نسخه ۰٫۵ · AI و WATCH در برنامه‌های مستقل باز می‌شوند. متن سایر برنامه‌ها به تأیید مالک پروژه نیاز دارد.",
     categories: { all: "همه محصولات", intelligence: "هوش مصنوعی", media: "سینما و رسانه", business: "کسب‌وکار", connectivity: "ارتباطات" },
   },
+  ar: {
+    eyebrow: "منظومة CINENTO", title: "المنتجات والمنصات",
+    lead: "تلتقي السينما والإعلام والتقنية الرقمية في مجموعة مشاريع CINENTO.",
+    explore: "استكشف المجموعة", catalog: "رؤية واحدة. إمكانات متعددة.",
+    catalogIntro: "استكشف برامج CINENTO. يُعرض الوصول إلى كل منتج وتوافره بعد التحقق منه فقط.",
+    review: "بانتظار التحقق", notice: "بعض أوصاف المنتجات معروضة بالإنجليزية إلى حين اعتماد ترجمتها العربية. لا يُعلن عن وصول أو إمكانات لم يتم التحقق منها.",
+    details: "استكشف الملف", audience: "الجمهور المستهدف", scope: "مجالات التركيز",
+    related: "الخدمة ذات الصلة", linkNote: "ستظهر روابط الموقع والعروض بعد التحقق.", inquire: "اسأل عن هذا البرنامج",
+    concept: "تصميم تصوري؛ ليس لقطة من المنتج", showing: "الملفات المعروضة", language: "لغة الصفحة",
+    footerTitle: "من الشاشة إلى المنظومة.", footerText: "تجمع هذه الواجهة اهتمامات CINENTO في السينما والإعلام والتقنية، وستُستكمل بمعلومات وصور منتجات معتمدة.",
+    footerNote: "الذكاء الاصطناعي وWATCH تطبيقان مستقلان. تحتاج بقية أوصاف البرامج إلى التحقق.",
+    categories: { all: "كل المنتجات", intelligence: "الذكاء الاصطناعي", media: "السينما والإعلام", business: "الأعمال", connectivity: "الاتصالات" },
+  },
 };
 
 const INITIAL_PRODUCTS: Product[] = (initialPrograms as Product[]).map(product => ({
@@ -96,6 +109,7 @@ const AI_ACCESS = {
   en: { status: "Preview · Account required", cta: "Open CINENTO AI", note: "Opens in a new tab. An account is required; public registration is not confirmed.", scope: "Workspace areas", audience: "Intended audience" },
   tr: { status: "Önizleme · Hesap gerekli", cta: "CINENTO AI’a giriş", note: "Yeni sekmede açılır. Hesap gerekir; herkese açık kayıt doğrulanmadı.", scope: "Çalışma alanları", audience: "Hedef kitle" },
   fa: { status: "پیش‌نمایش · نیازمند حساب", cta: "ورود به CINENTO AI", note: "در زبانه جدید باز می‌شود. نیازمند حساب است؛ ثبت‌نام عمومی تأیید نشده است.", scope: "حوزه‌های محیط برنامه", audience: "مخاطبان هدف" },
+  ar: { status: "معاينة · يتطلب حساباً", cta: "افتح CINENTO AI", note: "يفتح في تبويب جديد. يتطلب حساباً؛ التسجيل العام غير مؤكد.", scope: "مجالات العمل", audience: "الجمهور المستهدف" },
 };
 
 // WATCH evidence: owner screenshots and playback confirmation, 2026-10-18.
@@ -103,6 +117,7 @@ const WATCH_ACCESS = {
   en: { status: "Early release · In development", cta: "Explore CINENTO WATCH", note: "Opens in a new tab. The catalog is limited; additional categories and creator tools remain in development.", scope: "Current experience", audience: "Intended audience" },
   tr: { status: "İlk sürüm · Geliştiriliyor", cta: "CINENTO WATCH’ı keşfet", note: "Yeni sekmede açılır. Katalog sınırlıdır; ek kategoriler ve içerik üreticisi araçları geliştirme aşamasındadır.", scope: "Mevcut deneyim", audience: "Hedef kitle" },
   fa: { status: "نسخه اولیه · در حال توسعه", cta: "کاوش در CINENTO WATCH", note: "در زبانه جدید باز می‌شود. فهرست آثار محدود است؛ دسته‌های بیشتر و ابزارهای سازندگان در حال توسعه‌اند.", scope: "امکانات فعلی", audience: "مخاطبان هدف" },
+  ar: { status: "إصدار أولي · قيد التطوير", cta: "استكشف CINENTO WATCH", note: "يفتح في تبويب جديد. الكتالوج محدود وما زالت الأدوات الإضافية قيد التطوير.", scope: "التجربة الحالية", audience: "الجمهور المستهدف" },
 };
 
 const PRODUCT_ACCESS: Partial<Record<string, { url: string; copy: typeof AI_ACCESS }>> = {
@@ -115,6 +130,7 @@ const SUITE_PROFILE = {
   en: { status: "Local · In development", audience: "Intended audience", scope: "Visible interface", note: "Runs locally on the owner’s laptop. No public access link is provided. Registration, launch, edit and deletion have not been functionally tested in this review." },
   tr: { status: "Yerel · Geliştiriliyor", audience: "Hedef kitle", scope: "Gözlemlenen arayüz", note: "Proje sahibinin dizüstü bilgisayarında yerel olarak çalışır. Herkese açık erişim bağlantısı yoktur. Kayıt, başlatma, düzenleme ve silme bu incelemede işlevsel olarak test edilmedi." },
   fa: { status: "اجرای محلی · در حال توسعه", audience: "مخاطبان هدف", scope: "بخش‌های قابل مشاهده رابط", note: "روی لپ‌تاپ مالک پروژه اجرا می‌شود؛ لینک دسترسی عمومی ارائه نشده است. ثبت، اجرا، ویرایش و حذف در این بررسی به‌صورت عملی آزمایش نشده‌اند." },
+  ar: { status: "محلي · قيد التطوير", audience: "الجمهور المستهدف", scope: "الواجهة المتاحة", note: "يعمل محلياً على جهاز صاحب المشروع. لا يوجد رابط عام؛ لم تُختبر وظائف الإدارة في هذه المراجعة." },
 };
 
 function ProductSymbol({ id }: { id: string }) {
@@ -131,7 +147,7 @@ function ProductSymbol({ id }: { id: string }) {
 
 export default function PlatformsPage() {
   const params = useParams<{ lang: string }>();
-  const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(null);
+  const router = useRouter();
   const [category, setCategory] = useState<Category>("all");
   const [catalog, setCatalog] = useState<Product[]>(INITIAL_PRODUCTS);
   const [catalogError, setCatalogError] = useState(false);
@@ -151,33 +167,34 @@ export default function PlatformsPage() {
       .catch(error => { if (error.name !== "AbortError") { setCatalog([]); setCatalogError(true); } });
     return () => controller.abort();
   }, []);
-  const language: Language = selectedLanguage ?? (params?.lang === "tr" ? "tr" : "en");
+  const language: Language = params?.lang === "tr" || params?.lang === "fa" || params?.lang === "ar" ? params.lang : "en";
   const text = COPY[language];
-  const siteLanguage = language === "tr" ? "tr" : language === "en" ? "en" : params?.lang === "tr" ? "tr" : "en";
+  const siteLanguage = language;
   const homeUrl = `/${siteLanguage}`;
   const siteLabels = {
     en: ["Home", "About", "Gallery", "Journal", "Contact"],
     tr: ["Ana Sayfa", "Hakkımızda", "Galeri", "Günlük", "İletişim"],
     fa: ["خانه", "درباره ما", "گالری", "مجله", "تماس"],
+    ar: ["الرئيسية", "من نحن", "المعرض", "المقالات", "اتصل بنا"],
   }[language];
   const products = catalog.filter((product) => category === "all" || product.category === category);
   const count = new Intl.NumberFormat(language).format(products.length);
 
   return (
-    <main className="cp" lang={language} dir={language === "fa" ? "rtl" : "ltr"}>
+    <main className="cp" lang={language} dir={language === "fa" || language === "ar" ? "rtl" : "ltr"}>
       <a className="cp-skip" href="#collection">{text.explore}</a>
       <header className="cp-header">
         <a className="cp-brand" href={homeUrl} aria-label={`CINENTO — ${siteLabels[0]}`}>CINENTO<span aria-hidden="true">•</span></a>
-        <nav className="cp-site-nav" aria-label={language === "fa" ? "منوی اصلی" : language === "tr" ? "Ana menü" : "Main navigation"}>
+        <nav className="cp-site-nav" aria-label={language === "fa" ? "منوی اصلی" : language === "ar" ? "القائمة الرئيسية" : language === "tr" ? "Ana menü" : "Main navigation"}>
           {(["home", "about", "gallery", "journal", "contact"] as const).map((section, index) => (
             <a key={section} href={`${homeUrl}#${section}`}>{siteLabels[index]}</a>
           ))}
           <a href="#top" aria-current="page">{text.title}</a>
         </nav>
         <div className="cp-languages" role="group" aria-label={text.language}>
-          {(["en", "tr", "fa"] as Language[]).map((locale) => (
-            <button key={locale} type="button" lang={locale} aria-pressed={language === locale} onClick={() => setSelectedLanguage(locale)}>
-              {locale === "fa" ? "فارسی" : locale.toUpperCase()}
+          {(["en", "tr", "fa", "ar"] as Language[]).map((locale) => (
+            <button key={locale} type="button" lang={locale} aria-pressed={language === locale} onClick={() => router.push(`/${locale}/platforms`)}>
+              {locale.toUpperCase()}
             </button>
           ))}
         </div>
@@ -199,7 +216,7 @@ export default function PlatformsPage() {
         </div>
       </section>
 
-      <aside className="cp-notice"><span aria-hidden="true">◇</span><p>{catalogError ? "Catalog is temporarily unavailable. Please try again later." : text.notice}</p></aside>
+      <aside className="cp-notice"><span aria-hidden="true">◇</span><p>{catalogError ? { en: "Catalog is temporarily unavailable. Please try again later.", tr: "Katalog şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.", fa: "فهرست محصولات موقتاً در دسترس نیست. لطفاً بعداً دوباره تلاش کنید.", ar: "الكتالوج غير متاح حالياً. يرجى المحاولة لاحقاً." }[language] : text.notice}</p></aside>
 
       <section className="cp-collection" id="collection" aria-labelledby="cp-catalog-title">
         <div className="cp-section-heading"><div><p className="cp-eyebrow">CINENTO / 01—{String(catalog.length).padStart(2, "0")}</p><h2 id="cp-catalog-title">{text.catalog}</h2><p>{text.catalogIntro}</p></div><span className="cp-count" aria-live="polite">{text.showing} <strong>{count}</strong></span></div>
@@ -209,15 +226,15 @@ export default function PlatformsPage() {
 
         <div className="cp-grid">
           {products.map((product) => {
-            const content = product.copy[language];
-            const profileUrl = `/${siteLanguage}/platforms/${product.id}${language === "fa" ? "?view=fa" : ""}`;
+            const content = product.copy[language] || product.copy.en;
+            const profileUrl = `/${siteLanguage}/platforms/${product.id}`;
             const access = product.access_url ? { url: product.access_url, copy: PRODUCT_ACCESS[product.id]?.copy } : undefined;
             const accessText = access?.copy?.[language];
             const profileText = accessText ?? (product.id === "enterprise" ? SUITE_PROFILE[language] : undefined);
             const status = product.status === "desktop"
-              ? { en: "Desktop · Pending verification", tr: "Masaüstü · Doğrulama bekliyor", fa: "دسکتاپ · در انتظار تأیید" }[language]
+              ? { en: "Desktop · Pending verification", tr: "Masaüstü · Doğrulama bekliyor", fa: "دسکتاپ · در انتظار تأیید", ar: "سطح المكتب · بانتظار التحقق" }[language]
               : product.status === "development"
-                ? { en: "In development", tr: "Geliştiriliyor", fa: "در حال توسعه" }[language]
+                ? { en: "In development", tr: "Geliştiriliyor", fa: "در حال توسعه", ar: "قيد التطوير" }[language]
                 : undefined;
             return (
               <article className={`cp-card cp-card-${product.id}`} key={product.id} aria-labelledby={`cp-${product.id}`}>
@@ -232,7 +249,7 @@ export default function PlatformsPage() {
                 <div className="cp-card-body">
                   <div className="cp-card-meta"><span>{text.categories[product.category]}</span><span className="cp-status"><i />{profileText?.status ?? status ?? text.review}</span></div>
                   <h3 id={`cp-${product.id}`} dir="ltr"><a href={profileUrl}>{product.name}</a></h3>
-                  <p className="cp-description">{content.description}</p>
+                  <p className="cp-description" lang={language === "ar" && !product.copy.ar ? "en" : undefined} dir={language === "ar" && !product.copy.ar ? "ltr" : undefined}>{content.description}</p>
                   <details className="cp-details">
                     <summary>{text.details}<span aria-hidden="true">+</span></summary>
                     <div className="cp-detail-content"><h4>{profileText?.audience ?? text.audience}</h4><p>{content.audience}</p><h4>{profileText?.scope ?? text.scope}</h4><ul>{content.scope.map((item) => <li key={item}>{item}</li>)}</ul><h4>{text.related}</h4><p>{content.service}</p></div>

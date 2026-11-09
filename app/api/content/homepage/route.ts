@@ -25,7 +25,8 @@ export async function POST(req: NextRequest) {
     if (error || !data.user || !session.allowed(data.user.id)) return session.finish(NextResponse.json({ error: "Unauthorized" }, { status: 401 }));
     const body = await readBoundedJson(req, 131072);
     if (!body.en || typeof body.en !== "object" || Array.isArray(body.en) ||
-        !body.tr || typeof body.tr !== "object" || Array.isArray(body.tr))
+        !body.tr || typeof body.tr !== "object" || Array.isArray(body.tr) ||
+        ["fa", "ar"].some(locale => body[locale] != null && (typeof body[locale] !== "object" || Array.isArray(body[locale]))))
       return session.finish(NextResponse.json({ error: "Invalid content" }, { status: 400 }));
     const saved = await session.client.from(TABLE).upsert({ id: "main", content: body }, { onConflict: "id" });
     if (saved.error) return session.finish(NextResponse.json({ error: "Persistent content storage is unavailable" }, { status: 503 }));
