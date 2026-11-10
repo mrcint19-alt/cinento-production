@@ -11,7 +11,7 @@ const mediaFields = [
   { field: "logo_url", title: "لوگوی برنامه", hint: "تصویر افقی؛ زمینه شفاف بهتر است", shape: "aspect-[3/1] w-full" },
   { field: "cover_url", title: "تصویر شاخص", hint: "تصویر افقی با نسبت ۱۶:۹", shape: "aspect-video w-full" },
 ] as const;
-const blankCopy = () => ({ description: "", audience: "", scope: [] as string[], service: "" });
+const blankCopy = () => ({ description: "", audience: "", scope: [] as string[], service: "", features: [] as string[] });
 const blank = (): Program => ({
   id: "", name: "", mark: "", category: "business", status: "development",
   access_url: "", published: false, sort_order: 100,
@@ -97,9 +97,9 @@ export default function ProgramManager() {
   const update = (field: keyof Program, value: unknown) => {
     setDirty(true); setSuccess(""); setForm(previous => ({ ...previous, [field]: value }));
   };
-  const updateCopy = (field: "description" | "audience" | "service" | "scope", value: string) => {
+  const updateCopy = (field: "description" | "audience" | "service" | "scope" | "features", value: string) => {
     setDirty(true); setSuccess(""); setForm(previous => ({
-      ...previous, copy: { ...previous.copy, [language]: { ...(previous.copy[language] ?? blankCopy()), [field]: field === "scope" ? value.split("\n").map(item => item.trim()).filter(Boolean) : value } },
+      ...previous, copy: { ...previous.copy, [language]: { ...(previous.copy[language] ?? blankCopy()), [field]: field === "scope" || field === "features" ? value.split("\n").map(item => item.trim()).filter(Boolean) : value } },
     }));
   };
   async function uploadMedia(field: "icon_url" | "logo_url" | "cover_url", file?: File) {
@@ -189,6 +189,8 @@ export default function ProgramManager() {
               <label className={labelClass}>Description ({language})<textarea className={inputClass} dir={language === "fa" || language === "ar" ? "rtl" : "ltr"} rows={4} value={(form.copy[language] ?? blankCopy()).description} required={language !== "ar" || !!form.copy.ar} maxLength={1500} onChange={e => updateCopy("description", e.target.value)} /></label>
               <label className={labelClass}>Audience ({language})<input className={inputClass} dir={language === "fa" || language === "ar" ? "rtl" : "ltr"} value={(form.copy[language] ?? blankCopy()).audience} required={language !== "ar" || !!form.copy.ar} maxLength={500} onChange={e => updateCopy("audience", e.target.value)} /></label>
               <label className={labelClass}>Focus areas, one per line ({language})<textarea className={inputClass} dir={language === "fa" || language === "ar" ? "rtl" : "ltr"} rows={4} value={(form.copy[language] ?? blankCopy()).scope.join("\n")} onChange={e => updateCopy("scope", e.target.value)} /></label>
+              <label className={labelClass}>Program features, one per line ({language})<textarea className={inputClass} dir={language === "fa" || language === "ar" ? "rtl" : "ltr"} rows={5} value={(form.copy[language]?.features ?? []).join("\n")} maxLength={3000} placeholder="Add confirmed features only; leave blank until verified" onChange={e => updateCopy("features", e.target.value)} /></label>
+              <p className="text-xs text-neutral-400">امکانات تأییدشدهٔ همین برنامه را هر کدام در یک خط بنویسید. این بخش اختیاری است و فقط در صفحهٔ معرفی برنامه نمایش داده می‌شود.</p>
               <label className={labelClass}>Service ({language})<input className={inputClass} dir={language === "fa" || language === "ar" ? "rtl" : "ltr"} value={(form.copy[language] ?? blankCopy()).service} required={language !== "ar" || !!form.copy.ar} maxLength={500} onChange={e => updateCopy("service", e.target.value)} /></label>
               <p className="text-xs text-neutral-400">EN, TR و FA برای ذخیره لازم‌اند. ترجمهٔ AR اختیاری است؛ در صورت شروع، همهٔ فیلدهای متنی آن را کامل کنید. تا آن زمان متن انگلیسی در سایت نمایش داده می‌شود.</p>
               <button disabled={busy || !dirty} className="rounded-lg bg-yellow-500 p-3 font-semibold text-black disabled:opacity-50">{busy ? "در حال ذخیره…" : "ذخیره تغییرات"}</button>
