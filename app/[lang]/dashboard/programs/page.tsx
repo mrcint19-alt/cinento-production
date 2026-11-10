@@ -185,7 +185,7 @@ export default function ProgramManager() {
               <label className={labelClass}>Short mark<input className={inputClass} value={form.mark} required maxLength={24} onChange={e => update("mark", e.target.value)} /></label>
               <label className={labelClass}>Category<select className={inputClass} value={form.category} onChange={e => update("category", e.target.value)}>{["intelligence", "media", "business", "connectivity"].map(item => <option key={item}>{item}</option>)}</select></label>
               <label className={labelClass}>Status<select className={inputClass} value={form.status ?? ""} onChange={e => update("status", e.target.value || undefined)}><option value="">Unspecified</option><option value="development">In development</option><option value="desktop">Desktop</option></select></label>
-              <label className={labelClass}>Public link (HTTPS only)<input className={inputClass} type="url" value={form.access_url ?? ""} onChange={e => update("access_url", e.target.value)} /></label>
+              <label className={labelClass}>Application URL (stored for future use; not shown on public product pages)<input className={inputClass} type="url" value={form.access_url ?? ""} onChange={e => update("access_url", e.target.value)} /></label>
               <fieldset className="grid gap-4 rounded-lg border border-neutral-700 p-4" dir="rtl">
                 <legend className="px-2 text-yellow-400">تصاویر برنامه</legend>
                 <p className="text-sm text-neutral-300">برای هر بخش یک تصویر انتخاب کنید، پیش‌نمایش را ببینید و سپس «ذخیره تغییرات» را بزنید. فرمت PNG، JPG یا WebP؛ حداکثر ۴ مگابایت.</p>

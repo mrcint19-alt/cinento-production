@@ -44,11 +44,11 @@ const COPY: Record<Language, Copy> = {
     catalogIntro: "Explore the CINENTO program portfolio. Individual access and availability are shown only where verified.",
     review: "Pending verification", notice: "Design preview · AI’s sign-in page and workspace have been observed; capabilities and public registration remain untested. WATCH’s catalog has been observed and playback confirmed by the owner. Suite Dashboard’s local interface has been observed; its actions remain untested. Other profiles await verification.",
     details: "Explore this profile", audience: "Proposed audience", scope: "Proposed focus areas",
-    related: "Related service proposal", linkNote: "Website and demo links will appear after verification.", inquire: "Ask about this program",
+    related: "Related service proposal", linkNote: "Read the product profile here; this catalog does not launch applications.", inquire: "Ask about this program",
     concept: "Concept artwork · not a product screenshot", showing: "Profiles shown", language: "Page language",
     footerTitle: "From the screen to the system.",
     footerText: "The showcase brings CINENTO’s film, media and technology interests into one coherent experience. Verified product stories and real media will shape the next edition.",
-    footerNote: "Catalog review v0.5 · AI and WATCH open as separate applications. Other program descriptions require owner verification.",
+    footerNote: "Catalog review v0.5 · Product cards lead to information pages. Other program descriptions require owner verification.",
     categories: { all: "All products", intelligence: "Intelligence", media: "Film & media", business: "Business", connectivity: "Connectivity" },
   },
   tr: {
@@ -58,11 +58,11 @@ const COPY: Record<Language, Copy> = {
     catalogIntro: "CINENTO program portföyünü keşfedin. Erişim ve kullanılabilirlik yalnızca doğrulandığında gösterilir.",
     review: "Doğrulama bekliyor", notice: "Tasarım önizlemesi · AI’ın giriş sayfası ve çalışma alanı gözlemlendi; yetenekleri ve herkese açık kayıt test edilmedi. WATCH kataloğu gözlemlendi ve oynatma proje sahibi tarafından doğrulandı. Suite Dashboard’un yerel arayüzü gözlemlendi; işlemleri test edilmedi. Diğer profiller doğrulama bekliyor.",
     details: "Profili incele", audience: "Önerilen hedef kitle", scope: "Önerilen odak alanları",
-    related: "İlgili hizmet önerisi", linkNote: "Web sitesi ve demo bağlantıları doğrulamadan sonra eklenecek.", inquire: "Bu programı sorun",
+    related: "İlgili hizmet önerisi", linkNote: "Ürün profilini burada inceleyin; katalog uygulamaları açmaz.", inquire: "Bu programı sorun",
     concept: "Konsept görsel · ürün ekran görüntüsü değildir", showing: "Gösterilen profiller", language: "Sayfa dili",
     footerTitle: "Ekrandan sisteme.",
     footerText: "Bu vitrin, CINENTO’nun sinema, medya ve teknoloji alanlarını ortak bir deneyimde buluşturur. Sonraki sürüm doğrulanmış ürün bilgileri ve gerçek görsellerle şekillenecek.",
-    footerNote: "Katalog incelemesi v0.5 · AI ve WATCH bağımsız uygulamalarda açılır. Diğer program açıklamaları proje sahibinin onayını bekliyor.",
+    footerNote: "Katalog incelemesi v0.5 · Ürün kartları tanıtım sayfalarına gider. Diğer açıklamalar proje sahibinin onayını bekliyor.",
     categories: { all: "Tüm ürünler", intelligence: "Yapay zekâ", media: "Sinema & medya", business: "İş yönetimi", connectivity: "Bağlantı" },
   },
   fa: {
@@ -72,11 +72,11 @@ const COPY: Record<Language, Copy> = {
     catalogIntro: "برنامه‌های CINENTO را مرور کنید. دسترسی و آماده‌بودن هر محصول تنها پس از تأیید نمایش داده می‌شود.",
     review: "در انتظار تأیید", notice: "پیش‌نمایش طراحی · صفحه ورود و محیط AI مشاهده شده‌اند؛ قابلیت‌ها و ثبت‌نام عمومی آن آزمایش نشده‌اند. فهرست WATCH مشاهده و پخش توسط مالک پروژه تأیید شده است. رابط محلی Suite Dashboard مشاهده شده، اما عملیات آن آزمایش نشده است. سایر معرفی‌ها در انتظار بررسی‌اند.",
     details: "مشاهده معرفی", audience: "مخاطبان پیشنهادی", scope: "محورهای پیشنهادی",
-    related: "خدمت مرتبط پیشنهادی", linkNote: "لینک وب‌سایت و دمو پس از بررسی و تأیید اضافه می‌شود.", inquire: "درباره این برنامه بپرسید",
+    related: "خدمت مرتبط پیشنهادی", linkNote: "معرفی محصول را در همین سایت ببینید؛ فهرست، برنامه‌ها را اجرا نمی‌کند.", inquire: "درباره این برنامه بپرسید",
     concept: "تصویر مفهومی؛ نمای واقعی محصول نیست", showing: "تعداد معرفی‌های نمایان", language: "زبان صفحه",
     footerTitle: "از قاب سینما تا دنیای سیستم‌ها.",
     footerText: "این مجموعه، حوزه‌های سینما، رسانه و فناوری CINENTO را در تجربه‌ای منسجم معرفی می‌کند. نسخه بعدی با اطلاعات تأییدشده و تصاویر واقعی محصولات تکمیل خواهد شد.",
-    footerNote: "بررسی فهرست نسخه ۰٫۵ · AI و WATCH در برنامه‌های مستقل باز می‌شوند. متن سایر برنامه‌ها به تأیید مالک پروژه نیاز دارد.",
+    footerNote: "بررسی فهرست نسخه ۰٫۵ · کارت محصولات به صفحهٔ معرفی می‌روند. متن سایر برنامه‌ها به تأیید مالک پروژه نیاز دارد.",
     categories: { all: "همه محصولات", intelligence: "هوش مصنوعی", media: "سینما و رسانه", business: "کسب‌وکار", connectivity: "ارتباطات" },
   },
   ar: {
@@ -86,10 +86,10 @@ const COPY: Record<Language, Copy> = {
     catalogIntro: "استكشف برامج CINENTO. يُعرض الوصول إلى كل منتج وتوافره بعد التحقق منه فقط.",
     review: "بانتظار التحقق", notice: "بعض أوصاف المنتجات معروضة بالإنجليزية إلى حين اعتماد ترجمتها العربية. لا يُعلن عن وصول أو إمكانات لم يتم التحقق منها.",
     details: "استكشف الملف", audience: "الجمهور المستهدف", scope: "مجالات التركيز",
-    related: "الخدمة ذات الصلة", linkNote: "ستظهر روابط الموقع والعروض بعد التحقق.", inquire: "اسأل عن هذا البرنامج",
+    related: "الخدمة ذات الصلة", linkNote: "اطّلع على صفحة التعريف هنا؛ لا تفتح هذه القائمة التطبيقات.", inquire: "اسأل عن هذا البرنامج",
     concept: "تصميم تصوري؛ ليس لقطة من المنتج", showing: "الملفات المعروضة", language: "لغة الصفحة",
     footerTitle: "من الشاشة إلى المنظومة.", footerText: "تجمع هذه الواجهة اهتمامات CINENTO في السينما والإعلام والتقنية، وستُستكمل بمعلومات وصور منتجات معتمدة.",
-    footerNote: "الذكاء الاصطناعي وWATCH تطبيقان مستقلان. تحتاج بقية أوصاف البرامج إلى التحقق.",
+    footerNote: "بطاقات المنتجات تقود إلى صفحات التعريف فقط. تحتاج بقية الأوصاف إلى التحقق.",
     categories: { all: "كل المنتجات", intelligence: "الذكاء الاصطناعي", media: "السينما والإعلام", business: "الأعمال", connectivity: "الاتصالات" },
   },
 };
@@ -228,9 +228,7 @@ export default function PlatformsPage() {
           {products.map((product) => {
             const content = product.copy[language] || product.copy.en;
             const profileUrl = `/${siteLanguage}/platforms/${product.id}`;
-            const access = product.access_url ? { url: product.access_url, copy: PRODUCT_ACCESS[product.id]?.copy } : undefined;
-            const accessText = access?.copy?.[language];
-            const profileText = accessText ?? (product.id === "enterprise" ? SUITE_PROFILE[language] : undefined);
+            const profileText = PRODUCT_ACCESS[product.id]?.copy[language] ?? (product.id === "enterprise" ? SUITE_PROFILE[language] : undefined);
             const status = product.status === "desktop"
               ? { en: "Desktop · Pending verification", tr: "Masaüstü · Doğrulama bekliyor", fa: "دسکتاپ · در انتظار تأیید", ar: "سطح المكتب · بانتظار التحقق" }[language]
               : product.status === "development"
@@ -254,12 +252,7 @@ export default function PlatformsPage() {
                     <summary>{text.details}<span aria-hidden="true">+</span></summary>
                     <div className="cp-detail-content"><h4>{profileText?.audience ?? text.audience}</h4><p>{content.audience}</p><h4>{profileText?.scope ?? text.scope}</h4><ul>{content.scope.map((item) => <li key={item}>{item}</li>)}</ul><h4>{text.related}</h4><p>{content.service}</p></div>
                   </details>
-                  {access ? (
-                    <div className="cp-access">
-                      <a className="cp-access-link" href={access.url} target="_blank" rel="noopener noreferrer">{accessText?.cta ?? product.name}<span aria-hidden="true">↗</span></a>
-                      <p className="cp-link-note">{accessText?.note ?? text.linkNote}</p>
-                    </div>
-                  ) : <div className="cp-access"><a className="cp-access-link" href={profileUrl}>{text.details}<span aria-hidden="true">↗</span></a><p className="cp-link-note">{profileText?.note ?? text.linkNote}</p></div>}
+                  <div className="cp-access"><a className="cp-access-link" href={profileUrl}>{text.details}<span aria-hidden="true">↗</span></a><p className="cp-link-note">{text.linkNote}</p></div>
                 </div>
               </article>
             );

@@ -4,10 +4,10 @@ import { publicCatalogClient, staticPrograms, type Language, type Program } from
 export const dynamic = "force-dynamic";
 
 const labels = {
-  en: { back: "All products", audience: "Audience", focus: "Focus areas", features: "Program features", advantages: "Competitive advantages", gallery: "Gallery", status: "Status", development: "In development", desktop: "Desktop application", service: "Related service", open: "Open program", pending: "A public program link has not been confirmed yet.", category: "Category" },
-  tr: { back: "Tüm ürünler", audience: "Hedef kitle", focus: "Odak alanları", features: "Program özellikleri", advantages: "Öne çıkan yönler", gallery: "Galeri", status: "Durum", development: "Geliştiriliyor", desktop: "Masaüstü uygulaması", service: "İlgili hizmet", open: "Programı aç", pending: "Bu program için herkese açık bir bağlantı henüz doğrulanmadı.", category: "Kategori" },
-  fa: { back: "همهٔ برنامه‌ها", audience: "مخاطبان", focus: "حوزه‌های فعالیت", features: "امکانات برنامه", advantages: "مزیت‌های رقابتی", gallery: "گالری", status: "وضعیت", development: "در حال توسعه", desktop: "برنامهٔ دسکتاپ", service: "خدمت مرتبط", open: "ورود به برنامه", pending: "لینک عمومی این برنامه هنوز تأیید نشده است.", category: "دسته‌بندی" },
-  ar: { back: "كل المنتجات", audience: "الجمهور المستهدف", focus: "مجالات التركيز", features: "ميزات البرنامج", advantages: "المزايا التنافسية", gallery: "معرض الصور", status: "الحالة", development: "قيد التطوير", desktop: "تطبيق سطح المكتب", service: "الخدمة ذات الصلة", open: "افتح البرنامج", pending: "لم يُعتمد رابط عام لهذا البرنامج بعد.", category: "التصنيف" },
+  en: { back: "All products", audience: "Audience", focus: "Focus areas", features: "Program features", advantages: "Competitive advantages", gallery: "Gallery", status: "Status", development: "In development", desktop: "Desktop application", service: "Related service", profileOnly: "This page introduces the product. It does not open the application.", category: "Category" },
+  tr: { back: "Tüm ürünler", audience: "Hedef kitle", focus: "Odak alanları", features: "Program özellikleri", advantages: "Öne çıkan yönler", gallery: "Galeri", status: "Durum", development: "Geliştiriliyor", desktop: "Masaüstü uygulaması", service: "İlgili hizmet", profileOnly: "Bu sayfa ürünü tanıtır; uygulamayı açmaz.", category: "Kategori" },
+  fa: { back: "همهٔ برنامه‌ها", audience: "مخاطبان", focus: "حوزه‌های فعالیت", features: "امکانات برنامه", advantages: "مزیت‌های رقابتی", gallery: "گالری", status: "وضعیت", development: "در حال توسعه", desktop: "برنامهٔ دسکتاپ", service: "خدمت مرتبط", profileOnly: "این صفحه برای معرفی برنامه است و خودِ برنامه را باز نمی‌کند.", category: "دسته‌بندی" },
+  ar: { back: "كل المنتجات", audience: "الجمهور المستهدف", focus: "مجالات التركيز", features: "ميزات البرنامج", advantages: "المزايا التنافسية", gallery: "معرض الصور", status: "الحالة", development: "قيد التطوير", desktop: "تطبيق سطح المكتب", service: "الخدمة ذات الصلة", profileOnly: "هذه الصفحة للتعريف بالمنتج ولا تفتح التطبيق.", category: "التصنيف" },
 } as const;
 
 const categories = {
@@ -81,9 +81,7 @@ export default async function ProgramProfile({ params, searchParams }: { params:
           <h2 id="gallery-title">{text.gallery}</h2>
           <div className="gallery">{program.copy.media.gallery.map((url, index) => <a key={`${index}-${url}`} href={url} target="_blank" rel="noopener noreferrer"><img src={url} alt={`${program.name} — ${text.gallery} ${index + 1}`} loading="lazy" /></a>)}</div>
         </section>}
-        {program.access_url
-          ? <a className="action" href={program.access_url} target="_blank" rel="noopener noreferrer">{text.open} ↗</a>
-          : <p className="pending">{text.pending}</p>}
+        <p className="pending">{text.profileOnly}</p>
       </article>
       <style>{`
         .translation-note{color:#d6b453;font-size:13px;margin:24px 44px 0}.profile[dir=rtl] .logo{margin-left:0;margin-right:auto}.profile[dir=rtl] .information ul{padding-left:0;padding-right:20px}.features{margin:34px 44px 0;border-top:1px solid #d6b45366;padding-top:24px}.features h2{font-size:20px;color:#e9cd81;margin:0 0 20px}.features ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.features li{border:1px solid #ffffff25;background:#182028;padding:16px 18px;font-size:15px;line-height:1.6;overflow-wrap:anywhere}.features li::before{content:'✦';color:#e9cd81;margin-inline-end:12px}.gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.gallery a{display:block;border:1px solid #ffffff25;background:#090c10}.gallery img{width:100%;aspect-ratio:16/9;object-fit:contain;display:block}@media(max-width:700px){.translation-note{margin:22px 22px 0}.features{margin:26px 22px 0}.features ul,.gallery{grid-template-columns:1fr}}
