@@ -523,11 +523,11 @@ export default function HomePage() {
 
       <section id="about" className="mx-auto max-w-7xl px-6 py-12">
         <h2 className="mb-6 text-2xl font-semibold text-[#d4af37]">{content.whatWeDo.title}</h2>
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className={`grid gap-6 ${content.whatWeDo.items.length === 1 ? "grid-cols-1" : content.whatWeDo.items.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3"}`}>
           {content.whatWeDo.items.map((item, index) => (
-            <div key={item} className="rounded-2xl border border-[#d4af37]/15 bg-neutral-900/80 p-6 text-white shadow-lg transition hover:border-[#d4af37]/40">
-              <div className="mb-10 text-xs font-semibold tracking-[0.25em] text-[#d4af37]">{String(index + 1).padStart(2, "0")}</div>
-              <div className="border-t border-white/10 pt-5 text-lg font-medium leading-7">{item}</div>
+            <div key={`${index}-${item}`} className="rounded-2xl border border-[#d4af37]/15 bg-neutral-900/80 p-6 text-white shadow-lg transition hover:border-[#d4af37]/40">
+              <div className="mb-8 text-xs font-semibold tracking-[0.25em] text-[#d4af37]">{String(index + 1).padStart(2, "0")}</div>
+              <div className={`border-t border-white/10 pt-5 text-lg font-medium leading-7 ${content.whatWeDo.items.length === 1 ? "max-w-4xl" : ""}`}>{item}</div>
             </div>
           ))}
         </div>
