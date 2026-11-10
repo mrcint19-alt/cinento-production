@@ -31,11 +31,12 @@ export default async function ProgramProfile({ params, searchParams }: { params:
   const { lang, id } = await params;
   const { view } = await searchParams;
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) notFound();
-  const language: Language | "ar" = lang === "ar" ? "ar" : view === "fa" || lang === "fa" ? "fa" : lang === "tr" ? "tr" : "en";
+  const language: Language = lang === "ar" ? "ar" : view === "fa" || lang === "fa" ? "fa" : lang === "tr" ? "tr" : "en";
   const text = labels[language];
   const program = await getProgram(id);
   if (!program) notFound();
-  const copy = language === "ar" ? program.copy.en : program.copy[language];
+  const arabicFallback = language === "ar" && !program.copy.ar;
+  const copy = program.copy[language] ?? program.copy.en;
   if (!copy) notFound();
   const catalogUrl = `/${lang}/platforms`;
 
@@ -58,12 +59,12 @@ export default async function ProgramProfile({ params, searchParams }: { params:
           </div>
           {program.logo_url && <img className="logo" src={program.logo_url} alt="" />}
         </div>
-        {language === "ar" && <p className="translation-note">تفاصيل هذا البرنامج بالإنجليزية إلى حين اعتماد الترجمة العربية.</p>}
-        <p className="description" lang={language === "ar" ? "en" : undefined} dir={language === "ar" ? "ltr" : undefined}>{copy.description}</p>
+        {arabicFallback && <p className="translation-note">تفاصيل هذا البرنامج بالإنجليزية إلى حين اعتماد الترجمة العربية.</p>}
+        <p className="description" lang={arabicFallback ? "en" : undefined} dir={arabicFallback ? "ltr" : undefined}>{copy.description}</p>
         <div className="information">
-          <section><h2>{text.audience}</h2><p lang={language === "ar" ? "en" : undefined} dir={language === "ar" ? "ltr" : undefined}>{copy.audience}</p></section>
-          <section><h2>{text.focus}</h2><ul lang={language === "ar" ? "en" : undefined} dir={language === "ar" ? "ltr" : undefined}>{copy.scope.map((item, index) => <li key={index}>{item}</li>)}</ul></section>
-          <section><h2>{text.service}</h2><p lang={language === "ar" ? "en" : undefined} dir={language === "ar" ? "ltr" : undefined}>{copy.service}</p></section>
+          <section><h2>{text.audience}</h2><p lang={arabicFallback ? "en" : undefined} dir={arabicFallback ? "ltr" : undefined}>{copy.audience}</p></section>
+          <section><h2>{text.focus}</h2><ul lang={arabicFallback ? "en" : undefined} dir={arabicFallback ? "ltr" : undefined}>{copy.scope.map((item, index) => <li key={index}>{item}</li>)}</ul></section>
+          <section><h2>{text.service}</h2><p lang={arabicFallback ? "en" : undefined} dir={arabicFallback ? "ltr" : undefined}>{copy.service}</p></section>
         </div>
         {program.access_url
           ? <a className="action" href={program.access_url} target="_blank" rel="noopener noreferrer">{text.open} ↗</a>
