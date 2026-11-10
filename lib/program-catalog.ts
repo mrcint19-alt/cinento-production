@@ -3,13 +3,13 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
 import initialPrograms from "../app/data/programs.json";
 
-export type Language = "en" | "tr" | "fa";
+export type Language = "en" | "tr" | "fa" | "ar";
 export type ProgramCopy = { description: string; audience: string; scope: string[]; service: string };
 export type Program = {
   id: string; name: string; mark: string;
   category: "intelligence" | "media" | "business" | "connectivity";
   status?: "desktop" | "development";
-  copy: Record<Language, ProgramCopy>;
+  copy: Record<"en" | "tr" | "fa", ProgramCopy> & { ar?: ProgramCopy };
   access_url?: string | null;
   icon_url?: string | null;
   logo_url?: string | null;
@@ -137,6 +137,14 @@ export function validateProgram(input: unknown): Program | null {
   for (const lang of ["en", "tr", "fa"]) {
     const text = copy[lang];
     if (!text || typeof text !== "object" || !str(text.description, 1500) ||
+        !str(text.audience, 500) || !str(text.service, 500) ||
+        !Array.isArray(text.scope) || text.scope.length > 12 ||
+        text.scope.some(item => !str(item, 250))) return null;
+  }
+  // Arabic is optional for existing records; once supplied it must be complete.
+  if (copy.ar != null) {
+    const text = copy.ar;
+    if (typeof text !== "object" || !str(text.description, 1500) ||
         !str(text.audience, 500) || !str(text.service, 500) ||
         !Array.isArray(text.scope) || text.scope.length > 12 ||
         text.scope.some(item => !str(item, 250))) return null;

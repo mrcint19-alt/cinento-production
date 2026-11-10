@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import type { Program, Language } from "../../../../lib/program-catalog";
 
-const langs: Language[] = ["en", "tr", "fa"];
+const langs: Language[] = ["en", "tr", "fa", "ar"];
 const mediaFields = [
   { field: "icon_url", title: "آیکن برنامه", hint: "تصویر مربعی؛ زمینه شفاف بهتر است", shape: "aspect-square max-w-36" },
   { field: "logo_url", title: "لوگوی برنامه", hint: "تصویر افقی؛ زمینه شفاف بهتر است", shape: "aspect-[3/1] w-full" },
@@ -99,7 +99,7 @@ export default function ProgramManager() {
   };
   const updateCopy = (field: "description" | "audience" | "service" | "scope", value: string) => {
     setDirty(true); setSuccess(""); setForm(previous => ({
-      ...previous, copy: { ...previous.copy, [language]: { ...previous.copy[language], [field]: field === "scope" ? value.split("\n").map(item => item.trim()).filter(Boolean) : value } },
+      ...previous, copy: { ...previous.copy, [language]: { ...(previous.copy[language] ?? blankCopy()), [field]: field === "scope" ? value.split("\n").map(item => item.trim()).filter(Boolean) : value } },
     }));
   };
   async function uploadMedia(field: "icon_url" | "logo_url" | "cover_url", file?: File) {
@@ -186,11 +186,11 @@ export default function ProgramManager() {
               <label className={labelClass}>Order<input className={inputClass} type="number" min={0} max={9999} value={form.sort_order ?? 100} onChange={e => update("sort_order", Number(e.target.value))} /></label>
               <label className="flex gap-3"><input type="checkbox" checked={!!form.published} onChange={e => update("published", e.target.checked)} />Published</label>
               <div className="flex gap-3 border-b border-neutral-700 pb-3">{langs.map(lang => <button key={lang} type="button" onClick={() => setLanguage(lang)} aria-pressed={language === lang} className={`rounded px-3 py-2 ${language === lang ? "bg-yellow-500 text-black" : "border border-neutral-700"}`}>{lang.toUpperCase()}</button>)}</div>
-              <label className={labelClass}>Description ({language})<textarea className={inputClass} dir={language === "fa" ? "rtl" : "ltr"} rows={4} value={form.copy[language].description} required maxLength={1500} onChange={e => updateCopy("description", e.target.value)} /></label>
-              <label className={labelClass}>Audience ({language})<input className={inputClass} dir={language === "fa" ? "rtl" : "ltr"} value={form.copy[language].audience} required maxLength={500} onChange={e => updateCopy("audience", e.target.value)} /></label>
-              <label className={labelClass}>Focus areas, one per line ({language})<textarea className={inputClass} dir={language === "fa" ? "rtl" : "ltr"} rows={4} value={form.copy[language].scope.join("\n")} onChange={e => updateCopy("scope", e.target.value)} /></label>
-              <label className={labelClass}>Service ({language})<input className={inputClass} dir={language === "fa" ? "rtl" : "ltr"} value={form.copy[language].service} required maxLength={500} onChange={e => updateCopy("service", e.target.value)} /></label>
-              <p className="text-xs text-neutral-400">Complete all three languages before saving. Drafts are hidden from the public catalog.</p>
+              <label className={labelClass}>Description ({language})<textarea className={inputClass} dir={language === "fa" || language === "ar" ? "rtl" : "ltr"} rows={4} value={(form.copy[language] ?? blankCopy()).description} required={language !== "ar" || !!form.copy.ar} maxLength={1500} onChange={e => updateCopy("description", e.target.value)} /></label>
+              <label className={labelClass}>Audience ({language})<input className={inputClass} dir={language === "fa" || language === "ar" ? "rtl" : "ltr"} value={(form.copy[language] ?? blankCopy()).audience} required={language !== "ar" || !!form.copy.ar} maxLength={500} onChange={e => updateCopy("audience", e.target.value)} /></label>
+              <label className={labelClass}>Focus areas, one per line ({language})<textarea className={inputClass} dir={language === "fa" || language === "ar" ? "rtl" : "ltr"} rows={4} value={(form.copy[language] ?? blankCopy()).scope.join("\n")} onChange={e => updateCopy("scope", e.target.value)} /></label>
+              <label className={labelClass}>Service ({language})<input className={inputClass} dir={language === "fa" || language === "ar" ? "rtl" : "ltr"} value={(form.copy[language] ?? blankCopy()).service} required={language !== "ar" || !!form.copy.ar} maxLength={500} onChange={e => updateCopy("service", e.target.value)} /></label>
+              <p className="text-xs text-neutral-400">EN, TR و FA برای ذخیره لازم‌اند. ترجمهٔ AR اختیاری است؛ در صورت شروع، همهٔ فیلدهای متنی آن را کامل کنید. تا آن زمان متن انگلیسی در سایت نمایش داده می‌شود.</p>
               <button disabled={busy || !dirty} className="rounded-lg bg-yellow-500 p-3 font-semibold text-black disabled:opacity-50">{busy ? "در حال ذخیره…" : "ذخیره تغییرات"}</button>
             </form>
           </div>
