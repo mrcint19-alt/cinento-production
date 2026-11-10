@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     const kind = form.get("kind");
     if (!(file instanceof File) || file.size === 0 || file.size > MAX_BYTES ||
         typeof id !== "string" || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id) || id.length > 64 ||
-        !["icon", "logo", "cover"].includes(String(kind)))
+        !["icon", "logo", "cover", "gallery"].includes(String(kind)))
       return session.finish(NextResponse.json({ error: "Invalid image or program ID" }, { status: 400 }));
     const bytes = new Uint8Array(await file.arrayBuffer());
     const type = imageType(bytes);
