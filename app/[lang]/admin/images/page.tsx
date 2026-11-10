@@ -118,7 +118,8 @@ export default function ImageManagerPage() {
 
       if (data.success) {
         const seconds = ((performance.now() - started) / 1000).toFixed(1);
-        setMessage(`Uploaded successfully in ${seconds}s. Refreshing the image list… ${data.url}`);
+        const serverTiming = res.headers.get("Server-Timing")?.replace(/;dur=/g, ": ").replace(/, /g, " ms · ");
+        setMessage(`Uploaded successfully in ${seconds}s. ${serverTiming ? `Server steps: ${serverTiming} ms. ` : ""}Refreshing the image list… ${data.url}`);
         setFile(null);
         setPreview("");
         setLoading(false);

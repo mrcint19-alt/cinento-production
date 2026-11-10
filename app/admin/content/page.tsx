@@ -8,6 +8,7 @@ Status: HERO + WHAT WE DO + WHY + ECOSYSTEM + PLATFORMS + GALLERY + JOURNAL + CO
 */
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import rtlHomepage from "../../data/rtl-homepage.json";
 
 type Lang = "en" | "tr" | "fa" | "ar";
@@ -96,6 +97,7 @@ export default function ContentManager() {
   const [heroCardSubtitle, setHeroCardSubtitle] = useState("");
 
   const [whatTitle, setWhatTitle] = useState("");
+  const [whatIntro, setWhatIntro] = useState("");
   const [whatItems, setWhatItems] = useState("");
   const [servicesTitle, setServicesTitle] = useState("");
   const [servicesSubtitle, setServicesSubtitle] = useState("");
@@ -192,6 +194,7 @@ export default function ContentManager() {
     setHeroCardSubtitle(section.hero?.cardSubtitle || "");
 
     setWhatTitle(section.whatWeDo?.title || section.whatTitle || "");
+    setWhatIntro(section.whatWeDo?.intro || "");
     setWhatItems(
       section.whatWeDo?.items
         ? arrayToLines(section.whatWeDo.items)
@@ -313,6 +316,7 @@ export default function ContentManager() {
           },
           whatWeDo: {
             title: whatTitle,
+            intro: whatIntro,
             items: linesToArray(whatItems),
           },
           services: { title: servicesTitle, subtitle: servicesSubtitle, items: services.filter(item => item.title.trim()) },
@@ -432,6 +436,7 @@ export default function ContentManager() {
 
         <Section title="What We Do">
           <Input label="Section Title" value={whatTitle} onChange={setWhatTitle} />
+          <Textarea label="Short introduction" value={whatIntro} onChange={setWhatIntro} />
           <Textarea label="Items - each line is one card" value={whatItems} onChange={setWhatItems} />
         </Section>
 
@@ -491,14 +496,18 @@ export default function ContentManager() {
           <Textarea label="Subtitle" value={ecosystemSubtitle} onChange={setEcosystemSubtitle} />
         </Section>
 
-        <Section title="Platforms">
-          {platforms.map((item, index) => (
-            <div key={index} className="rounded-2xl border border-yellow-600/10 bg-black/30 p-4">
-              <div className="mb-3 text-sm font-semibold text-yellow-400">Platform {index + 1}</div>
-              <Input label="Title" value={item.title} onChange={(value) => updatePlatform(index, "title", value)} />
-              <Textarea label="Description" value={item.description} onChange={(value) => updatePlatform(index, "description", value)} />
-            </div>
-          ))}
+        <Section title="Platforms (legacy content)">
+          <p className="mb-4 text-sm leading-6 text-neutral-300">The homepage Ecosystem and product profiles now read published records from Products &amp; Platforms Manager. Edit product names, descriptions, images, languages, publication and order there. These older fields remain available for reference; changes here do not update the public product catalog.</p>
+          <Link href="/en/dashboard/programs" className="mb-4 inline-block rounded-lg border border-yellow-500 px-4 py-2 text-yellow-400">Open Products &amp; Platforms Manager ↗</Link>
+          <details className="rounded-xl border border-white/10 p-4"><summary className="cursor-pointer text-sm text-neutral-300">View legacy platform entries</summary>
+            <div className="mt-4 space-y-4">{platforms.map((item, index) => (
+              <div key={index} className="rounded-2xl border border-yellow-600/10 bg-black/30 p-4">
+                <div className="mb-3 text-sm font-semibold text-yellow-400">Platform {index + 1}</div>
+                <Input label="Title" value={item.title} onChange={(value) => updatePlatform(index, "title", value)} />
+                <Textarea label="Description" value={item.description} onChange={(value) => updatePlatform(index, "description", value)} />
+              </div>
+            ))}</div>
+          </details>
         </Section>
 
         <Section title="Gallery">

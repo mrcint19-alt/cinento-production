@@ -4,12 +4,12 @@ import { NextRequest, NextResponse } from "next/server";
 import initialPrograms from "../app/data/programs.json";
 
 export type Language = "en" | "tr" | "fa" | "ar";
-export type ProgramCopy = { description: string; audience: string; scope: string[]; service: string; features?: string[] };
+export type ProgramCopy = { description: string; audience: string; scope: string[]; service: string; features?: string[]; advantages?: string[] };
 export type Program = {
   id: string; name: string; mark: string;
   category: "intelligence" | "media" | "business" | "connectivity";
   status?: "desktop" | "development";
-  copy: Record<"en" | "tr" | "fa", ProgramCopy> & { ar?: ProgramCopy };
+  copy: Record<"en" | "tr" | "fa", ProgramCopy> & { ar?: ProgramCopy; media?: { gallery: string[] } };
   access_url?: string | null;
   icon_url?: string | null;
   logo_url?: string | null;
@@ -136,12 +136,23 @@ export function validateProgram(input: unknown): Program | null {
   if (!copy || typeof copy !== "object" || Array.isArray(copy)) return null;
   const validFeatures = (features: unknown) => features == null ||
     (Array.isArray(features) && features.length <= 12 && features.every(item => str(item, 250)));
+  const media = copy.media;
+  if (media != null) {
+    if (typeof media !== "object" || Array.isArray(media) || !Array.isArray(media.gallery) || media.gallery.length > 8) return null;
+    for (const image of media.gallery) {
+      if (!str(image, 1000)) return null;
+      try {
+        const url = new URL(image);
+        if (url.protocol !== "https:" || url.username || url.password) return null;
+      } catch { return null; }
+    }
+  }
   for (const lang of ["en", "tr", "fa"]) {
     const text = copy[lang];
     if (!text || typeof text !== "object" || !str(text.description, 1500) ||
         !str(text.audience, 500) || !str(text.service, 500) ||
         !Array.isArray(text.scope) || text.scope.length > 12 ||
-        text.scope.some(item => !str(item, 250)) || !validFeatures(text.features)) return null;
+        text.scope.some(item => !str(item, 250)) || !validFeatures(text.features) || !validFeatures(text.advantages)) return null;
   }
   // Arabic is optional for existing records; once supplied it must be complete.
   if (copy.ar != null) {
@@ -149,7 +160,7 @@ export function validateProgram(input: unknown): Program | null {
     if (typeof text !== "object" || !str(text.description, 1500) ||
         !str(text.audience, 500) || !str(text.service, 500) ||
         !Array.isArray(text.scope) || text.scope.length > 12 ||
-        text.scope.some(item => !str(item, 250)) || !validFeatures(text.features)) return null;
+        text.scope.some(item => !str(item, 250)) || !validFeatures(text.features) || !validFeatures(text.advantages)) return null;
   }
   return {
     id: (value.id as string).trim(), name: (value.name as string).trim(), mark: (value.mark as string).trim(),

@@ -11,7 +11,7 @@ const mediaFields = [
   { field: "logo_url", title: "لوگوی برنامه", hint: "تصویر افقی؛ زمینه شفاف بهتر است", shape: "aspect-[3/1] w-full" },
   { field: "cover_url", title: "تصویر شاخص", hint: "تصویر افقی با نسبت ۱۶:۹", shape: "aspect-video w-full" },
 ] as const;
-const blankCopy = () => ({ description: "", audience: "", scope: [] as string[], service: "", features: [] as string[] });
+const blankCopy = () => ({ description: "", audience: "", scope: [] as string[], service: "", features: [] as string[], advantages: [] as string[] });
 const blank = (): Program => ({
   id: "", name: "", mark: "", category: "business", status: "development",
   access_url: "", published: false, sort_order: 100,
@@ -97,9 +97,9 @@ export default function ProgramManager() {
   const update = (field: keyof Program, value: unknown) => {
     setDirty(true); setSuccess(""); setForm(previous => ({ ...previous, [field]: value }));
   };
-  const updateCopy = (field: "description" | "audience" | "service" | "scope" | "features", value: string) => {
+  const updateCopy = (field: "description" | "audience" | "service" | "scope" | "features" | "advantages", value: string) => {
     setDirty(true); setSuccess(""); setForm(previous => ({
-      ...previous, copy: { ...previous.copy, [language]: { ...(previous.copy[language] ?? blankCopy()), [field]: field === "scope" || field === "features" ? value.split("\n").map(item => item.trim()).filter(Boolean) : value } },
+      ...previous, copy: { ...previous.copy, [language]: { ...(previous.copy[language] ?? blankCopy()), [field]: ["scope", "features", "advantages"].includes(field) ? value.split("\n").map(item => item.trim()).filter(Boolean) : value } },
     }));
   };
   async function uploadMedia(field: "icon_url" | "logo_url" | "cover_url", file?: File) {
@@ -122,6 +122,30 @@ export default function ProgramManager() {
     finally { setBusy(false); }
   }
 
+  function updateGallery(gallery: string[]) {
+    setDirty(true); setSuccess("");
+    setForm(previous => ({ ...previous, copy: { ...previous.copy, media: { gallery } } }));
+  }
+
+  async function uploadGallery(file?: File) {
+    if (!file || !form.id) return;
+    if (file.size > 4 * 1024 * 1024 || !["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+      setError("Use a PNG, JPG or WebP image up to 4 MB."); return;
+    }
+    if ((form.copy.media?.gallery.length ?? 0) >= 8) { setError("Maximum 8 gallery images per program."); return; }
+    setBusy(true); setError(""); setSuccess("");
+    try {
+      const body = new FormData();
+      body.set("id", form.id); body.set("kind", "gallery"); body.set("file", file);
+      const response = await fetch("/api/programs/media", { method: "POST", credentials: "same-origin", body });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Image upload failed");
+      setForm(previous => ({ ...previous, copy: { ...previous.copy, media: { gallery: [...(previous.copy.media?.gallery ?? []), result.url] } } }));
+      setDirty(true); setSuccess("Gallery image uploaded. Save the program to publish it.");
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Image upload failed"); }
+    finally { setBusy(false); }
+  }
+
   return <main className="min-h-screen bg-black px-5 py-12 text-white">
     <div className="mx-auto max-w-6xl">
       <Link href="/en/dashboard" className="text-yellow-400">← CINENTO Dashboard</Link>
@@ -138,13 +162,15 @@ export default function ProgramManager() {
           <div className="mb-6 flex flex-wrap gap-3">
             <button disabled={busy} onClick={() => { if (dirty && !window.confirm("تغییرات ذخیره نشده‌اند. ادامه می‌دهید؟")) return; setEditing(false); setForm(blank()); setDirty(false); setSuccess(""); }} className="rounded-lg bg-yellow-500 px-4 py-2 text-black disabled:opacity-50">Add program</button>
             <Link href="/en/platforms" className="rounded-lg border border-yellow-500 px-4 py-2">View public catalog</Link>
+            <Link href="/en#ecosystem" className="rounded-lg border border-neutral-600 px-4 py-2">View homepage Ecosystem</Link>
             <button onClick={async () => { await fetch("/api/programs/session", { method: "DELETE" }); setAuthenticated(false); setPrograms([]); }} className="rounded-lg border border-neutral-600 px-4 py-2">Sign out</button>
           </div>
           <div className="grid gap-6 lg:grid-cols-[1fr_1.3fr]">
             <section aria-label="Programs" className="space-y-3">
               {programs.map(program => <div key={program.id} className="rounded-xl border border-neutral-700 p-4">
                 <div className="flex justify-between gap-3"><strong>{program.name}</strong><span className="text-xs text-neutral-400">{program.published ? "Published" : "Draft"}</span></div>
-                <p className="my-2 text-xs text-neutral-400">{program.id} · {program.category}</p>
+                <p className="my-2 text-xs text-neutral-400">{program.id} · {program.category} · Order {program.sort_order}</p>
+                <p className="mb-2 text-xs text-neutral-400">Translations: {langs.map(lang => <span key={lang} className={`mr-2 ${program.copy[lang]?.description && program.copy[lang]?.audience && program.copy[lang]?.service ? "text-emerald-300" : "text-amber-300"}`}>{lang.toUpperCase()} {program.copy[lang]?.description && program.copy[lang]?.audience && program.copy[lang]?.service ? "✓" : "needs translation"}</span>)}</p>
                 <div className="flex gap-4 text-sm"><button disabled={busy} onClick={() => { if (dirty && !window.confirm("تغییرات ذخیره نشده‌اند. ادامه می‌دهید؟")) return; setForm(structuredClone(program)); setEditing(true); setDirty(false); setSuccess(""); }} className="text-yellow-400 disabled:opacity-50">Edit</button><button disabled={busy} onClick={() => remove(program.id)} className="text-red-300">Delete</button></div>
               </div>)}
               {!programs.length && <p className="text-neutral-400">No programs yet.</p>}
@@ -183,6 +209,13 @@ export default function ProgramManager() {
                 </div>
                 {!form.id && <p className="text-sm text-yellow-300">برای برنامهٔ جدید، ابتدا ID را در بالای فرم وارد کنید.</p>}
               </fieldset>
+              <fieldset className="grid gap-3 rounded-lg border border-neutral-700 p-4">
+                <legend className="px-2 text-yellow-400">Program gallery (shared across languages)</legend>
+                <p className="text-sm text-neutral-400">Up to eight screenshots. Upload or paste HTTPS image URLs. The gallery appears on the public product profile after saving.</p>
+                <label className="cursor-pointer rounded-lg border border-yellow-500 px-4 py-2 text-center text-sm text-yellow-400">Upload screenshot<input className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" disabled={busy || !form.id} onChange={e => { void uploadGallery(e.target.files?.[0]); e.target.value = ""; }} /></label>
+                <textarea className={inputClass} dir="ltr" rows={4} aria-label="Gallery image URLs, one per line" placeholder="https://… (one image per line)" value={(form.copy.media?.gallery ?? []).join("\n")} onChange={e => updateGallery(e.target.value.split("\n").map(item => item.trim()).filter(Boolean))} />
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{(form.copy.media?.gallery ?? []).map((url, index) => <img key={`${url}-${index}`} src={url} alt={`Gallery preview ${index + 1}`} className="aspect-video w-full rounded-lg border border-neutral-700 object-contain" />)}</div>
+              </fieldset>
               <label className={labelClass}>Order<input className={inputClass} type="number" min={0} max={9999} value={form.sort_order ?? 100} onChange={e => update("sort_order", Number(e.target.value))} /></label>
               <label className="flex gap-3"><input type="checkbox" checked={!!form.published} onChange={e => update("published", e.target.checked)} />Published</label>
               <div className="flex gap-3 border-b border-neutral-700 pb-3">{langs.map(lang => <button key={lang} type="button" onClick={() => setLanguage(lang)} aria-pressed={language === lang} className={`rounded px-3 py-2 ${language === lang ? "bg-yellow-500 text-black" : "border border-neutral-700"}`}>{lang.toUpperCase()}</button>)}</div>
@@ -190,6 +223,7 @@ export default function ProgramManager() {
               <label className={labelClass}>Audience ({language})<input className={inputClass} dir={language === "fa" || language === "ar" ? "rtl" : "ltr"} value={(form.copy[language] ?? blankCopy()).audience} required={language !== "ar" || !!form.copy.ar} maxLength={500} onChange={e => updateCopy("audience", e.target.value)} /></label>
               <label className={labelClass}>Focus areas, one per line ({language})<textarea className={inputClass} dir={language === "fa" || language === "ar" ? "rtl" : "ltr"} rows={4} value={(form.copy[language] ?? blankCopy()).scope.join("\n")} onChange={e => updateCopy("scope", e.target.value)} /></label>
               <label className={labelClass}>Program features, one per line ({language})<textarea className={inputClass} dir={language === "fa" || language === "ar" ? "rtl" : "ltr"} rows={5} value={(form.copy[language]?.features ?? []).join("\n")} maxLength={3000} placeholder="Add confirmed features only; leave blank until verified" onChange={e => updateCopy("features", e.target.value)} /></label>
+              <label className={labelClass}>Competitive advantages, one per line ({language})<textarea className={inputClass} dir={language === "fa" || language === "ar" ? "rtl" : "ltr"} rows={4} value={(form.copy[language]?.advantages ?? []).join("\n")} maxLength={3000} placeholder="Add verified advantages; leave blank if none" onChange={e => updateCopy("advantages", e.target.value)} /></label>
               <p className="text-xs text-neutral-400">امکانات تأییدشدهٔ همین برنامه را هر کدام در یک خط بنویسید. این بخش اختیاری است و فقط در صفحهٔ معرفی برنامه نمایش داده می‌شود.</p>
               <label className={labelClass}>Service ({language})<input className={inputClass} dir={language === "fa" || language === "ar" ? "rtl" : "ltr"} value={(form.copy[language] ?? blankCopy()).service} required={language !== "ar" || !!form.copy.ar} maxLength={500} onChange={e => updateCopy("service", e.target.value)} /></label>
               <p className="text-xs text-neutral-400">EN, TR و FA برای ذخیره لازم‌اند. ترجمهٔ AR اختیاری است؛ در صورت شروع، همهٔ فیلدهای متنی آن را کامل کنید. تا آن زمان متن انگلیسی در سایت نمایش داده می‌شود.</p>

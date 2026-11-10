@@ -31,7 +31,7 @@ async function mutate(request: NextRequest, method: "POST" | "PUT" | "DELETE") {
   try {
     const { data, error } = await session.client.auth.getUser();
     if (error || !data.user || !session.allowed(data.user.id)) return session.finish(NextResponse.json({ error: "Unauthorized" }, { status: 401 }));
-    const parsed = await readBoundedJson(request, 12000);
+    const parsed = await readBoundedJson(request, 24000);
     if (method === "DELETE") {
       if (typeof parsed.id !== "string" || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(parsed.id)) return session.finish(NextResponse.json({ error: "Invalid ID" }, { status: 400 }));
       const result = await session.client.from("site_programs").delete().eq("id", parsed.id).select("id").single();

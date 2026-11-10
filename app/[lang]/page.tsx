@@ -61,7 +61,7 @@ type PageContent = {
     cardTitle: string;
     cardSubtitle: string;
   };
-  whatWeDo: { title: string; items: string[] };
+  whatWeDo: { title: string; intro?: string; items: string[] };
   services: { title: string; subtitle: string; items: ServiceItem[] };
   featuredProjects: { title: string; subtitle: string; items: ProjectItem[] };
   process: { title: string; subtitle: string; steps: ServiceItem[] };
@@ -295,7 +295,7 @@ export default function HomePage() {
 
   const [dynamicContent, setDynamicContent] = useState<DynamicHomepageContent | null>(null);
   const [showEnglishProjectDetails, setShowEnglishProjectDetails] = useState(false);
-  const [featuredPrograms, setFeaturedPrograms] = useState<FeaturedProgram[]>([]);
+  const [featuredPrograms, setFeaturedPrograms] = useState<FeaturedProgram[] | null>(null);
   const [uploadedImages, setUploadedImages] = useState<UploadedImages>({ hero: [], gallery: [], projects: [], active: { hero: "", gallery: "", projects: "" } });
   const [brokenImages, setBrokenImages] = useState<Record<string, boolean>>({});
 
@@ -398,10 +398,10 @@ export default function HomePage() {
         if (Array.isArray(data?.programs)) {
           setFeaturedPrograms(data.programs.filter((program: FeaturedProgram) =>
             typeof program.id === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(program.id)
-          ).slice(0, 6));
+          ));
         }
       })
-      .catch(() => {});
+      .catch(() => { if (!controller.signal.aborted) setFeaturedPrograms([]); });
     return () => controller.abort();
   }, []);
 
@@ -522,12 +522,13 @@ export default function HomePage() {
       </section>
 
       <section id="about" className="mx-auto max-w-7xl px-6 py-12">
-        <h2 className="mb-6 text-2xl font-semibold text-[#d4af37]">{content.whatWeDo.title}</h2>
+        <h2 className="mb-4 text-2xl font-semibold text-[#d4af37]">{content.whatWeDo.title}</h2>
+        {content.whatWeDo.intro && <p className="mb-7 max-w-3xl whitespace-pre-line text-base leading-8 text-neutral-300">{content.whatWeDo.intro}</p>}
         <div className={`grid gap-6 ${content.whatWeDo.items.length === 1 ? "grid-cols-1" : content.whatWeDo.items.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3"}`}>
           {content.whatWeDo.items.map((item, index) => (
             <div key={`${index}-${item}`} className="rounded-2xl border border-[#d4af37]/15 bg-neutral-900/80 p-6 text-white shadow-lg transition hover:border-[#d4af37]/40">
               <div className="mb-8 text-xs font-semibold tracking-[0.25em] text-[#d4af37]">{String(index + 1).padStart(2, "0")}</div>
-              <div className={`border-t border-white/10 pt-5 text-lg font-medium leading-7 ${content.whatWeDo.items.length === 1 ? "max-w-4xl" : ""}`}>{item}</div>
+              <div className={`whitespace-pre-line break-words border-t border-white/10 pt-5 text-lg font-medium leading-7 ${content.whatWeDo.items.length === 1 ? "max-w-4xl" : ""}`}>{item.replace(/^\s*#{1,6}\s*/g, "")}</div>
             </div>
           ))}
         </div>
@@ -556,18 +557,18 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="border-y border-white/5 bg-[#0b0b0b] py-20">
+      <section id="ecosystem" className="border-y border-white/5 bg-[#0b0b0b] py-20">
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
             <div><div className="mb-4 h-px w-14 bg-[#d4af37]" /><h2 className="text-3xl font-semibold tracking-tight text-white md:text-4xl">{content.ecosystem.title}</h2><p className="mt-4 max-w-3xl leading-8 text-neutral-400">{content.ecosystem.subtitle}</p></div>
             <a href={`/${lang}/platforms`} className="inline-flex min-h-11 items-center gap-3 border-b border-[#d4af37] pb-2 text-sm font-semibold text-[#e6c878] transition hover:text-white">{ui[lang].all}<span aria-hidden="true">↗</span></a>
           </div>
-          {featuredPrograms.length > 0 ? (
+          {featuredPrograms?.length ? (
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {featuredPrograms.map((program, index) => (
                 <a key={program.id} href={`/${lang}/platforms/${program.id}`} className="group overflow-hidden border border-white/10 bg-[#131313] transition hover:border-[#d4af37]/60 hover:bg-[#191919]">
                   <div className="relative flex h-48 items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_50%_40%,#2d2b27,#101010_70%)]">
-                    {program.cover_url && !brokenImages[program.cover_url] && <Image src={program.cover_url} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw" unoptimized={program.cover_url.startsWith("https://")} onError={() => handleImageError(program.cover_url!)} className="object-cover opacity-80 transition duration-500 group-hover:scale-105" />}
+                    {program.cover_url && !brokenImages[program.cover_url] && <Image src={program.cover_url} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw" unoptimized={program.cover_url.startsWith("https://")} onError={() => handleImageError(program.cover_url!)} className="object-contain p-3 opacity-90 transition duration-500 group-hover:scale-[1.03]" />}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#131313] via-transparent to-black/10" />
                     {(!program.cover_url || brokenImages[program.cover_url]) && (program.icon_url && !brokenImages[program.icon_url] ? <Image src={program.icon_url} alt="" width={64} height={64} unoptimized={program.icon_url.startsWith("https://")} onError={() => handleImageError(program.icon_url!)} className="relative z-10 h-16 w-16 object-contain drop-shadow-xl" /> : <span className="relative z-10 border border-[#d4af37]/60 bg-black/60 px-4 py-3 text-xl font-semibold text-[#e6c878]">{program.mark}</span>)}
                   </div>
@@ -575,9 +576,7 @@ export default function HomePage() {
                 </a>
               ))}
             </div>
-          ) : (
-            <div className="grid gap-6 md:grid-cols-2">{content.platforms.map((item) => <div key={item.title} className="border border-[#d4af37]/15 bg-neutral-900/80 p-6"><h3 className="mb-3 text-lg font-semibold text-white">{item.title}</h3><p className="text-sm leading-7 text-neutral-400">{item.description}</p></div>)}</div>
-          )}
+          ) : <p role="status" className="border border-white/10 p-6 text-neutral-400">{featuredPrograms === null ? { en: "Loading products…", tr: "Ürünler yükleniyor…", fa: "در حال بارگذاری محصولات…", ar: "جارٍ تحميل المنتجات…" }[lang] : { en: "Products are temporarily unavailable.", tr: "Ürünlere şu anda erişilemiyor.", fa: "محصولات موقتاً در دسترس نیستند.", ar: "المنتجات غير متاحة مؤقتاً." }[lang]}</p>}
         </div>
       </section>
 
