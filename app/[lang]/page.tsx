@@ -550,9 +550,9 @@ export default function HomePage() {
 
       <section className="mx-auto max-w-7xl px-6 py-12">
         <h2 className="mb-6 text-2xl font-semibold text-[#d4af37]">{content.whyCinento.title}</h2>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {content.whyCinento.items.map((item) => (
-            <div key={item} className="rounded-2xl border border-white/10 bg-[#0f0f0f] p-6 text-neutral-200">{item}</div>
+        <div className={`grid gap-6 md:grid-cols-2 ${content.whyCinento.items.length >= 6 ? "lg:grid-cols-3" : "lg:grid-cols-4"}`}>
+          {content.whyCinento.items.map((item, index) => (
+            <div key={`${index}-${item}`} className="min-w-0 whitespace-pre-line break-words rounded-2xl border border-white/10 bg-[#0f0f0f] p-6 leading-7 text-neutral-200">{item.replace(/^\s*#{1,6}\s*/g, "")}</div>
           ))}
         </div>
       </section>
