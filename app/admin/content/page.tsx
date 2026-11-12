@@ -21,7 +21,7 @@ type JournalItem = {
   title: string;
   description: string;
 };
-type ServiceItem = { id?: string; title: string; description: string; status?: string };
+type ServiceItem = { id?: string; title: string; description: string; shortDescription?: string; fullDescription?: string; status?: string };
 type ProjectItem = { id?: string; title: string; role: string; status: string; description: string; image: string };
 const emptyService: ServiceItem = { title: "", description: "" };
 const emptyProject: ProjectItem = { title: "", role: "", status: "", description: "", image: "" };
@@ -494,6 +494,8 @@ export default function ContentManager() {
             {item.status === "archived" && <p className="mb-3 text-sm text-neutral-400">Archived in {lang.toUpperCase()}: hidden from this language after saving. All text is retained.</p>}
             <Input label="Title" value={item.title} onChange={value => updateItem(setServices, index, "title", value)} />
             <Textarea label="Description" value={item.description} onChange={value => updateItem(setServices, index, "description", value)} />
+            <Textarea label="Card summary (optional; uses Description when empty)" value={item.shortDescription ?? ""} onChange={value => updateItem(setServices, index, "shortDescription", value)} />
+            <Textarea label="Full description (optional)" value={item.fullDescription ?? ""} onChange={value => updateItem(setServices, index, "fullDescription", value)} />
           </div>)}
         </Section>
 
