@@ -24,7 +24,7 @@ const ui = {
 type NavItem = { label: string; href: string };
 type PlatformItem = { title: string; description: string };
 type JournalItem = { title: string; description: string };
-type ServiceItem = { title: string; description: string };
+type ServiceItem = { title: string; description: string; status?: string };
 type ProjectItem = { id?: string; title: string; role: string; status: string; description: string; image?: string };
 type FeaturedProgram = {
   id: string;
@@ -537,9 +537,9 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-10 max-w-3xl"><div className="mb-4 h-px w-14 bg-[#d4af37]" /><h2 id="services-title" className="text-3xl font-semibold md:text-4xl">{content.services.title}</h2><p className="mt-4 leading-8 text-neutral-400">{content.services.subtitle}</p></div>
           <div className="grid gap-5 md:grid-cols-3">
-            {content.services.items.filter(item => item.title.trim()).map((item, index) => (
+            {content.services.items.filter(item => item.title.trim() && item.status !== "archived").map((item, index, visibleServices) => (
               <article key={`${item.title}-${index}`} className="border border-white/10 bg-[#151515] p-7 transition hover:border-[#d4af37]/50">
-                <div className="mb-12 text-sm tracking-[0.25em] text-[#d4af37]">{String(index + 1).padStart(2, "0")} / 03</div>
+                <div className="mb-12 text-sm tracking-[0.25em] text-[#d4af37]">{String(index + 1).padStart(2, "0")} / {String(visibleServices.length).padStart(2, "0")}</div>
                 <h3 className="text-xl font-semibold leading-7">{item.title}</h3><p className="mt-4 text-sm leading-7 text-neutral-400">{item.description}</p>
               </article>
             ))}

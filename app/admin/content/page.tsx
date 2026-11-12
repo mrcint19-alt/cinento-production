@@ -21,7 +21,7 @@ type JournalItem = {
   title: string;
   description: string;
 };
-type ServiceItem = { title: string; description: string };
+type ServiceItem = { title: string; description: string; status?: string };
 type ProjectItem = { id?: string; title: string; role: string; status: string; description: string; image: string };
 const emptyService: ServiceItem = { title: "", description: "" };
 const emptyProject: ProjectItem = { title: "", role: "", status: "", description: "", image: "" };
@@ -99,7 +99,7 @@ export default function ContentManager() {
   const [whatItems, setWhatItems] = useState("");
   const [servicesTitle, setServicesTitle] = useState("");
   const [servicesSubtitle, setServicesSubtitle] = useState("");
-  const [services, setServices] = useState<ServiceItem[]>(threeItems(undefined, emptyService));
+  const [services, setServices] = useState<ServiceItem[]>(serviceDefaults.en.items);
   const [projectsTitle, setProjectsTitle] = useState("");
   const [projectsSubtitle, setProjectsSubtitle] = useState("");
   const [projects, setProjects] = useState<ProjectItem[]>(threeItems(undefined, emptyProject));
@@ -202,7 +202,7 @@ export default function ContentManager() {
     const defaults = serviceDefaults[selectedLang];
     setServicesTitle(section.services?.title ?? defaults.title);
     setServicesSubtitle(section.services?.subtitle ?? defaults.subtitle);
-    setServices(threeItems(section.services?.items ?? defaults.items, emptyService));
+    setServices(Array.isArray(section.services?.items) ? section.services.items : defaults.items);
     setProjectsTitle(section.featuredProjects?.title ?? defaults.projectsTitle);
     setProjectsSubtitle(section.featuredProjects?.subtitle ?? defaults.projectsSubtitle);
     const savedProjects: ProjectItem[] = Array.isArray(section.featuredProjects?.items) ? section.featuredProjects.items : [];
@@ -268,6 +268,14 @@ export default function ContentManager() {
   };
 
   const handleLangChange = (newLang: Lang) => {
+    if (newLang === lang) return;
+    const original = data?.[lang]?.services;
+    const defaults = serviceDefaults[lang];
+    const savedItems = Array.isArray(original?.items) ? original.items : defaults.items;
+    if ((servicesTitle !== (original?.title ?? defaults.title) ||
+         servicesSubtitle !== (original?.subtitle ?? defaults.subtitle) ||
+         JSON.stringify(services) !== JSON.stringify(savedItems)) &&
+        !window.confirm("Unsaved service changes will be lost. Switch language?")) return;
     setLang(newLang);
     loadLang(data, newLang);
   };
@@ -289,6 +297,24 @@ export default function ContentManager() {
   };
   const updateItem = <T extends ServiceItem | ProjectItem>(setter: React.Dispatch<React.SetStateAction<T[]>>, index: number, key: keyof T, value: string) => {
     setter(prev => prev.map((item, itemIndex) => itemIndex === index ? { ...item, [key]: value } : item));
+  };
+  const moveService = (index: number, direction: -1 | 1) => {
+    setServices(prev => {
+      const target = index + direction;
+      if (target < 0 || target >= prev.length) return prev;
+      const reordered = [...prev];
+      [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+      return reordered;
+    });
+  };
+  const toggleServiceArchive = (index: number) => {
+    const service = services[index];
+    if (!service) return;
+    const archived = service.status === "archived";
+    if (!archived && !window.confirm(`Archive service "${service.title || index + 1}" in ${lang.toUpperCase()}? You can restore it later.`)) return;
+    setServices(prev => prev.map((item, itemIndex) => itemIndex === index
+      ? { ...item, status: archived ? "active" : "archived" }
+      : item));
   };
 
   const handleSave = async () => {
@@ -315,7 +341,7 @@ export default function ContentManager() {
             title: whatTitle,
             items: linesToArray(whatItems),
           },
-          services: { title: servicesTitle, subtitle: servicesSubtitle, items: services.filter(item => item.title.trim()) },
+          services: { ...data?.[lang]?.services, title: servicesTitle, subtitle: servicesSubtitle, items: services },
           featuredProjects: { title: projectsTitle, subtitle: projectsSubtitle, items: lang !== "en"
             ? projects.map((item, index) => ({ ...item, id: item.id || `project-${index + 1}`, image: data?.en?.featuredProjects?.items?.[index]?.image || "" }))
             : projects.filter(item => item.title.trim()).map((item, index) => ({ ...item, id: item.id || `project-${index + 1}` })) },
@@ -438,8 +464,14 @@ export default function ContentManager() {
         <Section title="Services / خدمات اصلی">
           <Input label="Section title" value={servicesTitle} onChange={setServicesTitle} />
           <Textarea label="Introduction" value={servicesSubtitle} onChange={setServicesSubtitle} />
+          <button type="button" onClick={() => setServices(prev => [...prev, { ...emptyService }])} className="rounded-lg border border-yellow-500 px-4 py-2 text-sm font-semibold text-yellow-400 hover:bg-yellow-500/10">Add Service</button>
           {services.map((item, index) => <div key={index} className="rounded-2xl border border-yellow-600/20 p-4">
-            <div className="mb-3 text-sm text-yellow-400">Service {index + 1}</div>
+            <div className="mb-3 flex items-center justify-between gap-3"><span className="text-sm text-yellow-400">Service {index + 1}</span><div className="flex gap-2">
+              <button type="button" aria-label={`Move service ${index + 1} up`} disabled={index === 0} onClick={() => moveService(index, -1)} className="rounded border border-neutral-600 px-3 py-1 text-sm disabled:opacity-40">↑</button>
+              <button type="button" aria-label={`Move service ${index + 1} down`} disabled={index === services.length - 1} onClick={() => moveService(index, 1)} className="rounded border border-neutral-600 px-3 py-1 text-sm disabled:opacity-40">↓</button>
+              <button type="button" onClick={() => toggleServiceArchive(index)} className="rounded border border-neutral-600 px-3 py-1 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-yellow-400">{item.status === "archived" ? "Restore" : "Archive"}</button>
+            </div></div>
+            {item.status === "archived" && <p className="mb-3 text-sm text-neutral-400">Archived in {lang.toUpperCase()}: hidden from this language after saving. All text is retained.</p>}
             <Input label="Title" value={item.title} onChange={value => updateItem(setServices, index, "title", value)} />
             <Textarea label="Description" value={item.description} onChange={value => updateItem(setServices, index, "description", value)} />
           </div>)}

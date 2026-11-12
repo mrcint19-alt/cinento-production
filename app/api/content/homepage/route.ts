@@ -1,13 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 import snapshot from "../../../data/homepage.json";
 import { catalogSession, publicCatalogClient, readBoundedJson, sameOrigin } from "../../../../lib/program-catalog";
+import { previewAuth, previewAuthConfig } from "../../../../lib/site-admin-auth";
 
 export const dynamic = "force-dynamic";
 const TABLE = "site_homepage_content";
 const headers = { "Cache-Control": "no-store" };
 
+function previewContentConfig() {
+  if (process.env.VERCEL_ENV !== "preview" || process.env.CINENTO_SITE_PREVIEW_CONTENT_ENABLED !== "true") return null;
+  const config = previewAuthConfig();
+  if (!config) return null;
+  // Never let a preview write to the catalog's production project either.
+  const catalogUrl = process.env.CINENTO_CATALOG_SUPABASE_URL?.trim();
+  if (catalogUrl) {
+    try { if (new URL(catalogUrl).origin === config.url) return null; } catch { return null; }
+  }
+  return config;
+}
+
 export async function GET() {
-  if (process.env.VERCEL_ENV === "preview") return NextResponse.json(snapshot, { headers });
+  if (process.env.VERCEL_ENV === "preview") {
+    const config = previewContentConfig();
+    if (!config) return NextResponse.json(snapshot, { headers });
+    const client = createClient(config.url, config.key, { auth: { persistSession: false } });
+    const { data, error } = await client.from(TABLE).select("content").eq("id", "main").maybeSingle();
+    if (error) return NextResponse.json(snapshot, { headers: { ...headers, "X-CINENTO-Source": "snapshot" } });
+    return NextResponse.json(data?.content ?? snapshot, { headers });
+  }
   const client = publicCatalogClient();
   if (!client) return NextResponse.json(snapshot, { headers });
   const { data, error } = await client.from(TABLE).select("content").eq("id", "main").maybeSingle();
@@ -17,8 +38,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  if (process.env.VERCEL_ENV === "preview" || !sameOrigin(req)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  const session = catalogSession(req);
+  if (!sameOrigin(req) || (process.env.VERCEL_ENV === "preview" && !previewContentConfig()))
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const session = process.env.VERCEL_ENV === "preview" ? previewAuth(req) : catalogSession(req);
   if (!session) return NextResponse.json({ error: "Administrator access is not configured" }, { status: 503 });
   try {
     const { data, error } = await session.client.auth.getUser();
