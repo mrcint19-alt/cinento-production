@@ -21,7 +21,7 @@ type JournalItem = {
   title: string;
   description: string;
 };
-type ServiceItem = { title: string; description: string; status?: string };
+type ServiceItem = { id?: string; title: string; description: string; status?: string };
 type ProjectItem = { id?: string; title: string; role: string; status: string; description: string; image: string };
 const emptyService: ServiceItem = { title: "", description: "" };
 const emptyProject: ProjectItem = { title: "", role: "", status: "", description: "", image: "" };
@@ -47,6 +47,22 @@ const serviceDefaults: Record<Lang, { title: string; subtitle: string; items: Se
   fa: { title: rtlHomepage.fa.services.title, subtitle: rtlHomepage.fa.services.subtitle, items: rtlHomepage.fa.services.items, processTitle: rtlHomepage.fa.process.title, processSubtitle: rtlHomepage.fa.process.subtitle, steps: rtlHomepage.fa.process.steps, projectsTitle: rtlHomepage.fa.featuredProjects.title, projectsSubtitle: rtlHomepage.fa.featuredProjects.subtitle },
   ar: { title: rtlHomepage.ar.services.title, subtitle: rtlHomepage.ar.services.subtitle, items: rtlHomepage.ar.services.items, processTitle: rtlHomepage.ar.process.title, processSubtitle: rtlHomepage.ar.process.subtitle, steps: rtlHomepage.ar.process.steps, projectsTitle: rtlHomepage.ar.featuredProjects.title, projectsSubtitle: rtlHomepage.ar.featuredProjects.subtitle },
 };
+
+type ServiceHomepageData = Partial<Record<Lang, { services?: { items?: ServiceItem[] }; [key: string]: unknown }>> & Record<string, unknown>;
+
+function appendServiceAcrossLocales(current: ServiceHomepageData | null, id: string): ServiceHomepageData {
+  const updated: ServiceHomepageData = { ...current };
+  for (const locale of ["en", "tr", "fa", "ar"] as const) {
+    const section = current?.[locale] ?? {};
+    const services = section.services ?? {};
+    const items = Array.isArray(services.items) ? services.items : serviceDefaults[locale].items;
+    updated[locale] = {
+      ...section,
+      services: { ...services, items: [...items, { id, title: "", description: "" }] },
+    };
+  }
+  return updated;
+}
 
 const emptyPlatform: PlatformItem = { title: "", description: "" };
 const emptyJournal: JournalItem = { title: "", description: "" };
@@ -464,8 +480,12 @@ export default function ContentManager() {
         <Section title="Services / خدمات اصلی">
           <Input label="Section title" value={servicesTitle} onChange={setServicesTitle} />
           <Textarea label="Introduction" value={servicesSubtitle} onChange={setServicesSubtitle} />
-          <button type="button" onClick={() => setServices(prev => [...prev, { ...emptyService }])} className="rounded-lg border border-yellow-500 px-4 py-2 text-sm font-semibold text-yellow-400 hover:bg-yellow-500/10">Add Service</button>
-          {services.map((item, index) => <div key={index} className="rounded-2xl border border-yellow-600/20 p-4">
+          <button type="button" onClick={() => {
+            const id = crypto.randomUUID();
+            setData((prev: ServiceHomepageData | null) => appendServiceAcrossLocales(prev, id));
+            setServices(prev => [...prev, { ...emptyService, id }]);
+          }} className="rounded-lg border border-yellow-500 px-4 py-2 text-sm font-semibold text-yellow-400 hover:bg-yellow-500/10">Add Service</button>
+          {services.map((item, index) => <div key={item.id || index} className="rounded-2xl border border-yellow-600/20 p-4">
             <div className="mb-3 flex items-center justify-between gap-3"><span className="text-sm text-yellow-400">Service {index + 1}</span><div className="flex gap-2">
               <button type="button" aria-label={`Move service ${index + 1} up`} disabled={index === 0} onClick={() => moveService(index, -1)} className="rounded border border-neutral-600 px-3 py-1 text-sm disabled:opacity-40">↑</button>
               <button type="button" aria-label={`Move service ${index + 1} down`} disabled={index === services.length - 1} onClick={() => moveService(index, 1)} className="rounded border border-neutral-600 px-3 py-1 text-sm disabled:opacity-40">↓</button>
