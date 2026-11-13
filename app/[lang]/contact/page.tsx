@@ -8,6 +8,7 @@
  */
 
 import { useMemo, useState } from "react";
+import SiteHeader from "../../../components/SiteHeader";
 import { useParams } from "next/navigation";
 import { homepageContent } from "../../../content/homepage";
 import { defaultLanguage, isValidLanguage, type SiteLanguage } from "@/lib/i18n";
@@ -88,6 +89,7 @@ ${message}
 
   return (
     <section className="bg-black text-white">
+      <SiteHeader />
       <div className="mx-auto max-w-7xl px-6 md:px-10 py-12 md:py-16">
         <div className="rounded-3xl bg-neutral-900 p-8 border border-yellow-600/20">
           <h1 className="text-4xl md:text-6xl text-yellow-500 mb-8 font-bold">

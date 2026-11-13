@@ -12,8 +12,9 @@
  * CMS integration and further product capability checks are subsequent work.
  */
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import initialPrograms from "../../data/programs.json";
+import SiteHeader from "../../../components/SiteHeader";
 
 type Language = "en" | "tr" | "fa" | "ar";
 type Category = "all" | "intelligence" | "media" | "business" | "connectivity";
@@ -147,7 +148,6 @@ function ProductSymbol({ id }: { id: string }) {
 
 export default function PlatformsPage() {
   const params = useParams<{ lang: string }>();
-  const router = useRouter();
   const [category, setCategory] = useState<Category>("all");
   const [catalog, setCatalog] = useState<Product[]>(INITIAL_PRODUCTS);
   const [catalogError, setCatalogError] = useState(false);
@@ -183,22 +183,7 @@ export default function PlatformsPage() {
   return (
     <main className="cp" lang={language} dir={language === "fa" || language === "ar" ? "rtl" : "ltr"}>
       <a className="cp-skip" href="#collection">{text.explore}</a>
-      <header className="cp-header">
-        <a className="cp-brand" href={homeUrl} aria-label={`CINENTO — ${siteLabels[0]}`}>CINENTO<span aria-hidden="true">•</span></a>
-        <nav className="cp-site-nav" aria-label={language === "fa" ? "منوی اصلی" : language === "ar" ? "القائمة الرئيسية" : language === "tr" ? "Ana menü" : "Main navigation"}>
-          {(["home", "about", "gallery", "journal", "contact"] as const).map((section, index) => (
-            <a key={section} href={`${homeUrl}#${section}`}>{siteLabels[index]}</a>
-          ))}
-          <a href="#top" aria-current="page">{text.title}</a>
-        </nav>
-        <div className="cp-languages" role="group" aria-label={text.language}>
-          {(["en", "tr", "fa", "ar"] as Language[]).map((locale) => (
-            <button key={locale} type="button" lang={locale} aria-pressed={language === locale} onClick={() => router.push(`/${locale}/platforms`)}>
-              {locale.toUpperCase()}
-            </button>
-          ))}
-        </div>
-      </header>
+      <SiteHeader />
 
       <section className="cp-hero" id="top" aria-labelledby="cp-title">
         <div className="cp-hero-copy">
@@ -226,7 +211,8 @@ export default function PlatformsPage() {
 
         <div className="cp-grid">
           {products.map((product) => {
-            const content = product.copy[language] || product.copy.en;
+            const content = product.copy[language];
+            const pendingTranslation = { en: "Details pending", tr: "Çeviri bekleniyor", fa: "ترجمه اطلاعات در انتظار تکمیل است", ar: "ترجمة التفاصيل قيد الإعداد" }[language];
             const profileUrl = `/${siteLanguage}/platforms/${product.id}`;
             const access = product.access_url ? { url: product.access_url, copy: PRODUCT_ACCESS[product.id]?.copy } : undefined;
             const accessText = access?.copy?.[language];
@@ -249,10 +235,10 @@ export default function PlatformsPage() {
                 <div className="cp-card-body">
                   <div className="cp-card-meta"><span>{text.categories[product.category]}</span><span className="cp-status"><i />{profileText?.status ?? status ?? text.review}</span></div>
                   <h3 id={`cp-${product.id}`} dir="ltr"><a href={profileUrl}>{product.name}</a></h3>
-                  <p className="cp-description" lang={language === "ar" && !product.copy.ar ? "en" : undefined} dir={language === "ar" && !product.copy.ar ? "ltr" : undefined}>{content.description}</p>
+                  <p className="cp-description">{content?.description || pendingTranslation}</p>
                   <details className="cp-details">
                     <summary>{text.details}<span aria-hidden="true">+</span></summary>
-                    <div className="cp-detail-content"><h4>{profileText?.audience ?? text.audience}</h4><p>{content.audience}</p><h4>{profileText?.scope ?? text.scope}</h4><ul>{content.scope.map((item) => <li key={item}>{item}</li>)}</ul><h4>{text.related}</h4><p>{content.service}</p></div>
+                    <div className="cp-detail-content">{content ? <><h4>{profileText?.audience ?? text.audience}</h4><p>{content.audience}</p><h4>{profileText?.scope ?? text.scope}</h4><ul>{content.scope.map((item) => <li key={item}>{item}</li>)}</ul><h4>{text.related}</h4><p>{content.service}</p></> : <p>{pendingTranslation}</p>}</div>
                   </details>
                   {access ? (
                     <div className="cp-access">

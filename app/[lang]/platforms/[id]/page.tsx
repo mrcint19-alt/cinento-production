@@ -1,3 +1,4 @@
+import SiteHeader from "../../../../components/SiteHeader";
 import { notFound } from "next/navigation";
 import { publicCatalogClient, staticPrograms, type Language, type Program } from "../../../../lib/program-catalog";
 
@@ -36,16 +37,11 @@ export default async function ProgramProfile({ params, searchParams }: { params:
   const program = await getProgram(id);
   if (!program) notFound();
   const arabicFallback = language === "ar" && !program.copy.ar;
-  const copy = program.copy[language] ?? program.copy.en;
-  if (!copy) notFound();
-  const catalogUrl = `/${lang}/platforms`;
+  const copy = program.copy[language];
 
   return (
     <main className="profile" lang={language} dir={language === "fa" || language === "ar" ? "rtl" : "ltr"}>
-      <header className="profile-header">
-        <a className="brand" href={`/${lang}`}>CINENTO<span>•</span></a>
-        <a className="back" href={catalogUrl}>← {text.back}</a>
-      </header>
+      <SiteHeader />
       <article className="profile-content">
         <div className="cover">
           {program.cover_url && <img src={program.cover_url} alt="" />}
@@ -59,19 +55,19 @@ export default async function ProgramProfile({ params, searchParams }: { params:
           </div>
           {program.logo_url && <img className="logo" src={program.logo_url} alt="" />}
         </div>
-        {arabicFallback && <p className="translation-note">تفاصيل هذا البرنامج بالإنجليزية إلى حين اعتماد الترجمة العربية.</p>}
-        <p className="description" lang={arabicFallback ? "en" : undefined} dir={arabicFallback ? "ltr" : undefined}>{copy.description}</p>
+        {arabicFallback && <p className="translation-note">ترجمة تفاصيل هذا البرنامج قيد الإعداد.</p>}
+        {copy && <><p className="description">{copy.description}</p>
         <div className="information">
-          <section><h2>{text.audience}</h2><p lang={arabicFallback ? "en" : undefined} dir={arabicFallback ? "ltr" : undefined}>{copy.audience}</p></section>
-          <section><h2>{text.focus}</h2><ul lang={arabicFallback ? "en" : undefined} dir={arabicFallback ? "ltr" : undefined}>{copy.scope.map((item, index) => <li key={index}>{item}</li>)}</ul></section>
-          <section><h2>{text.service}</h2><p lang={arabicFallback ? "en" : undefined} dir={arabicFallback ? "ltr" : undefined}>{copy.service}</p></section>
+          <section><h2>{text.audience}</h2><p>{copy.audience}</p></section>
+          <section><h2>{text.focus}</h2><ul>{copy.scope.map((item, index) => <li key={index}>{item}</li>)}</ul></section>
+          <section><h2>{text.service}</h2><p>{copy.service}</p></section>
         </div>
         {!!copy.features?.length && <section className="features" aria-labelledby="features-title">
           <h2 id="features-title">{text.features}</h2>
-          <ul lang={arabicFallback ? "en" : undefined} dir={arabicFallback ? "ltr" : undefined}>
+          <ul>
             {copy.features.map((feature, index) => <li key={`${index}-${feature}`}>{feature}</li>)}
           </ul>
-        </section>}
+        </section>}</>}
         {program.access_url
           ? <a className="action" href={program.access_url} target="_blank" rel="noopener noreferrer">{text.open} ↗</a>
           : <p className="pending">{text.pending}</p>}

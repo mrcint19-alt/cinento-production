@@ -13,6 +13,8 @@ import rtlHomepage from "../../data/rtl-homepage.json";
 import { heroDestination, heroIcon, HERO_DESTINATIONS, HERO_DESTINATION_LABELS, HERO_ICONS } from "../../../lib/hero-cta";
 import { addHeroSlide, moveHeroSlide, removeHeroSlide, reorderHeroSlides, setHeroSlideImage, type HeroSlide } from "../../../lib/hero-slides";
 import { DEFAULT_SITE_THEME, siteTheme, type SiteTheme } from "../../../lib/site-theme";
+import { DEFAULT_NAVIGATION, SITE_LOCALES, navigationFromContent, siteNavigation, validNavigationHref, validNavigationIcon, type SiteNavigation } from "../../../lib/site-navigation";
+import NavigationEditor from "../../../components/NavigationEditor";
 
 type Lang = "en" | "tr" | "fa" | "ar";
 
@@ -103,6 +105,7 @@ export default function ContentManager() {
   const [saving, setSaving] = useState(false);
   const [lang, setLang] = useState<Lang>("en");
   const [theme, setTheme] = useState<SiteTheme>(DEFAULT_SITE_THEME);
+  const [navigation, setNavigation] = useState<SiteNavigation>(DEFAULT_NAVIGATION);
 
   const [brand, setBrand] = useState("");
 
@@ -185,6 +188,7 @@ export default function ContentManager() {
       .then((json) => {
         setData(json);
         setTheme(siteTheme(json?.theme));
+        setNavigation(navigationFromContent(json));
         loadLang(json, "en");
         setLoading(false);
       })
@@ -365,11 +369,16 @@ export default function ContentManager() {
 
   const handleSave = async () => {
     try {
+      if (!validNavigationIcon(navigation.menuIcon, true) || navigation.items.some(item => item.enabled && (!validNavigationHref(item.href) || !validNavigationIcon(item.icon) || SITE_LOCALES.some(locale => !item.labels[locale].trim())))) {
+        alert("The menu icon and every visible item need a valid icon, destination and title in all four languages.");
+        return;
+      }
       setSaving(true);
 
       const updated = {
         ...data,
         theme: siteTheme(theme),
+        navigation: siteNavigation(navigation),
         [lang]: {
           ...data?.[lang],
           brand,
@@ -482,6 +491,9 @@ export default function ContentManager() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
+        <Section title="Navigation Manager · shared across all languages">
+          <NavigationEditor value={navigation} onChange={setNavigation} />
+        </Section>
         <Section title="Theme Manager PRO · shared across all languages">
           <p className="text-sm text-neutral-300">These colors apply to the public homepage in EN, TR, FA and AR. Preview saving stays subject to the existing safety restriction.</p>
           {(["background", "surface", "accent"] as const).map(key => <label key={key} className="flex items-center justify-between gap-4 text-sm text-neutral-200">

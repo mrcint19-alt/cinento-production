@@ -8,20 +8,21 @@ Status: PAGE54 BASE + CMS CONNECTED + IMAGE MANAGER ACTIVE HERO SYSTEM CONNECTED
 "use client";
 
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Image from "next/image";
 import rtlHomepage from "../data/rtl-homepage.json";
 import { heroIcon, heroLink, HERO_ICON_SYMBOL } from "../../lib/hero-cta";
 import { visibleHeroSlides, type HeroSlide } from "../../lib/hero-slides";
 import { DEFAULT_SITE_THEME, siteTheme, type SiteTheme } from "../../lib/site-theme";
+import SiteHeader from "../../components/SiteHeader";
 
 type Lang = "en" | "tr" | "fa" | "ar";
 const isRtl = (lang: Lang) => lang === "fa" || lang === "ar";
 const ui = {
-  en: { menu: "Main navigation", platforms: "Products & Platforms", watch: "Watch Now", all: "All platforms", profile: "Explore profile", gallery: "CINENTO Gallery", sending: "Sending…", sent: "Your inquiry was received. Our team will review your project.", unavailable: "The form is unavailable right now. Please contact us by email.", privacy: "Your details will be sent to the CINENTO project team.", email: "Open email draft", required: "Please fill in all fields.", invalidEmail: "Enter a valid email address.", short: "Please describe your project in at least 20 characters.", translation: "Project details appear in English until translations are saved.", previousSlide: "Previous slide", nextSlide: "Next slide", pauseSlides: "Pause slides", playSlides: "Play slides" },
-  tr: { menu: "Ana menü", platforms: "Ürünler & Platformlar", watch: "İzlemeye Başla", all: "Tüm platformlar", profile: "Profili incele", gallery: "CINENTO Galeri", sending: "Gönderiliyor…", sent: "Mesajınız alındı. Ekibimiz projenizi inceleyecek.", unavailable: "Şu anda form gönderilemiyor. Lütfen e-posta ile iletişime geçin.", privacy: "Bilgileriniz CINENTO proje ekibine iletilecektir.", email: "E-posta taslağı aç", required: "Lütfen tüm alanları doldurun.", invalidEmail: "Geçerli bir e-posta adresi girin.", short: "Lütfen projenizi en az 20 karakterle açıklayın.", translation: "Proje ayrıntıları Türkçe çevirileri kaydedilene kadar İngilizce gösterilir.", previousSlide: "Önceki slayt", nextSlide: "Sonraki slayt", pauseSlides: "Slaytları durdur", playSlides: "Slaytları oynat" },
-  fa: { menu: "منوی اصلی", platforms: "محصولات و پلتفرم‌ها", watch: "تماشای CINENTO WATCH", all: "همه پلتفرم‌ها", profile: "مشاهده معرفی", gallery: "گالری CINENTO", sending: "در حال ارسال…", sent: "درخواست شما دریافت شد. تیم ما پروژه را بررسی می‌کند.", unavailable: "فرم موقتاً در دسترس نیست. لطفاً از راه ایمیل تماس بگیرید.", privacy: "اطلاعات شما به تیم پروژه CINENTO ارسال می‌شود.", email: "بازکردن پیش‌نویس ایمیل", required: "لطفاً همه فیلدها را تکمیل کنید.", invalidEmail: "یک نشانی ایمیل معتبر وارد کنید.", short: "لطفاً پروژه را در دست‌کم ۲۰ نویسه توضیح دهید.", translation: "تا ثبت ترجمه در داشبورد، اطلاعات برخی پروژه‌ها به انگلیسی نمایش داده می‌شود.", previousSlide: "اسلاید قبلی", nextSlide: "اسلاید بعدی", pauseSlides: "توقف اسلایدها", playSlides: "پخش اسلایدها" },
-  ar: { menu: "القائمة الرئيسية", platforms: "المنتجات والمنصات", watch: "شاهد CINENTO WATCH", all: "جميع المنصات", profile: "استكشف الملف", gallery: "معرض CINENTO", sending: "جارٍ الإرسال…", sent: "وصل طلبك. سيراجع فريقنا مشروعك.", unavailable: "النموذج غير متاح حالياً. يرجى التواصل عبر البريد الإلكتروني.", privacy: "ستُرسل بياناتك إلى فريق مشاريع CINENTO.", email: "فتح مسودة البريد", required: "يرجى ملء جميع الحقول.", invalidEmail: "يرجى إدخال بريد إلكتروني صالح.", short: "يرجى وصف مشروعك في ٢٠ حرفاً على الأقل.", translation: "تُعرض بعض تفاصيل المشاريع بالإنجليزية إلى حين حفظ ترجمتها في لوحة التحكم.", previousSlide: "الشريحة السابقة", nextSlide: "الشريحة التالية", pauseSlides: "إيقاف الشرائح", playSlides: "تشغيل الشرائح" },
+  en: { menu: "Main navigation", platforms: "Products & Platforms", watch: "Watch Now", all: "All platforms", profile: "Explore profile", gallery: "CINENTO Gallery", sending: "Sending…", sent: "Your inquiry was received. Our team will review your project.", unavailable: "The form is unavailable right now. Please contact us by email.", privacy: "Your details will be sent to the CINENTO project team.", email: "Open email draft", required: "Please fill in all fields.", invalidEmail: "Enter a valid email address.", short: "Please describe your project in at least 20 characters.", translation: "Some project details are awaiting translation.", previousSlide: "Previous slide", nextSlide: "Next slide", pauseSlides: "Pause slides", playSlides: "Play slides" },
+  tr: { menu: "Ana menü", platforms: "Ürünler & Platformlar", watch: "İzlemeye Başla", all: "Tüm platformlar", profile: "Profili incele", gallery: "CINENTO Galeri", sending: "Gönderiliyor…", sent: "Mesajınız alındı. Ekibimiz projenizi inceleyecek.", unavailable: "Şu anda form gönderilemiyor. Lütfen e-posta ile iletişime geçin.", privacy: "Bilgileriniz CINENTO proje ekibine iletilecektir.", email: "E-posta taslağı aç", required: "Lütfen tüm alanları doldurun.", invalidEmail: "Geçerli bir e-posta adresi girin.", short: "Lütfen projenizi en az 20 karakterle açıklayın.", translation: "Bazı proje ayrıntılarının çevirisi bekleniyor.", previousSlide: "Önceki slayt", nextSlide: "Sonraki slayt", pauseSlides: "Slaytları durdur", playSlides: "Slaytları oynat" },
+  fa: { menu: "منوی اصلی", platforms: "محصولات و پلتفرم‌ها", watch: "تماشای CINENTO WATCH", all: "همه پلتفرم‌ها", profile: "مشاهده معرفی", gallery: "گالری CINENTO", sending: "در حال ارسال…", sent: "درخواست شما دریافت شد. تیم ما پروژه را بررسی می‌کند.", unavailable: "فرم موقتاً در دسترس نیست. لطفاً از راه ایمیل تماس بگیرید.", privacy: "اطلاعات شما به تیم پروژه CINENTO ارسال می‌شود.", email: "بازکردن پیش‌نویس ایمیل", required: "لطفاً همه فیلدها را تکمیل کنید.", invalidEmail: "یک نشانی ایمیل معتبر وارد کنید.", short: "لطفاً پروژه را در دست‌کم ۲۰ نویسه توضیح دهید.", translation: "ترجمه برخی اطلاعات پروژه‌ها هنوز ثبت نشده است.", previousSlide: "اسلاید قبلی", nextSlide: "اسلاید بعدی", pauseSlides: "توقف اسلایدها", playSlides: "پخش اسلایدها" },
+  ar: { menu: "القائمة الرئيسية", platforms: "المنتجات والمنصات", watch: "شاهد CINENTO WATCH", all: "جميع المنصات", profile: "استكشف الملف", gallery: "معرض CINENTO", sending: "جارٍ الإرسال…", sent: "وصل طلبك. سيراجع فريقنا مشروعك.", unavailable: "النموذج غير متاح حالياً. يرجى التواصل عبر البريد الإلكتروني.", privacy: "ستُرسل بياناتك إلى فريق مشاريع CINENTO.", email: "فتح مسودة البريد", required: "يرجى ملء جميع الحقول.", invalidEmail: "يرجى إدخال بريد إلكتروني صالح.", short: "يرجى وصف مشروعك في ٢٠ حرفاً على الأقل.", translation: "ترجمة بعض تفاصيل المشاريع قيد الإعداد.", previousSlide: "الشريحة السابقة", nextSlide: "الشريحة التالية", pauseSlides: "إيقاف الشرائح", playSlides: "تشغيل الشرائح" },
 } as const;
 
 type NavItem = { label: string; href: string };
@@ -116,7 +117,6 @@ type UploadedImages = {
   active: { hero: string; gallery: string; projects: string };
 };
 
-const WATCH_URL = "https://watch.cinento.net";
 
 const BASE_CONTENT: Record<"en" | "tr", PageContent> = {
   en: {
@@ -303,7 +303,6 @@ function mergeHomepageContent(fallback: PageContent, dynamic?: DynamicHomepageCo
 
 export default function HomePage() {
   const params = useParams();
-  const router = useRouter();
   const lang: Lang = params?.lang === "tr" || params?.lang === "fa" || params?.lang === "ar" ? params.lang : "en";
 
   useEffect(() => {
@@ -322,6 +321,12 @@ export default function HomePage() {
   const [slideInteraction, setSlideInteraction] = useState(false);
 
   const content = useMemo(() => mergeHomepageContent(CONTENT[lang], dynamicContent), [lang, dynamicContent]);
+  const programCategories: Record<string, Record<Lang, string>> = {
+    intelligence: { en: "Intelligence", tr: "Yapay zekâ", fa: "هوش مصنوعی", ar: "الذكاء الاصطناعي" },
+    media: { en: "Film & media", tr: "Sinema ve medya", fa: "فیلم و رسانه", ar: "السينما والإعلام" },
+    business: { en: "Business", tr: "İş yönetimi", fa: "کسب‌وکار", ar: "الأعمال" },
+    connectivity: { en: "Connectivity", tr: "Bağlantı", fa: "ارتباطات", ar: "الاتصالات" },
+  };
   const primaryHeroLink = heroLink(content.hero.primaryCtaHref, lang, "watch");
   const secondaryHeroLink = heroLink(content.hero.secondaryCtaHref, lang, "/platforms");
   const primaryHeroIcon = heroIcon(content.hero.primaryCtaIcon ?? "arrow");
@@ -368,23 +373,24 @@ export default function HomePage() {
         const englishProjects = data?.en?.featuredProjects?.items;
         const translatedProjects: ProjectItem[] = Array.isArray(selected?.featuredProjects?.items) ? selected.featuredProjects.items : [];
         const hasEnglishProjects = Array.isArray(englishProjects) && englishProjects.some((item: ProjectItem) => item?.title?.trim());
-        let needsEnglishFallback = false;
+        let needsTranslation = false;
+        const pending = { en: "Translation pending", tr: "Çeviri bekleniyor", fa: "در انتظار ترجمه", ar: "الترجمة قيد الإعداد" }[lang];
         const mergedProjects: ProjectItem[] = lang !== "en" && hasEnglishProjects
           ? englishProjects.map((item: ProjectItem, index: number) => {
               const translation = translatedProjects.find((candidate) => candidate.id === (item.id || `project-${index + 1}`))
                 || (!translatedProjects.some(candidate => candidate.id) ? translatedProjects[index] : undefined);
-              if (item.title?.trim() && (!translation?.title?.trim() || !translation?.role?.trim() || !translation?.status?.trim() || !translation?.description?.trim())) needsEnglishFallback = true;
+              if (item.title?.trim() && (!translation?.title?.trim() || !translation?.role?.trim() || !translation?.status?.trim() || !translation?.description?.trim())) needsTranslation = true;
               return {
                 ...item,
-                title: translation?.title?.trim() || item.title,
-                role: translation?.role?.trim() || item.role,
-                status: translation?.status?.trim() || item.status,
-                description: translation?.description?.trim() || item.description,
+                title: translation?.title?.trim() || pending,
+                role: translation?.role?.trim() || "",
+                status: translation?.status?.trim() || pending,
+                description: translation?.description?.trim() || pending,
                 image: item.image, // Artwork is shared across languages.
               };
             })
           : translatedProjects;
-        setShowEnglishProjectDetails(needsEnglishFallback);
+        setShowEnglishProjectDetails(needsTranslation);
         setDynamicContent(lang !== "en" && hasEnglishProjects ? {
           ...selected,
           featuredProjects: {
@@ -445,17 +451,6 @@ export default function HomePage() {
     return `${content.contact.title}\n\n${content.contact.namePlaceholder}: ${name}\n${content.contact.emailPlaceholder}: ${email}\n\n${message}`;
   }, [content, name, email, message]);
 
-  function handleLanguageSwitch(nextLang: Lang) {
-    if (nextLang === lang) return;
-    router.push(`/${nextLang}`);
-  }
-
-  function handleNavClick(href: string) {
-    const targetId = href.replace("#", "");
-    const target = document.getElementById(targetId);
-    if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-
   function handleImageError(src: string) {
     setBrokenImages((current) => ({ ...current, [src]: true }));
   }
@@ -490,36 +485,7 @@ export default function HomePage() {
 
   return (
     <main lang={lang} dir={isRtl(lang) ? "rtl" : "ltr"} className="site-theme min-h-screen text-white" style={{ "--site-background": theme.background, "--site-surface": theme.surface, "--site-accent": theme.accent } as CSSProperties}>
-      <header className="site-header sticky top-0 z-50 border-b border-white/10 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-4">
-          <div className="text-lg font-bold tracking-wide text-white">{content.brand}</div>
-
-          <nav aria-label={ui[lang].menu} className="order-3 flex w-full flex-wrap items-center gap-x-5 gap-y-3 lg:order-none lg:w-auto">
-            {content.nav.map((item) => (
-              <button key={item.label} onClick={() => handleNavClick(item.href)} className="text-sm text-neutral-300 transition hover:text-[var(--site-accent)]">
-                {item.label}
-              </button>
-            ))}
-            <a href={`/${lang}/platforms`} className="text-sm font-semibold text-[var(--site-accent)] transition hover:text-white">
-              {ui[lang].platforms}
-            </a>
-          </nav>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <div role="group" aria-label="Language / زبان" className="flex items-center gap-1 rounded-full border border-[var(--site-accent)]/70 bg-black/45 p-1 shadow-[0_0_0_1px_rgba(255,255,255,.08)]">
-              <span aria-hidden="true" className="ps-2 text-xs font-bold text-[var(--site-accent)]">{lang === "fa" ? "زبان" : lang === "ar" ? "اللغة" : lang === "tr" ? "DİL" : "LANG"}</span>
-              <button type="button" aria-label="English" aria-current={lang === "en" ? "page" : undefined} onClick={() => handleLanguageSwitch("en")} className={`rounded-full px-3 py-2 text-sm font-semibold transition ${lang === "en" ? "bg-[var(--site-accent)] text-black" : "text-white hover:bg-white/15"}`}>EN</button>
-              <button type="button" aria-label="Türkçe" aria-current={lang === "tr" ? "page" : undefined} onClick={() => handleLanguageSwitch("tr")} className={`rounded-full px-3 py-2 text-sm font-semibold transition ${lang === "tr" ? "bg-[var(--site-accent)] text-black" : "text-white hover:bg-white/15"}`}>TR</button>
-              <button type="button" aria-label="فارسی" aria-current={lang === "fa" ? "page" : undefined} onClick={() => handleLanguageSwitch("fa")} className={`rounded-full px-3 py-2 text-sm font-semibold transition ${lang === "fa" ? "bg-[var(--site-accent)] text-black" : "text-white hover:bg-white/15"}`}>FA</button>
-              <button type="button" aria-label="العربية" aria-current={lang === "ar" ? "page" : undefined} onClick={() => handleLanguageSwitch("ar")} className={`rounded-full px-3 py-2 text-sm font-semibold transition ${lang === "ar" ? "bg-[var(--site-accent)] text-black" : "text-white hover:bg-white/15"}`}>AR</button>
-            </div>
-
-            <a href={WATCH_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-[var(--site-accent)] px-4 py-2 text-sm font-semibold text-black transition hover:opacity-90">
-              {ui[lang].watch}
-            </a>
-          </div>
-        </div>
-      </header>
+      <SiteHeader brand={content.brand} />
 
       <section id="home" className="relative isolate overflow-hidden border-b border-white/5 bg-[radial-gradient(ellipse_at_78%_25%,rgba(166,120,43,.15),transparent_42%)]">
         <div className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(90deg,transparent_49.9%,rgba(212,175,55,.07)_50%,transparent_50.1%)]" />
@@ -624,7 +590,7 @@ export default function HomePage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-[#131313] via-transparent to-black/10" />
                     {(!program.cover_url || brokenImages[program.cover_url]) && (program.icon_url && !brokenImages[program.icon_url] ? <Image src={program.icon_url} alt="" width={64} height={64} unoptimized={program.icon_url.startsWith("https://")} onError={() => handleImageError(program.icon_url!)} className="relative z-10 h-16 w-16 object-contain drop-shadow-xl" /> : <span className="relative z-10 border border-[var(--site-accent)]/60 bg-black/60 px-4 py-3 text-xl font-semibold text-[var(--site-accent)]">{program.mark}</span>)}
                   </div>
-                  <div className="p-6"><div className="mb-3 flex items-center justify-between text-xs uppercase tracking-[0.2em] text-[var(--site-accent)]"><span>{program.category}</span><span>{String(index + 1).padStart(2, "0")}</span></div><h3 className="text-xl font-semibold text-white">{program.name}</h3><p className="mt-3 min-h-20 text-sm leading-7 text-neutral-400">{program.copy?.[lang]?.description || program.copy?.en?.description}</p><div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4 text-sm font-medium text-[var(--site-accent)]"><span>{ui[lang].profile}</span><span aria-hidden="true" className="transition group-hover:translate-x-1">↗</span></div></div>
+                  <div className="p-6"><div className="mb-3 flex items-center justify-between text-xs uppercase tracking-[0.2em] text-[var(--site-accent)]"><span>{programCategories[program.category]?.[lang] ?? program.category}</span><span>{String(index + 1).padStart(2, "0")}</span></div><h3 className="text-xl font-semibold text-white">{program.name}</h3><p className="mt-3 min-h-20 text-sm leading-7 text-neutral-400">{program.copy?.[lang]?.description || ui[lang].translation}</p><div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4 text-sm font-medium text-[var(--site-accent)]"><span>{ui[lang].profile}</span><span aria-hidden="true" className="transition group-hover:translate-x-1">↗</span></div></div>
                 </a>
               ))}
             </div>
