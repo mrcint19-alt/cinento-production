@@ -11,6 +11,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import rtlHomepage from "../data/rtl-homepage.json";
+import { heroIcon, heroLink, HERO_ICON_SYMBOL } from "../../lib/hero-cta";
 
 type Lang = "en" | "tr" | "fa" | "ar";
 const isRtl = (lang: Lang) => lang === "fa" || lang === "ar";
@@ -68,6 +69,10 @@ type PageContent = {
     primaryCtaHref?: string;
     secondaryCta: string;
     secondaryCtaHref?: string;
+    primaryCtaVisible?: boolean;
+    secondaryCtaVisible?: boolean;
+    primaryCtaIcon?: string;
+    secondaryCtaIcon?: string;
     cardTitle: string;
     cardSubtitle: string;
   };
@@ -310,6 +315,10 @@ export default function HomePage() {
   const [brokenImages, setBrokenImages] = useState<Record<string, boolean>>({});
 
   const content = useMemo(() => mergeHomepageContent(CONTENT[lang], dynamicContent), [lang, dynamicContent]);
+  const primaryHeroLink = heroLink(content.hero.primaryCtaHref, lang, "watch");
+  const secondaryHeroLink = heroLink(content.hero.secondaryCtaHref, lang, "/platforms");
+  const primaryHeroIcon = heroIcon(content.hero.primaryCtaIcon);
+  const secondaryHeroIcon = heroIcon(content.hero.secondaryCtaIcon);
 
   const activeHeroImage = useMemo(() => {
     const activeHero = uploadedImages.active.hero;
@@ -503,12 +512,12 @@ export default function HomePage() {
           <p className="mt-7 max-w-xl border-s border-[#d4af37]/60 ps-5 text-base leading-8 text-neutral-300">{content.hero.description}</p>
 
           <div className="mt-8 flex flex-wrap gap-4">
-            <a href={content.hero.primaryCtaHref === "#contact" ? "#contact" : WATCH_URL} target={content.hero.primaryCtaHref === "#contact" ? undefined : "_blank"} rel={content.hero.primaryCtaHref === "#contact" ? undefined : "noopener noreferrer"} className="rounded-xl bg-[#d4af37] px-6 py-3 font-semibold text-black transition hover:opacity-90">
-              {content.hero.primaryCta}
-            </a>
-            <a href={content.hero.secondaryCtaHref === "#contact" ? "#contact" : `/${lang}/platforms`} className="rounded-xl border border-[#d4af37] px-6 py-3 font-semibold text-[#d4af37] transition hover:bg-[#d4af37] hover:text-black">
-              {content.hero.secondaryCta}
-            </a>
+            {content.hero.primaryCtaVisible !== false && <a href={primaryHeroLink.href} target={primaryHeroLink.external ? "_blank" : undefined} rel={primaryHeroLink.external ? "noopener noreferrer" : undefined} className="inline-flex items-center gap-2 rounded-xl bg-[#d4af37] px-6 py-3 font-semibold text-black transition hover:opacity-90">
+              {primaryHeroIcon !== "none" && <span aria-hidden="true">{HERO_ICON_SYMBOL[primaryHeroIcon]}</span>}{content.hero.primaryCta}
+            </a>}
+            {content.hero.secondaryCtaVisible !== false && <a href={secondaryHeroLink.href} target={secondaryHeroLink.external ? "_blank" : undefined} rel={secondaryHeroLink.external ? "noopener noreferrer" : undefined} className="inline-flex items-center gap-2 rounded-xl border border-[#d4af37] px-6 py-3 font-semibold text-[#d4af37] transition hover:bg-[#d4af37] hover:text-black">
+              {secondaryHeroIcon !== "none" && <span aria-hidden="true">{HERO_ICON_SYMBOL[secondaryHeroIcon]}</span>}{content.hero.secondaryCta}
+            </a>}
           </div>
         </div>
 

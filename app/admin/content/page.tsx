@@ -9,6 +9,7 @@ Status: HERO + WHAT WE DO + WHY + ECOSYSTEM + PLATFORMS + GALLERY + JOURNAL + CO
 
 import { useEffect, useState } from "react";
 import rtlHomepage from "../../data/rtl-homepage.json";
+import { heroDestination, heroIcon, HERO_DESTINATIONS, HERO_DESTINATION_LABELS, HERO_ICONS } from "../../../lib/hero-cta";
 
 type Lang = "en" | "tr" | "fa" | "ar";
 
@@ -106,8 +107,12 @@ export default function ContentManager() {
   const [heroDescription, setHeroDescription] = useState("");
   const [heroPrimaryCta, setHeroPrimaryCta] = useState("");
   const [heroPrimaryCtaHref, setHeroPrimaryCtaHref] = useState("watch");
+  const [heroPrimaryCtaVisible, setHeroPrimaryCtaVisible] = useState(true);
+  const [heroPrimaryCtaIcon, setHeroPrimaryCtaIcon] = useState("none");
   const [heroSecondaryCta, setHeroSecondaryCta] = useState("");
   const [heroSecondaryCtaHref, setHeroSecondaryCtaHref] = useState("/platforms");
+  const [heroSecondaryCtaVisible, setHeroSecondaryCtaVisible] = useState(true);
+  const [heroSecondaryCtaIcon, setHeroSecondaryCtaIcon] = useState("none");
   const [heroCardTitle, setHeroCardTitle] = useState("");
   const [heroCardSubtitle, setHeroCardSubtitle] = useState("");
 
@@ -201,9 +206,13 @@ export default function ContentManager() {
     setHeroTitle(section.hero?.title || section.heroTitle || "");
     setHeroDescription(section.hero?.description || section.heroSubtitle || "");
     setHeroPrimaryCta(section.hero?.primaryCta || section.buttonPrimary || "");
-    setHeroPrimaryCtaHref(section.hero?.primaryCtaHref === "#contact" ? "#contact" : "watch");
+    setHeroPrimaryCtaHref(heroDestination(section.hero?.primaryCtaHref, "watch"));
+    setHeroPrimaryCtaVisible(section.hero?.primaryCtaVisible !== false);
+    setHeroPrimaryCtaIcon(heroIcon(section.hero?.primaryCtaIcon));
     setHeroSecondaryCta(section.hero?.secondaryCta || section.buttonSecondary || "");
-    setHeroSecondaryCtaHref(section.hero?.secondaryCtaHref === "#contact" ? "#contact" : "/platforms");
+    setHeroSecondaryCtaHref(heroDestination(section.hero?.secondaryCtaHref, "/platforms"));
+    setHeroSecondaryCtaVisible(section.hero?.secondaryCtaVisible !== false);
+    setHeroSecondaryCtaIcon(heroIcon(section.hero?.secondaryCtaIcon));
     setHeroCardTitle(section.hero?.cardTitle || "CINENTO");
     setHeroCardSubtitle(section.hero?.cardSubtitle || "");
 
@@ -348,8 +357,12 @@ export default function ContentManager() {
             description: heroDescription,
             primaryCta: heroPrimaryCta,
             primaryCtaHref: heroPrimaryCtaHref,
+            primaryCtaVisible: heroPrimaryCtaVisible,
+            primaryCtaIcon: heroPrimaryCtaIcon,
             secondaryCta: heroSecondaryCta,
             secondaryCtaHref: heroSecondaryCtaHref,
+            secondaryCtaVisible: heroSecondaryCtaVisible,
+            secondaryCtaIcon: heroSecondaryCtaIcon,
             cardTitle: heroCardTitle,
             cardSubtitle: heroCardSubtitle,
           },
@@ -455,17 +468,27 @@ export default function ContentManager() {
           <Input label="Hero Title" value={heroTitle} onChange={setHeroTitle} />
           <Textarea label="Hero Description" value={heroDescription} onChange={setHeroDescription} />
           <Input label="Primary Button" value={heroPrimaryCta} onChange={setHeroPrimaryCta} />
+          <label className="flex items-center gap-2 text-sm text-neutral-300"><input type="checkbox" checked={heroPrimaryCtaVisible} onChange={event => setHeroPrimaryCtaVisible(event.target.checked)} />Show primary button</label>
           <label className="block text-sm text-neutral-300">Primary Button Destination
             <select value={heroPrimaryCtaHref} onChange={(event) => setHeroPrimaryCtaHref(event.target.value)} className="mt-2 w-full rounded-lg border border-neutral-700 bg-neutral-900 p-3 text-white">
-              <option value="watch">CINENTO Watch</option>
-              <option value="#contact">Contact form</option>
+              {HERO_DESTINATIONS.map(destination => <option key={destination} value={destination}>{HERO_DESTINATION_LABELS[destination]}</option>)}
+            </select>
+          </label>
+          <label className="block text-sm text-neutral-300">Primary Button Icon
+            <select value={heroPrimaryCtaIcon} onChange={event => setHeroPrimaryCtaIcon(event.target.value)} className="mt-2 w-full rounded-lg border border-neutral-700 bg-neutral-900 p-3 text-white">
+              {HERO_ICONS.map(icon => <option key={icon} value={icon}>{icon === "none" ? "No icon" : icon}</option>)}
             </select>
           </label>
           <Input label="Secondary Button" value={heroSecondaryCta} onChange={setHeroSecondaryCta} />
+          <label className="flex items-center gap-2 text-sm text-neutral-300"><input type="checkbox" checked={heroSecondaryCtaVisible} onChange={event => setHeroSecondaryCtaVisible(event.target.checked)} />Show secondary button</label>
           <label className="block text-sm text-neutral-300">Secondary Button Destination
             <select value={heroSecondaryCtaHref} onChange={(event) => setHeroSecondaryCtaHref(event.target.value)} className="mt-2 w-full rounded-lg border border-neutral-700 bg-neutral-900 p-3 text-white">
-              <option value="/platforms">Products & Platforms</option>
-              <option value="#contact">Contact form</option>
+              {HERO_DESTINATIONS.map(destination => <option key={destination} value={destination}>{HERO_DESTINATION_LABELS[destination]}</option>)}
+            </select>
+          </label>
+          <label className="block text-sm text-neutral-300">Secondary Button Icon
+            <select value={heroSecondaryCtaIcon} onChange={event => setHeroSecondaryCtaIcon(event.target.value)} className="mt-2 w-full rounded-lg border border-neutral-700 bg-neutral-900 p-3 text-white">
+              {HERO_ICONS.map(icon => <option key={icon} value={icon}>{icon === "none" ? "No icon" : icon}</option>)}
             </select>
           </label>
           <Input label="Hero Card Title" value={heroCardTitle} onChange={setHeroCardTitle} />
