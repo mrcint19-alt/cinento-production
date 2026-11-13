@@ -9,7 +9,7 @@ const source = readFileSync(path.resolve(import.meta.dirname, "../lib/hero-slide
 const output = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText;
 const exports = {};
 vm.runInNewContext(output, { exports }, { filename: "hero-slides.ts" });
-const { addHeroSlide, moveHeroSlide, removeHeroSlide, setHeroSlideImage, visibleHeroSlides } = exports;
+const { addHeroSlide, heroDuration, heroSliderSettings, moveHeroSlide, removeHeroSlide, setHeroSlideImage, setHeroSlideShared, visibleHeroSlides } = exports;
 
 test("adding a slide shares identity but keeps translations separate", () => {
   const original = { en: { hero: { title: "Main", slides: [] }, services: { title: "Keep" } }, tr: { hero: { slides: [] } }, custom: "keep" };
@@ -42,4 +42,27 @@ test("incomplete slides do not replace the existing Hero card", () => {
   assert.equal(visibleHeroSlides(undefined).length, 0);
   assert.equal(visibleHeroSlides([{ id: "one", title: "  ", subtitle: "Detail", image: "" }]).length, 0);
   assert.equal(visibleHeroSlides([{ id: "one", title: "Ready", subtitle: "", image: "" }]).length, 1);
+});
+
+test("slide timing and button destinations remain aligned while copy stays localized", () => {
+  let data = addHeroSlide({}, "first");
+  data.en.hero.slides[0].primaryCta = "Watch";
+  data.fa.hero.slides[0].primaryCta = "تماشا";
+  data = setHeroSlideShared(data, "first", { durationMs: 9000, primaryCtaHref: "watch", secondaryCtaVisible: false });
+  for (const lang of ["en", "tr", "fa", "ar"]) {
+    assert.equal(data[lang].hero.slides[0].durationMs, 9000);
+    assert.equal(data[lang].hero.slides[0].primaryCtaHref, "watch");
+    assert.equal(data[lang].hero.slides[0].secondaryCtaVisible, false);
+  }
+  assert.equal(data.en.hero.slides[0].primaryCta, "Watch");
+  assert.equal(data.fa.hero.slides[0].primaryCta, "تماشا");
+});
+
+test("slider settings preserve legacy defaults and reject out-of-range timing", () => {
+  assert.equal(heroSliderSettings(undefined).intervalMs, 7000);
+  assert.equal(heroSliderSettings({ autoplay: false, intervalMs: 12000, transitionMs: 900, transition: "slide" }).transition, "slide");
+  assert.equal(heroSliderSettings({ autoplay: false, intervalMs: 100, transitionMs: 30000 }).intervalMs, 7000);
+  assert.equal(heroSliderSettings({ transitionMs: 30000 }).transitionMs, 650);
+  assert.equal(heroDuration(11000, 7000), 11000);
+  assert.equal(heroDuration(200, 7000), 7000);
 });

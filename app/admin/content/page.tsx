@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import rtlHomepage from "../../data/rtl-homepage.json";
 import { heroDestination, heroIcon, HERO_DESTINATIONS, HERO_DESTINATION_LABELS, HERO_ICONS } from "../../../lib/hero-cta";
-import { addHeroSlide, moveHeroSlide, removeHeroSlide, reorderHeroSlides, setHeroSlideImage, type HeroSlide } from "../../../lib/hero-slides";
+import { addHeroSlide, heroSliderSettings, moveHeroSlide, removeHeroSlide, reorderHeroSlides, setHeroSlideImage, setHeroSlideShared, type HeroSlide, type HeroSliderSettings } from "../../../lib/hero-slides";
 import { DEFAULT_SITE_THEME, siteTheme, type SiteTheme } from "../../../lib/site-theme";
 import { DEFAULT_NAVIGATION, SITE_LOCALES, navigationFromContent, siteNavigation, validNavigationHref, validNavigationIcon, type SiteNavigation } from "../../../lib/site-navigation";
 import NavigationEditor from "../../../components/NavigationEditor";
@@ -123,6 +123,7 @@ export default function ContentManager() {
   const [heroCardTitle, setHeroCardTitle] = useState("");
   const [heroCardSubtitle, setHeroCardSubtitle] = useState("");
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
+  const [heroSlider, setHeroSlider] = useState<HeroSliderSettings>(heroSliderSettings(null));
   const [heroImages, setHeroImages] = useState<string[]>([]);
 
   const [whatTitle, setWhatTitle] = useState("");
@@ -187,6 +188,7 @@ export default function ContentManager() {
       .then((res) => res.json())
       .then((json) => {
         setData(json);
+        setHeroSlider(heroSliderSettings(json?.heroSlider));
         setTheme(siteTheme(json?.theme));
         setNavigation(navigationFromContent(json));
         loadLang(json, "en");
@@ -330,6 +332,11 @@ export default function ContentManager() {
     loadLang(data, newLang);
   };
 
+  const updateSharedSlide = (id: string, patch: Partial<Pick<HeroSlide, "durationMs" | "primaryCtaHref" | "secondaryCtaHref" | "primaryCtaVisible" | "secondaryCtaVisible">>) => {
+    setData((current: ServiceHomepageData | null) => setHeroSlideShared(current ?? {}, id, patch));
+    setHeroSlides(current => current.map(slide => slide.id === id ? { ...slide, ...patch } : slide));
+  };
+
   const updatePlatform = (index: number, key: keyof PlatformItem, value: string) => {
     setPlatforms((prev) =>
       prev.map((item, itemIndex) =>
@@ -377,6 +384,7 @@ export default function ContentManager() {
 
       const updated = {
         ...data,
+        heroSlider: heroSliderSettings(heroSlider),
         theme: siteTheme(theme),
         navigation: siteNavigation(navigation),
         [lang]: {
@@ -540,6 +548,19 @@ export default function ContentManager() {
           <Input label="Hero Card Subtitle" value={heroCardSubtitle} onChange={setHeroCardSubtitle} />
           <div className="space-y-4 border-t border-white/10 pt-5">
             <p className="text-sm text-neutral-300">Hero slides · text is separate for each language; the image and order are shared. Blank titles stay hidden. With no slides, the current active Hero image and card remain.</p>
+            <div className="grid gap-3 rounded-xl border border-white/15 p-4 sm:grid-cols-2">
+              <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={heroSlider.autoplay} onChange={event => setHeroSlider(current => ({ ...current, autoplay: event.target.checked }))} />Autoplay</label>
+              <label className="text-sm">Transition
+                <select value={heroSlider.transition} onChange={event => setHeroSlider(current => ({ ...current, transition: event.target.value === "slide" ? "slide" : "fade" }))} className="mt-2 w-full rounded-lg border border-neutral-700 bg-neutral-900 p-3"><option value="fade">Fade</option><option value="slide">Slide</option></select>
+              </label>
+              <label className="text-sm">Time per slide (seconds)
+                <input type="number" min="3" max="20" step="1" value={heroSlider.intervalMs / 1000} onChange={event => setHeroSlider(current => ({ ...current, intervalMs: Number(event.target.value) * 1000 }))} className="mt-2 w-full rounded-lg border border-neutral-700 bg-neutral-900 p-3" />
+              </label>
+              <label className="text-sm">Transition duration (milliseconds)
+                <input type="number" min="150" max="1500" step="50" value={heroSlider.transitionMs} onChange={event => setHeroSlider(current => ({ ...current, transitionMs: Number(event.target.value) }))} className="mt-2 w-full rounded-lg border border-neutral-700 bg-neutral-900 p-3" />
+              </label>
+              <p className="text-xs text-neutral-400 sm:col-span-2">Autoplay pauses on hover, focus and reduced-motion preference. Each slide may override the display time.</p>
+            </div>
             <button type="button" onClick={() => {
               const id = crypto.randomUUID();
               setData((current: ServiceHomepageData | null) => addHeroSlide(current ?? {}, id));
@@ -553,6 +574,13 @@ export default function ContentManager() {
               </div></div>
               <Input label={`${lang.toUpperCase()} slide title`} value={slide.title} onChange={value => setHeroSlides(current => current.map(item => item.id === slide.id ? { ...item, title: value } : item))} />
               <Textarea label={`${lang.toUpperCase()} slide subtitle`} value={slide.subtitle} onChange={value => setHeroSlides(current => current.map(item => item.id === slide.id ? { ...item, subtitle: value } : item))} />
+              <label className="block text-sm">Display time (seconds; blank uses global setting)<input type="number" min="3" max="20" step="1" value={slide.durationMs ? slide.durationMs / 1000 : ""} onChange={event => updateSharedSlide(slide.id, { durationMs: event.target.value ? Number(event.target.value) * 1000 : undefined })} className="mt-2 w-full rounded-lg border border-neutral-700 bg-neutral-900 p-3" /></label>
+              <Input label={`${lang.toUpperCase()} primary button (blank uses Hero button)`} value={slide.primaryCta ?? ""} onChange={value => setHeroSlides(current => current.map(item => item.id === slide.id ? { ...item, primaryCta: value } : item))} />
+              <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={slide.primaryCtaVisible ?? heroPrimaryCtaVisible} onChange={event => updateSharedSlide(slide.id, { primaryCtaVisible: event.target.checked })} />Show primary button on this slide</label>
+              <label className="block text-sm">Primary destination<select value={slide.primaryCtaHref ?? heroPrimaryCtaHref} onChange={event => updateSharedSlide(slide.id, { primaryCtaHref: event.target.value })} className="mt-2 w-full rounded-lg border border-neutral-700 bg-neutral-900 p-3">{HERO_DESTINATIONS.map(destination => <option key={destination} value={destination}>{HERO_DESTINATION_LABELS[destination]}</option>)}</select></label>
+              <Input label={`${lang.toUpperCase()} secondary button (blank uses Hero button)`} value={slide.secondaryCta ?? ""} onChange={value => setHeroSlides(current => current.map(item => item.id === slide.id ? { ...item, secondaryCta: value } : item))} />
+              <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={slide.secondaryCtaVisible ?? heroSecondaryCtaVisible} onChange={event => updateSharedSlide(slide.id, { secondaryCtaVisible: event.target.checked })} />Show secondary button on this slide</label>
+              <label className="block text-sm">Secondary destination<select value={slide.secondaryCtaHref ?? heroSecondaryCtaHref} onChange={event => updateSharedSlide(slide.id, { secondaryCtaHref: event.target.value })} className="mt-2 w-full rounded-lg border border-neutral-700 bg-neutral-900 p-3">{HERO_DESTINATIONS.map(destination => <option key={destination} value={destination}>{HERO_DESTINATION_LABELS[destination]}</option>)}</select></label>
               <label className="block text-sm text-neutral-300">Image (shared across languages)
                 <select value={slide.image} onChange={event => { const image = event.target.value; setData((current: ServiceHomepageData | null) => setHeroSlideImage(current ?? {}, slide.id, image)); setHeroSlides(current => current.map(item => item.id === slide.id ? { ...item, image } : item)); }} className="mt-2 w-full rounded-lg border border-neutral-700 bg-neutral-900 p-3 text-white">
                   <option value="">Use active Hero image</option>

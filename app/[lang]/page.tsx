@@ -12,7 +12,7 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import rtlHomepage from "../data/rtl-homepage.json";
 import { heroIcon, heroLink, HERO_ICON_SYMBOL } from "../../lib/hero-cta";
-import { visibleHeroSlides, type HeroSlide } from "../../lib/hero-slides";
+import { heroDuration, heroSliderSettings, visibleHeroSlides, type HeroSlide, type HeroSliderSettings } from "../../lib/hero-slides";
 import { DEFAULT_SITE_THEME, siteTheme, type SiteTheme } from "../../lib/site-theme";
 import SiteHeader from "../../components/SiteHeader";
 
@@ -319,6 +319,16 @@ export default function HomePage() {
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
   const [slidesPaused, setSlidesPaused] = useState(false);
   const [slideInteraction, setSlideInteraction] = useState(false);
+  const [sliderSettings, setSliderSettings] = useState<HeroSliderSettings>(heroSliderSettings(null));
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReducedMotion(preference.matches);
+    update();
+    preference.addEventListener("change", update);
+    return () => preference.removeEventListener("change", update);
+  }, []);
 
   const content = useMemo(() => mergeHomepageContent(CONTENT[lang], dynamicContent), [lang, dynamicContent]);
   const programCategories: Record<string, Record<Lang, string>> = {
@@ -327,18 +337,17 @@ export default function HomePage() {
     business: { en: "Business", tr: "İş yönetimi", fa: "کسب‌وکار", ar: "الأعمال" },
     connectivity: { en: "Connectivity", tr: "Bağlantı", fa: "ارتباطات", ar: "الاتصالات" },
   };
-  const primaryHeroLink = heroLink(content.hero.primaryCtaHref, lang, "watch");
-  const secondaryHeroLink = heroLink(content.hero.secondaryCtaHref, lang, "/platforms");
-  const primaryHeroIcon = heroIcon(content.hero.primaryCtaIcon ?? "arrow");
-  const secondaryHeroIcon = heroIcon(content.hero.secondaryCtaIcon ?? "arrow");
   const heroSlides = visibleHeroSlides(content.hero.slides);
   const currentSlide = heroSlides.length ? heroSlides[activeSlideIndex % heroSlides.length] : null;
-
+  const primaryHeroLink = heroLink(currentSlide?.primaryCtaHref ?? content.hero.primaryCtaHref, lang, "watch");
+  const secondaryHeroLink = heroLink(currentSlide?.secondaryCtaHref ?? content.hero.secondaryCtaHref, lang, "/platforms");
+  const primaryHeroIcon = heroIcon(content.hero.primaryCtaIcon ?? "arrow");
+  const secondaryHeroIcon = heroIcon(content.hero.secondaryCtaIcon ?? "arrow");
   useEffect(() => {
-    if (heroSlides.length < 2 || slidesPaused || slideInteraction || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const timer = window.setInterval(() => setActiveSlideIndex(index => (index + 1) % heroSlides.length), 7000);
-    return () => window.clearInterval(timer);
-  }, [heroSlides.length, slidesPaused, slideInteraction]);
+    if (heroSlides.length < 2 || !sliderSettings.autoplay || slidesPaused || slideInteraction || reducedMotion) return;
+    const timer = window.setTimeout(() => setActiveSlideIndex(index => (index + 1) % heroSlides.length), heroDuration(currentSlide?.durationMs, sliderSettings.intervalMs));
+    return () => window.clearTimeout(timer);
+  }, [heroSlides.length, currentSlide?.id, currentSlide?.durationMs, sliderSettings.autoplay, sliderSettings.intervalMs, slidesPaused, slideInteraction, reducedMotion]);
 
   const activeHeroImage = useMemo(() => {
     const activeHero = uploadedImages.active.hero;
@@ -369,6 +378,7 @@ export default function HomePage() {
       .then((data) => {
         if (!isActive) return;
         setTheme(siteTheme(data?.theme));
+        setSliderSettings(heroSliderSettings(data?.heroSlider));
         const selected = data?.[lang] || null;
         const englishProjects = data?.en?.featuredProjects?.items;
         const translatedProjects: ProjectItem[] = Array.isArray(selected?.featuredProjects?.items) ? selected.featuredProjects.items : [];
@@ -496,11 +506,11 @@ export default function HomePage() {
           <p className="mt-7 max-w-xl border-s border-[var(--site-accent)]/60 ps-5 text-base leading-8 text-neutral-300">{content.hero.description}</p>
 
           <div className="mt-8 flex flex-wrap gap-4">
-            {content.hero.primaryCtaVisible !== false && <a href={primaryHeroLink.href} target={primaryHeroLink.external ? "_blank" : undefined} rel={primaryHeroLink.external ? "noopener noreferrer" : undefined} className="inline-flex items-center gap-2 rounded-xl bg-[var(--site-accent)] px-6 py-3 font-semibold text-black transition hover:opacity-90">
-              {primaryHeroIcon !== "none" && <span aria-hidden="true">{HERO_ICON_SYMBOL[primaryHeroIcon]}</span>}{content.hero.primaryCta}
+            {(currentSlide?.primaryCtaVisible ?? content.hero.primaryCtaVisible) !== false && <a href={primaryHeroLink.href} target={primaryHeroLink.external ? "_blank" : undefined} rel={primaryHeroLink.external ? "noopener noreferrer" : undefined} className="inline-flex items-center gap-2 rounded-xl bg-[var(--site-accent)] px-6 py-3 font-semibold text-black transition hover:opacity-90">
+              {primaryHeroIcon !== "none" && <span aria-hidden="true">{HERO_ICON_SYMBOL[primaryHeroIcon]}</span>}{currentSlide?.primaryCta?.trim() || content.hero.primaryCta}
             </a>}
-            {content.hero.secondaryCtaVisible !== false && <a href={secondaryHeroLink.href} target={secondaryHeroLink.external ? "_blank" : undefined} rel={secondaryHeroLink.external ? "noopener noreferrer" : undefined} className="inline-flex items-center gap-2 rounded-xl border border-[var(--site-accent)] px-6 py-3 font-semibold text-[var(--site-accent)] transition hover:bg-[var(--site-accent)] hover:text-black">
-              {secondaryHeroIcon !== "none" && <span aria-hidden="true">{HERO_ICON_SYMBOL[secondaryHeroIcon]}</span>}{content.hero.secondaryCta}
+            {(currentSlide?.secondaryCtaVisible ?? content.hero.secondaryCtaVisible) !== false && <a href={secondaryHeroLink.href} target={secondaryHeroLink.external ? "_blank" : undefined} rel={secondaryHeroLink.external ? "noopener noreferrer" : undefined} className="inline-flex items-center gap-2 rounded-xl border border-[var(--site-accent)] px-6 py-3 font-semibold text-[var(--site-accent)] transition hover:bg-[var(--site-accent)] hover:text-black">
+              {secondaryHeroIcon !== "none" && <span aria-hidden="true">{HERO_ICON_SYMBOL[secondaryHeroIcon]}</span>}{currentSlide?.secondaryCta?.trim() || content.hero.secondaryCta}
             </a>}
           </div>
         </div>
@@ -510,7 +520,7 @@ export default function HomePage() {
             <div className="relative min-h-[430px] overflow-hidden site-hero-visual p-8 sm:min-h-[520px]">
               {displayHeroImage && (
                 <>
-                  <Image src={displayHeroImage} alt="" fill priority sizes="(min-width: 768px) 50vw, 100vw" unoptimized={displayHeroImage.startsWith("https://")} onError={() => handleImageError(displayHeroImage)} className="object-cover opacity-65" />
+                  <div key={displayHeroImage + (currentSlide?.id ?? "fallback")} className={`site-hero-enter ${sliderSettings.transition === "slide" ? "site-hero-slide" : ""}`} style={{ animationDuration: `${sliderSettings.transitionMs}ms` }}><Image src={displayHeroImage} alt="" fill priority sizes="(min-width: 768px) 50vw, 100vw" unoptimized={displayHeroImage.startsWith("https://")} onError={() => handleImageError(displayHeroImage)} className="object-cover opacity-65" /></div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
                 </>
               )}
@@ -522,7 +532,7 @@ export default function HomePage() {
                     <button type="button" aria-label={ui[lang].previousSlide} onClick={() => setActiveSlideIndex(index => (index - 1 + heroSlides.length) % heroSlides.length)} className="grid min-h-10 min-w-10 place-items-center border border-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--site-accent)]">‹</button>
                     <span className="px-2 tabular-nums" aria-live="off">{activeSlideIndex % heroSlides.length + 1} / {heroSlides.length}</span>
                     <button type="button" aria-label={ui[lang].nextSlide} onClick={() => setActiveSlideIndex(index => (index + 1) % heroSlides.length)} className="grid min-h-10 min-w-10 place-items-center border border-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--site-accent)]">›</button>
-                    <button type="button" aria-label={slidesPaused ? ui[lang].playSlides : ui[lang].pauseSlides} aria-pressed={slidesPaused} onClick={() => setSlidesPaused(value => !value)} className="grid min-h-10 min-w-10 place-items-center border border-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--site-accent)]">{slidesPaused ? "▶" : "Ⅱ"}</button>
+                    {sliderSettings.autoplay && <button type="button" aria-label={slidesPaused ? ui[lang].playSlides : ui[lang].pauseSlides} aria-pressed={slidesPaused} onClick={() => setSlidesPaused(value => !value)} className="grid min-h-10 min-w-10 place-items-center border border-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--site-accent)]">{slidesPaused ? "▶" : "Ⅱ"}</button>}
                   </div>}
                 </div>
               </div>
