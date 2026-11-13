@@ -7,12 +7,13 @@ Status: PAGE54 BASE + CMS CONNECTED + IMAGE MANAGER ACTIVE HERO SYSTEM CONNECTED
 
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import rtlHomepage from "../data/rtl-homepage.json";
 import { heroIcon, heroLink, HERO_ICON_SYMBOL } from "../../lib/hero-cta";
 import { visibleHeroSlides, type HeroSlide } from "../../lib/hero-slides";
+import { DEFAULT_SITE_THEME, siteTheme, type SiteTheme } from "../../lib/site-theme";
 
 type Lang = "en" | "tr" | "fa" | "ar";
 const isRtl = (lang: Lang) => lang === "fa" || lang === "ar";
@@ -311,6 +312,7 @@ export default function HomePage() {
   }, [lang]);
 
   const [dynamicContent, setDynamicContent] = useState<DynamicHomepageContent | null>(null);
+  const [theme, setTheme] = useState<SiteTheme>(DEFAULT_SITE_THEME);
   const [showEnglishProjectDetails, setShowEnglishProjectDetails] = useState(false);
   const [featuredPrograms, setFeaturedPrograms] = useState<FeaturedProgram[]>([]);
   const [uploadedImages, setUploadedImages] = useState<UploadedImages>({ hero: [], gallery: [], projects: [], active: { hero: "", gallery: "", projects: "" } });
@@ -361,6 +363,7 @@ export default function HomePage() {
       .then((res) => res.json())
       .then((data) => {
         if (!isActive) return;
+        setTheme(siteTheme(data?.theme));
         const selected = data?.[lang] || null;
         const englishProjects = data?.en?.featuredProjects?.items;
         const translatedProjects: ProjectItem[] = Array.isArray(selected?.featuredProjects?.items) ? selected.featuredProjects.items : [];
@@ -393,7 +396,7 @@ export default function HomePage() {
         } : selected);
       })
       .catch(() => {
-        if (isActive) { setDynamicContent(null); setShowEnglishProjectDetails(false); }
+        if (isActive) { setDynamicContent(null); setShowEnglishProjectDetails(false); setTheme(DEFAULT_SITE_THEME); }
       });
     return () => {
       isActive = false;
@@ -486,31 +489,31 @@ export default function HomePage() {
   }
 
   return (
-    <main lang={lang} dir={isRtl(lang) ? "rtl" : "ltr"} className="min-h-screen bg-[#070707] text-white">
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-black/70 backdrop-blur">
+    <main lang={lang} dir={isRtl(lang) ? "rtl" : "ltr"} className="site-theme min-h-screen text-white" style={{ "--site-background": theme.background, "--site-surface": theme.surface, "--site-accent": theme.accent } as CSSProperties}>
+      <header className="site-header sticky top-0 z-50 border-b border-white/10 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-4">
           <div className="text-lg font-bold tracking-wide text-white">{content.brand}</div>
 
           <nav aria-label={ui[lang].menu} className="order-3 flex w-full flex-wrap items-center gap-x-5 gap-y-3 lg:order-none lg:w-auto">
             {content.nav.map((item) => (
-              <button key={item.label} onClick={() => handleNavClick(item.href)} className="text-sm text-neutral-300 transition hover:text-[#d4af37]">
+              <button key={item.label} onClick={() => handleNavClick(item.href)} className="text-sm text-neutral-300 transition hover:text-[var(--site-accent)]">
                 {item.label}
               </button>
             ))}
-            <a href={`/${lang}/platforms`} className="text-sm font-semibold text-[#d4af37] transition hover:text-white">
+            <a href={`/${lang}/platforms`} className="text-sm font-semibold text-[var(--site-accent)] transition hover:text-white">
               {ui[lang].platforms}
             </a>
           </nav>
 
           <div className="flex items-center gap-3">
             <div className="flex rounded-full border border-white/10 bg-white/5 p-1">
-              <button aria-label="English" aria-current={lang === "en" ? "page" : undefined} onClick={() => handleLanguageSwitch("en")} className={`rounded-full px-3 py-1 text-xs font-medium transition ${lang === "en" ? "bg-[#d4af37] text-black" : "text-neutral-300 hover:text-white"}`}>EN</button>
-              <button aria-label="Türkçe" aria-current={lang === "tr" ? "page" : undefined} onClick={() => handleLanguageSwitch("tr")} className={`rounded-full px-3 py-1 text-xs font-medium transition ${lang === "tr" ? "bg-[#d4af37] text-black" : "text-neutral-300 hover:text-white"}`}>TR</button>
-              <button aria-label="فارسی" aria-current={lang === "fa" ? "page" : undefined} onClick={() => handleLanguageSwitch("fa")} className={`rounded-full px-3 py-1 text-xs font-medium transition ${lang === "fa" ? "bg-[#d4af37] text-black" : "text-neutral-300 hover:text-white"}`}>FA</button>
-              <button aria-label="العربية" aria-current={lang === "ar" ? "page" : undefined} onClick={() => handleLanguageSwitch("ar")} className={`rounded-full px-3 py-1 text-xs font-medium transition ${lang === "ar" ? "bg-[#d4af37] text-black" : "text-neutral-300 hover:text-white"}`}>AR</button>
+              <button aria-label="English" aria-current={lang === "en" ? "page" : undefined} onClick={() => handleLanguageSwitch("en")} className={`rounded-full px-3 py-1 text-xs font-medium transition ${lang === "en" ? "bg-[var(--site-accent)] text-black" : "text-neutral-300 hover:text-white"}`}>EN</button>
+              <button aria-label="Türkçe" aria-current={lang === "tr" ? "page" : undefined} onClick={() => handleLanguageSwitch("tr")} className={`rounded-full px-3 py-1 text-xs font-medium transition ${lang === "tr" ? "bg-[var(--site-accent)] text-black" : "text-neutral-300 hover:text-white"}`}>TR</button>
+              <button aria-label="فارسی" aria-current={lang === "fa" ? "page" : undefined} onClick={() => handleLanguageSwitch("fa")} className={`rounded-full px-3 py-1 text-xs font-medium transition ${lang === "fa" ? "bg-[var(--site-accent)] text-black" : "text-neutral-300 hover:text-white"}`}>FA</button>
+              <button aria-label="العربية" aria-current={lang === "ar" ? "page" : undefined} onClick={() => handleLanguageSwitch("ar")} className={`rounded-full px-3 py-1 text-xs font-medium transition ${lang === "ar" ? "bg-[var(--site-accent)] text-black" : "text-neutral-300 hover:text-white"}`}>AR</button>
             </div>
 
-            <a href={WATCH_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-[#d4af37] px-4 py-2 text-sm font-semibold text-black transition hover:opacity-90">
+            <a href={WATCH_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-[var(--site-accent)] px-4 py-2 text-sm font-semibold text-black transition hover:opacity-90">
               {ui[lang].watch}
             </a>
           </div>
@@ -521,38 +524,38 @@ export default function HomePage() {
         <div className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(90deg,transparent_49.9%,rgba(212,175,55,.07)_50%,transparent_50.1%)]" />
         <div className="mx-auto grid max-w-7xl gap-12 px-6 py-20 md:grid-cols-2 md:items-center md:py-28 lg:gap-20">
         <div className="flex flex-col justify-center">
-          <div className="mb-7 flex items-center gap-4 text-xs font-semibold uppercase tracking-[0.35em] text-[#d4af37]"><span className="h-px w-10 bg-[#d4af37]" />{content.hero.eyebrow}</div>
+          <div className="mb-7 flex items-center gap-4 text-xs font-semibold uppercase tracking-[0.35em] text-[var(--site-accent)]"><span className="h-px w-10 bg-[var(--site-accent)]" />{content.hero.eyebrow}</div>
           <h1 className="max-w-2xl text-5xl font-semibold leading-[1.08] tracking-tight md:text-6xl lg:text-7xl">{content.hero.title}</h1>
-          <p className="mt-7 max-w-xl border-s border-[#d4af37]/60 ps-5 text-base leading-8 text-neutral-300">{content.hero.description}</p>
+          <p className="mt-7 max-w-xl border-s border-[var(--site-accent)]/60 ps-5 text-base leading-8 text-neutral-300">{content.hero.description}</p>
 
           <div className="mt-8 flex flex-wrap gap-4">
-            {content.hero.primaryCtaVisible !== false && <a href={primaryHeroLink.href} target={primaryHeroLink.external ? "_blank" : undefined} rel={primaryHeroLink.external ? "noopener noreferrer" : undefined} className="inline-flex items-center gap-2 rounded-xl bg-[#d4af37] px-6 py-3 font-semibold text-black transition hover:opacity-90">
+            {content.hero.primaryCtaVisible !== false && <a href={primaryHeroLink.href} target={primaryHeroLink.external ? "_blank" : undefined} rel={primaryHeroLink.external ? "noopener noreferrer" : undefined} className="inline-flex items-center gap-2 rounded-xl bg-[var(--site-accent)] px-6 py-3 font-semibold text-black transition hover:opacity-90">
               {primaryHeroIcon !== "none" && <span aria-hidden="true">{HERO_ICON_SYMBOL[primaryHeroIcon]}</span>}{content.hero.primaryCta}
             </a>}
-            {content.hero.secondaryCtaVisible !== false && <a href={secondaryHeroLink.href} target={secondaryHeroLink.external ? "_blank" : undefined} rel={secondaryHeroLink.external ? "noopener noreferrer" : undefined} className="inline-flex items-center gap-2 rounded-xl border border-[#d4af37] px-6 py-3 font-semibold text-[#d4af37] transition hover:bg-[#d4af37] hover:text-black">
+            {content.hero.secondaryCtaVisible !== false && <a href={secondaryHeroLink.href} target={secondaryHeroLink.external ? "_blank" : undefined} rel={secondaryHeroLink.external ? "noopener noreferrer" : undefined} className="inline-flex items-center gap-2 rounded-xl border border-[var(--site-accent)] px-6 py-3 font-semibold text-[var(--site-accent)] transition hover:bg-[var(--site-accent)] hover:text-black">
               {secondaryHeroIcon !== "none" && <span aria-hidden="true">{HERO_ICON_SYMBOL[secondaryHeroIcon]}</span>}{content.hero.secondaryCta}
             </a>}
           </div>
         </div>
 
         <div className="flex items-center">
-          <div className="relative w-full border border-[#d4af37]/30 bg-neutral-900/80 p-2 shadow-[0_35px_100px_rgba(0,0,0,.65)] sm:p-3">
-            <div className="relative min-h-[430px] overflow-hidden bg-gradient-to-br from-[#1d1a16] via-[#101010] to-[#080808] p-8 sm:min-h-[520px]">
+          <div className="relative w-full border border-[var(--site-accent)]/30 site-surface p-2 shadow-[0_35px_100px_rgba(0,0,0,.65)] sm:p-3">
+            <div className="relative min-h-[430px] overflow-hidden site-hero-visual p-8 sm:min-h-[520px]">
               {displayHeroImage && (
                 <>
-                  <Image src={displayHeroImage} alt="" fill priority sizes="(min-width: 768px) 50vw, 100vw" unoptimized={displayHeroImage.startsWith("https://")} onError={() => handleImageError(displayHeroImage)} className="object-cover opacity-45" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-black/10" />
+                  <Image src={displayHeroImage} alt="" fill priority sizes="(min-width: 768px) 50vw, 100vw" unoptimized={displayHeroImage.startsWith("https://")} onError={() => handleImageError(displayHeroImage)} className="object-cover opacity-65" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
                 </>
               )}
               <div className="relative z-10 flex min-h-[366px] flex-col justify-between sm:min-h-[456px]" onMouseEnter={() => setSlideInteraction(true)} onMouseLeave={() => setSlideInteraction(false)} onFocusCapture={() => setSlideInteraction(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setSlideInteraction(false); }}>
-                <div className="flex items-start justify-between gap-4 text-xs font-semibold uppercase tracking-[0.28em] text-[#e6c878]"><span>{currentSlide?.title || content.hero.cardTitle}</span><span aria-hidden="true">✦</span></div>
+                <div className="flex items-start justify-between gap-4 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--site-accent)]"><span>{currentSlide?.title || content.hero.cardTitle}</span><span aria-hidden="true">✦</span></div>
                 <div>
                   <div className="max-w-sm border-t border-white/40 pt-5 text-2xl font-semibold leading-snug text-white sm:text-3xl">{currentSlide?.subtitle || content.hero.cardSubtitle}</div>
                   {heroSlides.length > 1 && <div className="mt-5 flex items-center gap-2 text-sm text-white" role="group" aria-label={content.hero.title}>
-                    <button type="button" aria-label={ui[lang].previousSlide} onClick={() => setActiveSlideIndex(index => (index - 1 + heroSlides.length) % heroSlides.length)} className="grid min-h-10 min-w-10 place-items-center border border-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#d4af37]">‹</button>
+                    <button type="button" aria-label={ui[lang].previousSlide} onClick={() => setActiveSlideIndex(index => (index - 1 + heroSlides.length) % heroSlides.length)} className="grid min-h-10 min-w-10 place-items-center border border-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--site-accent)]">‹</button>
                     <span className="px-2 tabular-nums" aria-live="off">{activeSlideIndex % heroSlides.length + 1} / {heroSlides.length}</span>
-                    <button type="button" aria-label={ui[lang].nextSlide} onClick={() => setActiveSlideIndex(index => (index + 1) % heroSlides.length)} className="grid min-h-10 min-w-10 place-items-center border border-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#d4af37]">›</button>
-                    <button type="button" aria-label={slidesPaused ? ui[lang].playSlides : ui[lang].pauseSlides} aria-pressed={slidesPaused} onClick={() => setSlidesPaused(value => !value)} className="grid min-h-10 min-w-10 place-items-center border border-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#d4af37]">{slidesPaused ? "▶" : "Ⅱ"}</button>
+                    <button type="button" aria-label={ui[lang].nextSlide} onClick={() => setActiveSlideIndex(index => (index + 1) % heroSlides.length)} className="grid min-h-10 min-w-10 place-items-center border border-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--site-accent)]">›</button>
+                    <button type="button" aria-label={slidesPaused ? ui[lang].playSlides : ui[lang].pauseSlides} aria-pressed={slidesPaused} onClick={() => setSlidesPaused(value => !value)} className="grid min-h-10 min-w-10 place-items-center border border-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--site-accent)]">{slidesPaused ? "▶" : "Ⅱ"}</button>
                   </div>}
                 </div>
               </div>
@@ -563,31 +566,31 @@ export default function HomePage() {
       </section>
 
       <section id="about" className="mx-auto max-w-7xl px-6 py-12">
-        <h2 className="mb-6 text-2xl font-semibold text-[#d4af37]">{content.whatWeDo.title}</h2>
+        <h2 className="mb-6 text-2xl font-semibold text-[var(--site-accent)]">{content.whatWeDo.title}</h2>
         <div className={`grid gap-6 ${content.whatWeDo.items.length === 1 ? "grid-cols-1" : content.whatWeDo.items.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3"}`}>
           {content.whatWeDo.items.map((item, index) => (
-            <div key={`${index}-${item}`} className="rounded-2xl border border-[#d4af37]/15 bg-neutral-900/80 p-6 text-white shadow-lg transition hover:border-[#d4af37]/40">
-              <div className="mb-8 text-xs font-semibold tracking-[0.25em] text-[#d4af37]">{String(index + 1).padStart(2, "0")}</div>
+            <div key={`${index}-${item}`} className="rounded-2xl border border-[var(--site-accent)]/15 site-surface p-6 text-white shadow-lg transition hover:border-[var(--site-accent)]/40">
+              <div className="mb-8 text-xs font-semibold tracking-[0.25em] text-[var(--site-accent)]">{String(index + 1).padStart(2, "0")}</div>
               <div className={`border-t border-white/10 pt-5 text-lg font-medium leading-7 ${content.whatWeDo.items.length === 1 ? "max-w-4xl" : ""}`}>{item}</div>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="border-y border-white/5 bg-[#0d0d0d] py-20" aria-labelledby="services-title">
+      <section className="border-y border-white/5 site-band py-20" aria-labelledby="services-title">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="mb-10 max-w-3xl"><div className="mb-4 h-px w-14 bg-[#d4af37]" /><h2 id="services-title" className="text-3xl font-semibold md:text-4xl">{content.services.title}</h2><p className="mt-4 leading-8 text-neutral-400">{content.services.subtitle}</p></div>
+          <div className="mb-10 max-w-3xl"><div className="mb-4 h-px w-14 bg-[var(--site-accent)]" /><h2 id="services-title" className="text-3xl font-semibold md:text-4xl">{content.services.title}</h2><p className="mt-4 leading-8 text-neutral-400">{content.services.subtitle}</p></div>
           <div className="grid gap-5 md:grid-cols-3">
             {content.services.items.filter(item => item.title.trim() && item.status !== "archived").map((item, index, visibleServices) => (
-              <article key={item.id || `${item.title}-${index}`} className="border border-white/10 bg-[#151515] p-7 transition hover:border-[#d4af37]/50">
+              <article key={item.id || `${item.title}-${index}`} className="border border-white/10 site-surface p-7 transition hover:border-[var(--site-accent)]/50">
                 {serviceHasDistinctDetail(item) ? <details className="group">
-                  <summary className="cursor-pointer list-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#d4af37] [&::-webkit-details-marker]:hidden">
-                    <div className="mb-12 flex justify-between text-sm tracking-[0.25em] text-[#d4af37]"><span>{String(index + 1).padStart(2, "0")} / {String(visibleServices.length).padStart(2, "0")}</span><span aria-hidden="true" className="transition-transform group-open:rotate-180">⌄</span></div>
+                  <summary className="cursor-pointer list-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--site-accent)] [&::-webkit-details-marker]:hidden">
+                    <div className="mb-12 flex justify-between text-sm tracking-[0.25em] text-[var(--site-accent)]"><span>{String(index + 1).padStart(2, "0")} / {String(visibleServices.length).padStart(2, "0")}</span><span aria-hidden="true" className="transition-transform group-open:rotate-180">⌄</span></div>
                     <h3 className="text-xl font-semibold leading-7">{item.title}</h3><p className="mt-4 text-sm leading-7 text-neutral-400">{serviceCardSummary(item)}</p>
                   </summary>
                   <p className="mt-5 border-t border-white/10 pt-5 text-sm leading-7 whitespace-pre-line text-neutral-300">{serviceDetailText(item)}</p>
                 </details> : <div>
-                  <div className="mb-12 text-sm tracking-[0.25em] text-[#d4af37]">{String(index + 1).padStart(2, "0")} / {String(visibleServices.length).padStart(2, "0")}</div>
+                  <div className="mb-12 text-sm tracking-[0.25em] text-[var(--site-accent)]">{String(index + 1).padStart(2, "0")} / {String(visibleServices.length).padStart(2, "0")}</div>
                   <h3 className="text-xl font-semibold leading-7">{item.title}</h3><p className="mt-4 text-sm leading-7 text-neutral-400">{serviceCardSummary(item)}</p>
                 </div>}
               </article>
@@ -597,51 +600,51 @@ export default function HomePage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-12">
-        <h2 className="mb-6 text-2xl font-semibold text-[#d4af37]">{content.whyCinento.title}</h2>
+        <h2 className="mb-6 text-2xl font-semibold text-[var(--site-accent)]">{content.whyCinento.title}</h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {content.whyCinento.items.map((item) => (
-            <div key={item} className="rounded-2xl border border-white/10 bg-[#0f0f0f] p-6 text-neutral-200">{item}</div>
+            <div key={item} className="rounded-2xl border border-white/10 site-surface p-6 text-neutral-200">{item}</div>
           ))}
         </div>
       </section>
 
-      <section className="border-y border-white/5 bg-[#0b0b0b] py-20">
+      <section className="border-y border-white/5 site-band py-20">
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
-            <div><div className="mb-4 h-px w-14 bg-[#d4af37]" /><h2 className="text-3xl font-semibold tracking-tight text-white md:text-4xl">{content.ecosystem.title}</h2><p className="mt-4 max-w-3xl leading-8 text-neutral-400">{content.ecosystem.subtitle}</p></div>
-            <a href={`/${lang}/platforms`} className="inline-flex min-h-11 items-center gap-3 border-b border-[#d4af37] pb-2 text-sm font-semibold text-[#e6c878] transition hover:text-white">{ui[lang].all}<span aria-hidden="true">↗</span></a>
+            <div><div className="mb-4 h-px w-14 bg-[var(--site-accent)]" /><h2 className="text-3xl font-semibold tracking-tight text-white md:text-4xl">{content.ecosystem.title}</h2><p className="mt-4 max-w-3xl leading-8 text-neutral-400">{content.ecosystem.subtitle}</p></div>
+            <a href={`/${lang}/platforms`} className="inline-flex min-h-11 items-center gap-3 border-b border-[var(--site-accent)] pb-2 text-sm font-semibold text-[var(--site-accent)] transition hover:text-white">{ui[lang].all}<span aria-hidden="true">↗</span></a>
           </div>
           {featuredPrograms.length > 0 ? (
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {featuredPrograms.map((program, index) => (
-                <a key={program.id} href={`/${lang}/platforms/${program.id}`} className="group overflow-hidden border border-white/10 bg-[#131313] transition hover:border-[#d4af37]/60 hover:bg-[#191919]">
+                <a key={program.id} href={`/${lang}/platforms/${program.id}`} className="group overflow-hidden border border-white/10 site-surface transition hover:border-[var(--site-accent)]/60 hover:bg-[#191919]">
                   <div className="relative flex h-48 items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_50%_40%,#2d2b27,#101010_70%)]">
                     {program.cover_url && !brokenImages[program.cover_url] && <Image src={program.cover_url} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw" unoptimized={program.cover_url.startsWith("https://")} onError={() => handleImageError(program.cover_url!)} className="object-cover opacity-80 transition duration-500 group-hover:scale-105" />}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#131313] via-transparent to-black/10" />
-                    {(!program.cover_url || brokenImages[program.cover_url]) && (program.icon_url && !brokenImages[program.icon_url] ? <Image src={program.icon_url} alt="" width={64} height={64} unoptimized={program.icon_url.startsWith("https://")} onError={() => handleImageError(program.icon_url!)} className="relative z-10 h-16 w-16 object-contain drop-shadow-xl" /> : <span className="relative z-10 border border-[#d4af37]/60 bg-black/60 px-4 py-3 text-xl font-semibold text-[#e6c878]">{program.mark}</span>)}
+                    {(!program.cover_url || brokenImages[program.cover_url]) && (program.icon_url && !brokenImages[program.icon_url] ? <Image src={program.icon_url} alt="" width={64} height={64} unoptimized={program.icon_url.startsWith("https://")} onError={() => handleImageError(program.icon_url!)} className="relative z-10 h-16 w-16 object-contain drop-shadow-xl" /> : <span className="relative z-10 border border-[var(--site-accent)]/60 bg-black/60 px-4 py-3 text-xl font-semibold text-[var(--site-accent)]">{program.mark}</span>)}
                   </div>
-                  <div className="p-6"><div className="mb-3 flex items-center justify-between text-xs uppercase tracking-[0.2em] text-[#d4af37]"><span>{program.category}</span><span>{String(index + 1).padStart(2, "0")}</span></div><h3 className="text-xl font-semibold text-white">{program.name}</h3><p className="mt-3 min-h-20 text-sm leading-7 text-neutral-400">{program.copy?.[lang]?.description || program.copy?.en?.description}</p><div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4 text-sm font-medium text-[#e6c878]"><span>{ui[lang].profile}</span><span aria-hidden="true" className="transition group-hover:translate-x-1">↗</span></div></div>
+                  <div className="p-6"><div className="mb-3 flex items-center justify-between text-xs uppercase tracking-[0.2em] text-[var(--site-accent)]"><span>{program.category}</span><span>{String(index + 1).padStart(2, "0")}</span></div><h3 className="text-xl font-semibold text-white">{program.name}</h3><p className="mt-3 min-h-20 text-sm leading-7 text-neutral-400">{program.copy?.[lang]?.description || program.copy?.en?.description}</p><div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4 text-sm font-medium text-[var(--site-accent)]"><span>{ui[lang].profile}</span><span aria-hidden="true" className="transition group-hover:translate-x-1">↗</span></div></div>
                 </a>
               ))}
             </div>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2">{content.platforms.map((item) => <div key={item.title} className="border border-[#d4af37]/15 bg-neutral-900/80 p-6"><h3 className="mb-3 text-lg font-semibold text-white">{item.title}</h3><p className="text-sm leading-7 text-neutral-400">{item.description}</p></div>)}</div>
+            <div className="grid gap-6 md:grid-cols-2">{content.platforms.map((item) => <div key={item.title} className="border border-[var(--site-accent)]/15 site-surface p-6"><h3 className="mb-3 text-lg font-semibold text-white">{item.title}</h3><p className="text-sm leading-7 text-neutral-400">{item.description}</p></div>)}</div>
           )}
         </div>
       </section>
 
       {content.featuredProjects.items.some(item => item.title.trim()) && (
         <section className="mx-auto max-w-7xl px-6 py-20" aria-labelledby="projects-title">
-          <div className="mb-10 max-w-3xl"><div className="mb-4 h-px w-14 bg-[#d4af37]" /><h2 id="projects-title" className="text-3xl font-semibold md:text-4xl">{content.featuredProjects.title}</h2><p className="mt-4 leading-8 text-neutral-400">{content.featuredProjects.subtitle}</p>{showEnglishProjectDetails && <p className="mt-3 text-sm text-[#e6c878]">{ui[lang].translation}</p>}</div>
+          <div className="mb-10 max-w-3xl"><div className="mb-4 h-px w-14 bg-[var(--site-accent)]" /><h2 id="projects-title" className="text-3xl font-semibold md:text-4xl">{content.featuredProjects.title}</h2><p className="mt-4 leading-8 text-neutral-400">{content.featuredProjects.subtitle}</p>{showEnglishProjectDetails && <p className="mt-3 text-sm text-[var(--site-accent)]">{ui[lang].translation}</p>}</div>
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {content.featuredProjects.items.filter(item => item.title.trim()).map((item, index) => {
               const rawImage = item.image?.trim() || "";
               const image = rawImage.startsWith("/") && !rawImage.startsWith("//") || /^https:\/\/[^\s]+$/i.test(rawImage) ? rawImage : "";
-              return <article key={`${item.title}-${index}`} className="overflow-hidden border border-white/10 bg-[#131313]">
+              return <article key={`${item.title}-${index}`} className="overflow-hidden border border-white/10 site-surface">
                 <div className="relative h-56 bg-[radial-gradient(circle_at_60%_25%,#373022,#111_70%)]">
-                  {image && !brokenImages[image] ? <Image src={image} alt={item.title} fill sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw" unoptimized={image.startsWith("https://")} onError={() => handleImageError(image)} className="object-cover" /> : <div className="flex h-full items-center justify-center text-4xl tracking-[0.3em] text-[#d4af37]/45">CINENTO</div>}
+                  {image && !brokenImages[image] ? <Image src={image} alt={item.title} fill sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw" unoptimized={image.startsWith("https://")} onError={() => handleImageError(image)} className="object-cover" /> : <div className="flex h-full items-center justify-center text-4xl tracking-[0.3em] text-[var(--site-accent)]/45">CINENTO</div>}
                 </div>
-                <div className="p-6"><div className="mb-3 text-xs uppercase tracking-[0.18em] text-[#d4af37]">{item.status}</div><h3 className="text-xl font-semibold">{item.title}</h3>{item.role && <p className="mt-3 text-sm text-[#e6c878]">{item.role}</p>}<p className="mt-4 text-sm leading-7 text-neutral-400">{item.description}</p></div>
+                <div className="p-6"><div className="mb-3 text-xs uppercase tracking-[0.18em] text-[var(--site-accent)]">{item.status}</div><h3 className="text-xl font-semibold">{item.title}</h3>{item.role && <p className="mt-3 text-sm text-[var(--site-accent)]">{item.role}</p>}<p className="mt-4 text-sm leading-7 text-neutral-400">{item.description}</p></div>
               </article>;
             })}
           </div>
@@ -649,14 +652,14 @@ export default function HomePage() {
       )}
 
       <section id="gallery" className="mx-auto max-w-7xl px-6 py-12">
-        <h2 className="mb-4 text-2xl font-semibold text-[#d4af37]">{content.gallery.title || ui[lang].gallery}</h2>
+        <h2 className="mb-4 text-2xl font-semibold text-[var(--site-accent)]">{content.gallery.title || ui[lang].gallery}</h2>
         <p className="mb-8 max-w-4xl text-neutral-400 leading-8">{content.gallery.subtitle}</p>
         {activeGalleryImages.length > 0 ? (
           <div className="grid gap-5 md:grid-cols-3">
             {activeGalleryImages.map((image, index) => {
               const label = content.gallery.items[index] || `Gallery ${index + 1}`;
               return (
-                <div key={`${image}-${index}`} className="group overflow-hidden rounded-2xl border border-white/10 bg-[#0f0f0f] shadow-lg">
+                <div key={`${image}-${index}`} className="group overflow-hidden rounded-2xl border border-white/10 site-surface shadow-lg">
                   <div className="relative h-56 w-full overflow-hidden">
                     <Image src={image} alt={label} fill sizes="(min-width: 768px) 33vw, 100vw" unoptimized={image.startsWith("https://")} onError={() => handleImageError(image)} className="object-cover transition duration-500 group-hover:scale-105" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -678,10 +681,10 @@ export default function HomePage() {
       </section>
 
       <section id="journal" className="mx-auto max-w-7xl px-6 py-12">
-        <h2 className="mb-6 text-2xl font-semibold text-[#d4af37]">{content.journalSection.title}</h2>
+        <h2 className="mb-6 text-2xl font-semibold text-[var(--site-accent)]">{content.journalSection.title}</h2>
         <div className="grid gap-4 md:grid-cols-3">
           {content.journal.map((item) => (
-            <div key={item.title} className="rounded-2xl border border-[#d4af37]/15 bg-neutral-900 p-6 shadow-lg">
+            <div key={item.title} className="rounded-2xl border border-[var(--site-accent)]/15 site-surface p-6 shadow-lg">
               <div className="mb-3 text-lg font-medium leading-7 text-white">{item.title}</div>
               <div className="text-sm leading-7 text-neutral-400">{item.description}</div>
             </div>
@@ -689,33 +692,33 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="border-y border-white/5 bg-[#0d0d0d] py-20" aria-labelledby="process-title">
-        <div className="mx-auto max-w-7xl px-6"><div className="mb-10 max-w-3xl"><div className="mb-4 h-px w-14 bg-[#d4af37]" /><h2 id="process-title" className="text-3xl font-semibold md:text-4xl">{content.process.title}</h2><p className="mt-4 leading-8 text-neutral-400">{content.process.subtitle}</p></div>
-          <div className="grid gap-5 md:grid-cols-3">{content.process.steps.filter(step => step.title.trim()).map((step, index) => <div key={`${step.title}-${index}`} className="border-t border-[#d4af37]/60 pt-6"><div className="mb-7 text-4xl font-light text-[#d4af37]/60">{String(index + 1).padStart(2, "0")}</div><h3 className="text-xl font-semibold">{step.title}</h3><p className="mt-3 text-sm leading-7 text-neutral-400">{step.description}</p></div>)}</div>
-          <a href="#contact" className="mt-10 inline-flex rounded-xl bg-[#d4af37] px-6 py-3 font-semibold text-black transition hover:opacity-90">{content.hero.primaryCtaHref === "#contact" ? content.hero.primaryCta : content.contact.title}</a>
+      <section className="border-y border-white/5 site-band py-20" aria-labelledby="process-title">
+        <div className="mx-auto max-w-7xl px-6"><div className="mb-10 max-w-3xl"><div className="mb-4 h-px w-14 bg-[var(--site-accent)]" /><h2 id="process-title" className="text-3xl font-semibold md:text-4xl">{content.process.title}</h2><p className="mt-4 leading-8 text-neutral-400">{content.process.subtitle}</p></div>
+          <div className="grid gap-5 md:grid-cols-3">{content.process.steps.filter(step => step.title.trim()).map((step, index) => <div key={`${step.title}-${index}`} className="border-t border-[var(--site-accent)]/60 pt-6"><div className="mb-7 text-4xl font-light text-[var(--site-accent)]/60">{String(index + 1).padStart(2, "0")}</div><h3 className="text-xl font-semibold">{step.title}</h3><p className="mt-3 text-sm leading-7 text-neutral-400">{step.description}</p></div>)}</div>
+          <a href="#contact" className="mt-10 inline-flex rounded-xl bg-[var(--site-accent)] px-6 py-3 font-semibold text-black transition hover:opacity-90">{content.hero.primaryCtaHref === "#contact" ? content.hero.primaryCta : content.contact.title}</a>
         </div>
       </section>
 
       <section id="contact" className="mx-auto max-w-4xl px-6 py-16">
-        <div className="rounded-3xl border border-[#d4af37]/20 bg-neutral-900/80 p-8 shadow-2xl md:p-10">
-          <h2 className="mb-3 text-3xl font-bold text-[#d4af37]">{content.contact.title}</h2>
+        <div className="rounded-3xl border border-[var(--site-accent)]/20 site-surface p-8 shadow-2xl md:p-10">
+          <h2 className="mb-3 text-3xl font-bold text-[var(--site-accent)]">{content.contact.title}</h2>
           <p className="mb-8 text-neutral-400 leading-8">{content.contact.subtitle}</p>
           <form onSubmit={handleSubmit} className="space-y-5">
             <label className="block" htmlFor="project-name">{content.contact.namePlaceholder}</label>
-            <input id="project-name" name="name" required autoComplete="name" minLength={2} maxLength={120} value={name} onChange={(e) => setName(e.target.value)} placeholder={content.contact.namePlaceholder} style={{ backgroundColor: "#0a0a0a", color: "#fff" }} className="w-full rounded-xl border border-[#d4af37]/20 px-4 py-3 placeholder-neutral-500 outline-none transition focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]" />
+            <input id="project-name" name="name" required autoComplete="name" minLength={2} maxLength={120} value={name} onChange={(e) => setName(e.target.value)} placeholder={content.contact.namePlaceholder} style={{ backgroundColor: theme.surface, color: "#fff" }} className="w-full rounded-xl border border-[var(--site-accent)]/20 px-4 py-3 placeholder-neutral-500 outline-none transition focus:border-[var(--site-accent)] focus:ring-1 focus:ring-[var(--site-accent)]" />
             <label className="block" htmlFor="project-email">{content.contact.emailPlaceholder}</label>
-            <input id="project-email" name="email" type="email" required autoComplete="email" maxLength={254} value={email} onChange={(e) => setEmail(e.target.value)} placeholder={content.contact.emailPlaceholder} style={{ backgroundColor: "#0a0a0a", color: "#fff" }} className="w-full rounded-xl border border-[#d4af37]/20 px-4 py-3 placeholder-neutral-500 outline-none transition focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]" />
+            <input id="project-email" name="email" type="email" required autoComplete="email" maxLength={254} value={email} onChange={(e) => setEmail(e.target.value)} placeholder={content.contact.emailPlaceholder} style={{ backgroundColor: theme.surface, color: "#fff" }} className="w-full rounded-xl border border-[var(--site-accent)]/20 px-4 py-3 placeholder-neutral-500 outline-none transition focus:border-[var(--site-accent)] focus:ring-1 focus:ring-[var(--site-accent)]" />
             <label className="block" htmlFor="project-message">{content.contact.messagePlaceholder}</label>
-            <textarea id="project-message" name="message" required minLength={20} maxLength={4000} value={message} onChange={(e) => setMessage(e.target.value)} placeholder={content.contact.messagePlaceholder} style={{ backgroundColor: "#0a0a0a", color: "#fff" }} className="h-36 w-full rounded-xl border border-[#d4af37]/20 px-4 py-3 placeholder-neutral-500 outline-none transition focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]" />
+            <textarea id="project-message" name="message" required minLength={20} maxLength={4000} value={message} onChange={(e) => setMessage(e.target.value)} placeholder={content.contact.messagePlaceholder} style={{ backgroundColor: theme.surface, color: "#fff" }} className="h-36 w-full rounded-xl border border-[var(--site-accent)]/20 px-4 py-3 placeholder-neutral-500 outline-none transition focus:border-[var(--site-accent)] focus:ring-1 focus:ring-[var(--site-accent)]" />
             <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="sr-only" />
-            <button type="submit" disabled={submitting} className="w-full rounded-xl bg-[#d4af37] py-3 font-semibold text-black transition hover:opacity-90 disabled:opacity-60">{submitting ? ui[lang].sending : lang === "en" && (content.contact.buttonLabel === "Prepare message" || content.contact.buttonLabel === "Submit Project") ? "Send project inquiry" : lang === "tr" && content.contact.buttonLabel === "Mesaj hazırla" ? "Proje talebini gönder" : content.contact.buttonLabel}</button>
+            <button type="submit" disabled={submitting} className="w-full rounded-xl bg-[var(--site-accent)] py-3 font-semibold text-black transition hover:opacity-90 disabled:opacity-60">{submitting ? ui[lang].sending : lang === "en" && (content.contact.buttonLabel === "Prepare message" || content.contact.buttonLabel === "Submit Project") ? "Send project inquiry" : lang === "tr" && content.contact.buttonLabel === "Mesaj hazırla" ? "Proje talebini gönder" : content.contact.buttonLabel}</button>
             <div role="status" aria-live="polite" className="text-sm text-neutral-300">{inquiryState === "sent" ? ui[lang].sent : inquiryState === "unavailable" ? ui[lang].unavailable : ui[lang].privacy}</div>
-            {inquiryState === "unavailable" && <a href={`mailto:${contactEmail}?subject=${encodeURIComponent(content.contact.title)}&body=${encodeURIComponent(mailBody)}`} className="inline-block border-b border-[#d4af37] pb-1 text-sm text-[#d4af37]">{ui[lang].email}</a>}
+            {inquiryState === "unavailable" && <a href={`mailto:${contactEmail}?subject=${encodeURIComponent(content.contact.title)}&body=${encodeURIComponent(mailBody)}`} className="inline-block border-b border-[var(--site-accent)] pb-1 text-sm text-[var(--site-accent)]">{ui[lang].email}</a>}
           </form>
         </div>
       </section>
 
-      <footer className="border-t border-white/10 bg-[#050505]">
+      <footer className="border-t border-white/10 site-band">
         <div className="mx-auto grid max-w-7xl gap-10 px-6 py-12 md:grid-cols-3">
           <div>
             <div className="mb-3 text-lg font-bold text-white">{content.brand}</div>
@@ -725,16 +728,16 @@ export default function HomePage() {
             <div className="mb-3 font-semibold text-white">{content.footer.contactTitle}</div>
             <div className="space-y-2 text-sm text-neutral-400">
               <div>{content.footer.location?.trim() || "Istanbul, Turkey"}</div>
-              <a href={`mailto:${contactEmail}`} className="block hover:text-[#d4af37]">{contactEmail}</a>
-              {whatsappNumber && <a href={`https://wa.me/${whatsappNumber}`} target="_blank" className="block hover:text-[#d4af37]" rel="noreferrer">{content.contact.whatsappLabel}</a>}
+              <a href={`mailto:${contactEmail}`} className="block hover:text-[var(--site-accent)]">{contactEmail}</a>
+              {whatsappNumber && <a href={`https://wa.me/${whatsappNumber}`} target="_blank" className="block hover:text-[var(--site-accent)]" rel="noreferrer">{content.contact.whatsappLabel}</a>}
             </div>
           </div>
           <div>
             <div className="mb-3 font-semibold text-white">{content.footer.followTitle}</div>
             <div className="space-y-2 text-sm text-neutral-400">
-              <a href={content.footer.social?.instagram || "https://instagram.com/cinento"} target="_blank" rel="noopener noreferrer" className="block hover:text-[#d4af37]">Instagram</a>
-              <a href={content.footer.social?.linkedin || "https://linkedin.com/company/cinento"} target="_blank" rel="noopener noreferrer" className="block hover:text-[#d4af37]">LinkedIn</a>
-              <a href={content.footer.social?.website || "https://cinento.net"} target="_blank" rel="noopener noreferrer" className="block hover:text-[#d4af37]">Website</a>
+              <a href={content.footer.social?.instagram || "https://instagram.com/cinento"} target="_blank" rel="noopener noreferrer" className="block hover:text-[var(--site-accent)]">Instagram</a>
+              <a href={content.footer.social?.linkedin || "https://linkedin.com/company/cinento"} target="_blank" rel="noopener noreferrer" className="block hover:text-[var(--site-accent)]">LinkedIn</a>
+              <a href={content.footer.social?.website || "https://cinento.net"} target="_blank" rel="noopener noreferrer" className="block hover:text-[var(--site-accent)]">Website</a>
             </div>
           </div>
         </div>

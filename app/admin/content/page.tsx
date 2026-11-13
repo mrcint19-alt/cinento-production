@@ -12,6 +12,7 @@ import Image from "next/image";
 import rtlHomepage from "../../data/rtl-homepage.json";
 import { heroDestination, heroIcon, HERO_DESTINATIONS, HERO_DESTINATION_LABELS, HERO_ICONS } from "../../../lib/hero-cta";
 import { addHeroSlide, moveHeroSlide, removeHeroSlide, reorderHeroSlides, setHeroSlideImage, type HeroSlide } from "../../../lib/hero-slides";
+import { DEFAULT_SITE_THEME, siteTheme, type SiteTheme } from "../../../lib/site-theme";
 
 type Lang = "en" | "tr" | "fa" | "ar";
 
@@ -101,6 +102,7 @@ export default function ContentManager() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [lang, setLang] = useState<Lang>("en");
+  const [theme, setTheme] = useState<SiteTheme>(DEFAULT_SITE_THEME);
 
   const [brand, setBrand] = useState("");
 
@@ -182,6 +184,7 @@ export default function ContentManager() {
       .then((res) => res.json())
       .then((json) => {
         setData(json);
+        setTheme(siteTheme(json?.theme));
         loadLang(json, "en");
         setLoading(false);
       })
@@ -366,6 +369,7 @@ export default function ContentManager() {
 
       const updated = {
         ...data,
+        theme: siteTheme(theme),
         [lang]: {
           ...data?.[lang],
           brand,
@@ -478,6 +482,16 @@ export default function ContentManager() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
+        <Section title="Theme Manager PRO · shared across all languages">
+          <p className="text-sm text-neutral-300">These colors apply to the public homepage in EN, TR, FA and AR. Preview saving stays subject to the existing safety restriction.</p>
+          {(["background", "surface", "accent"] as const).map(key => <label key={key} className="flex items-center justify-between gap-4 text-sm text-neutral-200">
+            <span className="capitalize">{key}</span>
+            <span className="flex items-center gap-2"><input type="color" aria-label={`${key} color`} value={theme[key]} onChange={event => setTheme(current => ({ ...current, [key]: event.target.value }))} className="h-11 w-14 cursor-pointer p-1" /><code>{theme[key]}</code></span>
+          </label>)}
+          {(["background", "surface", "accent"] as const).some(key => theme[key] !== siteTheme(theme)[key]) && <p role="alert" className="text-sm text-yellow-400">A selected color lacks text contrast. It will use the approved color when saved.</p>}
+          <div className="rounded-lg border p-5" style={{ background: siteTheme(theme).background, borderColor: siteTheme(theme).accent, color: "white" }}><strong style={{ color: siteTheme(theme).accent }}>CINENTO</strong><div className="mt-3 rounded-lg p-4" style={{ background: siteTheme(theme).surface }}>Live color sample · Card content</div></div>
+          <button type="button" onClick={() => setTheme(DEFAULT_SITE_THEME)} className="rounded-lg border border-yellow-500 px-4 py-2 text-sm text-yellow-400">Restore approved palette</button>
+        </Section>
         <Section title="Brand">
           <Input label="Brand" value={brand} onChange={setBrand} />
         </Section>
