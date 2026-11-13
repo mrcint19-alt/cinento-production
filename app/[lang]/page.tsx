@@ -324,8 +324,8 @@ export default function HomePage() {
   const content = useMemo(() => mergeHomepageContent(CONTENT[lang], dynamicContent), [lang, dynamicContent]);
   const primaryHeroLink = heroLink(content.hero.primaryCtaHref, lang, "watch");
   const secondaryHeroLink = heroLink(content.hero.secondaryCtaHref, lang, "/platforms");
-  const primaryHeroIcon = heroIcon(content.hero.primaryCtaIcon);
-  const secondaryHeroIcon = heroIcon(content.hero.secondaryCtaIcon);
+  const primaryHeroIcon = heroIcon(content.hero.primaryCtaIcon ?? "arrow");
+  const secondaryHeroIcon = heroIcon(content.hero.secondaryCtaIcon ?? "arrow");
   const heroSlides = visibleHeroSlides(content.hero.slides);
   const currentSlide = heroSlides.length ? heroSlides[activeSlideIndex % heroSlides.length] : null;
 
@@ -505,12 +505,13 @@ export default function HomePage() {
             </a>
           </nav>
 
-          <div className="flex items-center gap-3">
-            <div className="flex rounded-full border border-white/10 bg-white/5 p-1">
-              <button aria-label="English" aria-current={lang === "en" ? "page" : undefined} onClick={() => handleLanguageSwitch("en")} className={`rounded-full px-3 py-1 text-xs font-medium transition ${lang === "en" ? "bg-[var(--site-accent)] text-black" : "text-neutral-300 hover:text-white"}`}>EN</button>
-              <button aria-label="Türkçe" aria-current={lang === "tr" ? "page" : undefined} onClick={() => handleLanguageSwitch("tr")} className={`rounded-full px-3 py-1 text-xs font-medium transition ${lang === "tr" ? "bg-[var(--site-accent)] text-black" : "text-neutral-300 hover:text-white"}`}>TR</button>
-              <button aria-label="فارسی" aria-current={lang === "fa" ? "page" : undefined} onClick={() => handleLanguageSwitch("fa")} className={`rounded-full px-3 py-1 text-xs font-medium transition ${lang === "fa" ? "bg-[var(--site-accent)] text-black" : "text-neutral-300 hover:text-white"}`}>FA</button>
-              <button aria-label="العربية" aria-current={lang === "ar" ? "page" : undefined} onClick={() => handleLanguageSwitch("ar")} className={`rounded-full px-3 py-1 text-xs font-medium transition ${lang === "ar" ? "bg-[var(--site-accent)] text-black" : "text-neutral-300 hover:text-white"}`}>AR</button>
+          <div className="flex flex-wrap items-center gap-3">
+            <div role="group" aria-label="Language / زبان" className="flex items-center gap-1 rounded-full border border-[var(--site-accent)]/70 bg-black/45 p-1 shadow-[0_0_0_1px_rgba(255,255,255,.08)]">
+              <span aria-hidden="true" className="ps-2 text-xs font-bold text-[var(--site-accent)]">{lang === "fa" ? "زبان" : lang === "ar" ? "اللغة" : lang === "tr" ? "DİL" : "LANG"}</span>
+              <button type="button" aria-label="English" aria-current={lang === "en" ? "page" : undefined} onClick={() => handleLanguageSwitch("en")} className={`rounded-full px-3 py-2 text-sm font-semibold transition ${lang === "en" ? "bg-[var(--site-accent)] text-black" : "text-white hover:bg-white/15"}`}>EN</button>
+              <button type="button" aria-label="Türkçe" aria-current={lang === "tr" ? "page" : undefined} onClick={() => handleLanguageSwitch("tr")} className={`rounded-full px-3 py-2 text-sm font-semibold transition ${lang === "tr" ? "bg-[var(--site-accent)] text-black" : "text-white hover:bg-white/15"}`}>TR</button>
+              <button type="button" aria-label="فارسی" aria-current={lang === "fa" ? "page" : undefined} onClick={() => handleLanguageSwitch("fa")} className={`rounded-full px-3 py-2 text-sm font-semibold transition ${lang === "fa" ? "bg-[var(--site-accent)] text-black" : "text-white hover:bg-white/15"}`}>FA</button>
+              <button type="button" aria-label="العربية" aria-current={lang === "ar" ? "page" : undefined} onClick={() => handleLanguageSwitch("ar")} className={`rounded-full px-3 py-2 text-sm font-semibold transition ${lang === "ar" ? "bg-[var(--site-accent)] text-black" : "text-white hover:bg-white/15"}`}>AR</button>
             </div>
 
             <a href={WATCH_URL} target="_blank" rel="noopener noreferrer" className="rounded-xl bg-[var(--site-accent)] px-4 py-2 text-sm font-semibold text-black transition hover:opacity-90">
