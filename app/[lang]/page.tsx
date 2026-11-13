@@ -31,6 +31,10 @@ function serviceCardSummary(item: ServiceItem): string {
 function serviceDetailText(item: ServiceItem): string {
   return item.fullDescription?.trim() || item.description;
 }
+function serviceHasDistinctDetail(item: ServiceItem): boolean {
+  const detail = serviceDetailText(item).trim();
+  return Boolean(detail) && detail !== serviceCardSummary(item).trim();
+}
 type ProjectItem = { id?: string; title: string; role: string; status: string; description: string; image?: string };
 type FeaturedProgram = {
   id: string;
@@ -545,13 +549,16 @@ export default function HomePage() {
           <div className="grid gap-5 md:grid-cols-3">
             {content.services.items.filter(item => item.title.trim() && item.status !== "archived").map((item, index, visibleServices) => (
               <article key={item.id || `${item.title}-${index}`} className="border border-white/10 bg-[#151515] p-7 transition hover:border-[#d4af37]/50">
-                <details className="group">
+                {serviceHasDistinctDetail(item) ? <details className="group">
                   <summary className="cursor-pointer list-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#d4af37] [&::-webkit-details-marker]:hidden">
                     <div className="mb-12 flex justify-between text-sm tracking-[0.25em] text-[#d4af37]"><span>{String(index + 1).padStart(2, "0")} / {String(visibleServices.length).padStart(2, "0")}</span><span aria-hidden="true" className="transition-transform group-open:rotate-180">⌄</span></div>
                     <h3 className="text-xl font-semibold leading-7">{item.title}</h3><p className="mt-4 text-sm leading-7 text-neutral-400">{serviceCardSummary(item)}</p>
                   </summary>
                   <p className="mt-5 border-t border-white/10 pt-5 text-sm leading-7 whitespace-pre-line text-neutral-300">{serviceDetailText(item)}</p>
-                </details>
+                </details> : <div>
+                  <div className="mb-12 text-sm tracking-[0.25em] text-[#d4af37]">{String(index + 1).padStart(2, "0")} / {String(visibleServices.length).padStart(2, "0")}</div>
+                  <h3 className="text-xl font-semibold leading-7">{item.title}</h3><p className="mt-4 text-sm leading-7 text-neutral-400">{serviceCardSummary(item)}</p>
+                </div>}
               </article>
             ))}
           </div>

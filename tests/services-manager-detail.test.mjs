@@ -9,13 +9,16 @@ const file = path.resolve(import.meta.dirname, "../app/[lang]/page.tsx");
 const text = readFileSync(file, "utf8");
 const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
 const helper = source.statements.find(statement => ts.isFunctionDeclaration(statement) && statement.name?.text === "serviceDetailText");
+const summaryHelper = source.statements.find(statement => ts.isFunctionDeclaration(statement) && statement.name?.text === "serviceCardSummary");
+const distinctHelper = source.statements.find(statement => ts.isFunctionDeclaration(statement) && statement.name?.text === "serviceHasDistinctDetail");
 assert.ok(helper, "public services need detail copy selection");
-const compiled = ts.transpileModule(`${helper.getText(source)}\nmodule.exports = serviceDetailText;`, {
+assert.ok(summaryHelper && distinctHelper, "service cards need a distinct detail check");
+const compiled = ts.transpileModule(`${summaryHelper.getText(source)}\n${helper.getText(source)}\n${distinctHelper.getText(source)}\nmodule.exports = { serviceDetailText, serviceHasDistinctDetail };`, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
 }).outputText;
 const sandbox = { module: { exports: {} } };
 vm.runInNewContext(compiled, sandbox, { filename: file });
-const serviceDetailText = sandbox.module.exports;
+const { serviceDetailText, serviceHasDistinctDetail } = sandbox.module.exports;
 
 test("new detail copy is shown without changing legacy or card text", () => {
   const item = { id: "one", title: "Service", description: "Original", shortDescription: "Card", fullDescription: "  Detailed copy  " };
@@ -27,7 +30,14 @@ test("new detail copy is shown without changing legacy or card text", () => {
 test("legacy and blank full descriptions fall back to the existing description", () => {
   for (const fullDescription of [undefined, "", "  \n "]) {
     assert.equal(serviceDetailText({ title: "Legacy", description: "Original", fullDescription }), "Original");
+    assert.equal(serviceHasDistinctDetail({ title: "Legacy", description: "Original", fullDescription }), false);
   }
+});
+
+test("only a different detail opens a service card", () => {
+  assert.equal(serviceHasDistinctDetail({ description: "Original", fullDescription: " Original " }), false);
+  assert.equal(serviceHasDistinctDetail({ description: "Original", shortDescription: "Summary" }), true);
+  assert.equal(serviceHasDistinctDetail({ description: "Original", fullDescription: "Detailed copy" }), true);
 });
 
 test("EN/TR/FA/AR details remain independent after storage", () => {
@@ -41,6 +51,7 @@ test("EN/TR/FA/AR details remain independent after storage", () => {
 
 test("the existing public service filter and accessible card toggle remain in use", () => {
   assert.match(text, /items\.filter\(item => item\.title\.trim\(\) && item\.status !== "archived"\)/);
+  assert.match(text, /serviceHasDistinctDetail\(item\) \? <details/);
   assert.match(text, /<details className="group">[\s\S]*?<summary className="[^"]*focus-visible:outline/);
   assert.match(text, /\{serviceDetailText\(item\)\}<\/p>/);
 });
