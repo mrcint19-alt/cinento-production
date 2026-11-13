@@ -56,6 +56,11 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+html[lang="fa"] body {
+  font-family: var(--font-vazirmatn), Tahoma, sans-serif;
+  line-height: 1.8;
+}
+
 img,
 picture,
 video,
