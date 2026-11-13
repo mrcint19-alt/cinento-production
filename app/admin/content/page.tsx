@@ -8,8 +8,10 @@ Status: HERO + WHAT WE DO + WHY + ECOSYSTEM + PLATFORMS + GALLERY + JOURNAL + CO
 */
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import rtlHomepage from "../../data/rtl-homepage.json";
 import { heroDestination, heroIcon, HERO_DESTINATIONS, HERO_DESTINATION_LABELS, HERO_ICONS } from "../../../lib/hero-cta";
+import { addHeroSlide, moveHeroSlide, removeHeroSlide, reorderHeroSlides, setHeroSlideImage, type HeroSlide } from "../../../lib/hero-slides";
 
 type Lang = "en" | "tr" | "fa" | "ar";
 
@@ -115,6 +117,8 @@ export default function ContentManager() {
   const [heroSecondaryCtaIcon, setHeroSecondaryCtaIcon] = useState("none");
   const [heroCardTitle, setHeroCardTitle] = useState("");
   const [heroCardSubtitle, setHeroCardSubtitle] = useState("");
+  const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
+  const [heroImages, setHeroImages] = useState<string[]>([]);
 
   const [whatTitle, setWhatTitle] = useState("");
   const [whatItems, setWhatItems] = useState("");
@@ -189,7 +193,10 @@ export default function ContentManager() {
 
   useEffect(() => {
     fetch("/api/admin/images", { cache: "no-store" }).then(res => res.json())
-      .then(json => setProjectImages(Array.isArray(json?.images?.projects) ? json.images.projects : []))
+      .then(json => {
+        setProjectImages(Array.isArray(json?.images?.projects) ? json.images.projects : []);
+        setHeroImages(Array.isArray(json?.images?.hero) ? json.images.hero : []);
+      })
       .catch(() => {});
   }, []);
 
@@ -215,6 +222,7 @@ export default function ContentManager() {
     setHeroSecondaryCtaIcon(heroIcon(section.hero?.secondaryCtaIcon));
     setHeroCardTitle(section.hero?.cardTitle || "CINENTO");
     setHeroCardSubtitle(section.hero?.cardSubtitle || "");
+    setHeroSlides(Array.isArray(section.hero?.slides) ? section.hero.slides : []);
 
     setWhatTitle(section.whatWeDo?.title || section.whatTitle || "");
     setWhatItems(
@@ -297,10 +305,20 @@ export default function ContentManager() {
     const original = data?.[lang]?.services;
     const defaults = serviceDefaults[lang];
     const savedItems = Array.isArray(original?.items) ? original.items : defaults.items;
+    const savedHero = data?.[lang]?.hero ?? {};
     if ((servicesTitle !== (original?.title ?? defaults.title) ||
          servicesSubtitle !== (original?.subtitle ?? defaults.subtitle) ||
-         JSON.stringify(services) !== JSON.stringify(savedItems)) &&
-        !window.confirm("Unsaved service changes will be lost. Switch language?")) return;
+         JSON.stringify(services) !== JSON.stringify(savedItems) ||
+         JSON.stringify(heroSlides) !== JSON.stringify(savedHero.slides ?? []) ||
+         heroPrimaryCta !== (savedHero.primaryCta ?? data?.[lang]?.buttonPrimary ?? "") ||
+         heroSecondaryCta !== (savedHero.secondaryCta ?? data?.[lang]?.buttonSecondary ?? "") ||
+         heroPrimaryCtaHref !== heroDestination(savedHero.primaryCtaHref, "watch") ||
+         heroSecondaryCtaHref !== heroDestination(savedHero.secondaryCtaHref, "/platforms") ||
+         heroPrimaryCtaVisible !== (savedHero.primaryCtaVisible !== false) ||
+         heroSecondaryCtaVisible !== (savedHero.secondaryCtaVisible !== false) ||
+         heroPrimaryCtaIcon !== heroIcon(savedHero.primaryCtaIcon) ||
+         heroSecondaryCtaIcon !== heroIcon(savedHero.secondaryCtaIcon)) &&
+        !window.confirm("Unsaved Hero or service changes will be lost. Switch language?")) return;
     setLang(newLang);
     loadLang(data, newLang);
   };
@@ -365,6 +383,7 @@ export default function ContentManager() {
             secondaryCtaIcon: heroSecondaryCtaIcon,
             cardTitle: heroCardTitle,
             cardSubtitle: heroCardSubtitle,
+            slides: heroSlides,
           },
           whatWeDo: {
             title: whatTitle,
@@ -493,6 +512,31 @@ export default function ContentManager() {
           </label>
           <Input label="Hero Card Title" value={heroCardTitle} onChange={setHeroCardTitle} />
           <Input label="Hero Card Subtitle" value={heroCardSubtitle} onChange={setHeroCardSubtitle} />
+          <div className="space-y-4 border-t border-white/10 pt-5">
+            <p className="text-sm text-neutral-300">Hero slides · text is separate for each language; the image and order are shared. Blank titles stay hidden. With no slides, the current active Hero image and card remain.</p>
+            <button type="button" onClick={() => {
+              const id = crypto.randomUUID();
+              setData((current: ServiceHomepageData | null) => addHeroSlide(current ?? {}, id));
+              setHeroSlides(current => [...current, { id, title: "", subtitle: "", image: "" }]);
+            }} className="rounded-lg border border-yellow-500 px-4 py-2 text-sm font-semibold text-yellow-400">Add Hero slide</button>
+            {heroSlides.map((slide, index) => <div key={slide.id} className="space-y-3 rounded-2xl border border-yellow-600/20 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3"><span className="text-sm text-yellow-400">Slide {index + 1}</span><div className="flex gap-2">
+                <button type="button" aria-label={`Move Hero slide ${index + 1} up`} disabled={index === 0} onClick={() => { setData((current: ServiceHomepageData | null) => moveHeroSlide(current ?? {}, slide.id, -1)); setHeroSlides(current => reorderHeroSlides(current, slide.id, -1)); }} className="rounded border border-neutral-600 px-3 py-1 disabled:opacity-40">↑</button>
+                <button type="button" aria-label={`Move Hero slide ${index + 1} down`} disabled={index === heroSlides.length - 1} onClick={() => { setData((current: ServiceHomepageData | null) => moveHeroSlide(current ?? {}, slide.id, 1)); setHeroSlides(current => reorderHeroSlides(current, slide.id, 1)); }} className="rounded border border-neutral-600 px-3 py-1 disabled:opacity-40">↓</button>
+                <button type="button" onClick={() => { if (!window.confirm(`Remove Hero slide ${index + 1} from all four languages?`)) return; setData((current: ServiceHomepageData | null) => removeHeroSlide(current ?? {}, slide.id)); setHeroSlides(current => current.filter(item => item.id !== slide.id)); }} className="rounded border border-neutral-600 px-3 py-1">Remove</button>
+              </div></div>
+              <Input label={`${lang.toUpperCase()} slide title`} value={slide.title} onChange={value => setHeroSlides(current => current.map(item => item.id === slide.id ? { ...item, title: value } : item))} />
+              <Textarea label={`${lang.toUpperCase()} slide subtitle`} value={slide.subtitle} onChange={value => setHeroSlides(current => current.map(item => item.id === slide.id ? { ...item, subtitle: value } : item))} />
+              <label className="block text-sm text-neutral-300">Image (shared across languages)
+                <select value={slide.image} onChange={event => { const image = event.target.value; setData((current: ServiceHomepageData | null) => setHeroSlideImage(current ?? {}, slide.id, image)); setHeroSlides(current => current.map(item => item.id === slide.id ? { ...item, image } : item)); }} className="mt-2 w-full rounded-lg border border-neutral-700 bg-neutral-900 p-3 text-white">
+                  <option value="">Use active Hero image</option>
+                  {slide.image && !heroImages.includes(slide.image) && <option value={slide.image}>Previously selected image</option>}
+                  {heroImages.map((image, imageIndex) => <option key={image} value={image}>Hero image {imageIndex + 1}</option>)}
+                </select>
+              </label>
+              {slide.image && <Image src={slide.image} alt="Selected Hero slide preview" width={640} height={128} unoptimized className="h-32 w-full object-cover" />}
+            </div>)}
+          </div>
         </Section>
 
         <Section title="What We Do">

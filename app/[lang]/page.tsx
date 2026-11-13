@@ -12,14 +12,15 @@ import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import rtlHomepage from "../data/rtl-homepage.json";
 import { heroIcon, heroLink, HERO_ICON_SYMBOL } from "../../lib/hero-cta";
+import { visibleHeroSlides, type HeroSlide } from "../../lib/hero-slides";
 
 type Lang = "en" | "tr" | "fa" | "ar";
 const isRtl = (lang: Lang) => lang === "fa" || lang === "ar";
 const ui = {
-  en: { menu: "Main navigation", platforms: "Products & Platforms", watch: "Watch Now", all: "All platforms", profile: "Explore profile", gallery: "CINENTO Gallery", sending: "Sending…", sent: "Your inquiry was received. Our team will review your project.", unavailable: "The form is unavailable right now. Please contact us by email.", privacy: "Your details will be sent to the CINENTO project team.", email: "Open email draft", required: "Please fill in all fields.", invalidEmail: "Enter a valid email address.", short: "Please describe your project in at least 20 characters.", translation: "Project details appear in English until translations are saved." },
-  tr: { menu: "Ana menü", platforms: "Ürünler & Platformlar", watch: "İzlemeye Başla", all: "Tüm platformlar", profile: "Profili incele", gallery: "CINENTO Galeri", sending: "Gönderiliyor…", sent: "Mesajınız alındı. Ekibimiz projenizi inceleyecek.", unavailable: "Şu anda form gönderilemiyor. Lütfen e-posta ile iletişime geçin.", privacy: "Bilgileriniz CINENTO proje ekibine iletilecektir.", email: "E-posta taslağı aç", required: "Lütfen tüm alanları doldurun.", invalidEmail: "Geçerli bir e-posta adresi girin.", short: "Lütfen projenizi en az 20 karakterle açıklayın.", translation: "Proje ayrıntıları Türkçe çevirileri kaydedilene kadar İngilizce gösterilir." },
-  fa: { menu: "منوی اصلی", platforms: "محصولات و پلتفرم‌ها", watch: "تماشای CINENTO WATCH", all: "همه پلتفرم‌ها", profile: "مشاهده معرفی", gallery: "گالری CINENTO", sending: "در حال ارسال…", sent: "درخواست شما دریافت شد. تیم ما پروژه را بررسی می‌کند.", unavailable: "فرم موقتاً در دسترس نیست. لطفاً از راه ایمیل تماس بگیرید.", privacy: "اطلاعات شما به تیم پروژه CINENTO ارسال می‌شود.", email: "بازکردن پیش‌نویس ایمیل", required: "لطفاً همه فیلدها را تکمیل کنید.", invalidEmail: "یک نشانی ایمیل معتبر وارد کنید.", short: "لطفاً پروژه را در دست‌کم ۲۰ نویسه توضیح دهید.", translation: "تا ثبت ترجمه در داشبورد، اطلاعات برخی پروژه‌ها به انگلیسی نمایش داده می‌شود." },
-  ar: { menu: "القائمة الرئيسية", platforms: "المنتجات والمنصات", watch: "شاهد CINENTO WATCH", all: "جميع المنصات", profile: "استكشف الملف", gallery: "معرض CINENTO", sending: "جارٍ الإرسال…", sent: "وصل طلبك. سيراجع فريقنا مشروعك.", unavailable: "النموذج غير متاح حالياً. يرجى التواصل عبر البريد الإلكتروني.", privacy: "ستُرسل بياناتك إلى فريق مشاريع CINENTO.", email: "فتح مسودة البريد", required: "يرجى ملء جميع الحقول.", invalidEmail: "يرجى إدخال بريد إلكتروني صالح.", short: "يرجى وصف مشروعك في ٢٠ حرفاً على الأقل.", translation: "تُعرض بعض تفاصيل المشاريع بالإنجليزية إلى حين حفظ ترجمتها في لوحة التحكم." },
+  en: { menu: "Main navigation", platforms: "Products & Platforms", watch: "Watch Now", all: "All platforms", profile: "Explore profile", gallery: "CINENTO Gallery", sending: "Sending…", sent: "Your inquiry was received. Our team will review your project.", unavailable: "The form is unavailable right now. Please contact us by email.", privacy: "Your details will be sent to the CINENTO project team.", email: "Open email draft", required: "Please fill in all fields.", invalidEmail: "Enter a valid email address.", short: "Please describe your project in at least 20 characters.", translation: "Project details appear in English until translations are saved.", previousSlide: "Previous slide", nextSlide: "Next slide", pauseSlides: "Pause slides", playSlides: "Play slides" },
+  tr: { menu: "Ana menü", platforms: "Ürünler & Platformlar", watch: "İzlemeye Başla", all: "Tüm platformlar", profile: "Profili incele", gallery: "CINENTO Galeri", sending: "Gönderiliyor…", sent: "Mesajınız alındı. Ekibimiz projenizi inceleyecek.", unavailable: "Şu anda form gönderilemiyor. Lütfen e-posta ile iletişime geçin.", privacy: "Bilgileriniz CINENTO proje ekibine iletilecektir.", email: "E-posta taslağı aç", required: "Lütfen tüm alanları doldurun.", invalidEmail: "Geçerli bir e-posta adresi girin.", short: "Lütfen projenizi en az 20 karakterle açıklayın.", translation: "Proje ayrıntıları Türkçe çevirileri kaydedilene kadar İngilizce gösterilir.", previousSlide: "Önceki slayt", nextSlide: "Sonraki slayt", pauseSlides: "Slaytları durdur", playSlides: "Slaytları oynat" },
+  fa: { menu: "منوی اصلی", platforms: "محصولات و پلتفرم‌ها", watch: "تماشای CINENTO WATCH", all: "همه پلتفرم‌ها", profile: "مشاهده معرفی", gallery: "گالری CINENTO", sending: "در حال ارسال…", sent: "درخواست شما دریافت شد. تیم ما پروژه را بررسی می‌کند.", unavailable: "فرم موقتاً در دسترس نیست. لطفاً از راه ایمیل تماس بگیرید.", privacy: "اطلاعات شما به تیم پروژه CINENTO ارسال می‌شود.", email: "بازکردن پیش‌نویس ایمیل", required: "لطفاً همه فیلدها را تکمیل کنید.", invalidEmail: "یک نشانی ایمیل معتبر وارد کنید.", short: "لطفاً پروژه را در دست‌کم ۲۰ نویسه توضیح دهید.", translation: "تا ثبت ترجمه در داشبورد، اطلاعات برخی پروژه‌ها به انگلیسی نمایش داده می‌شود.", previousSlide: "اسلاید قبلی", nextSlide: "اسلاید بعدی", pauseSlides: "توقف اسلایدها", playSlides: "پخش اسلایدها" },
+  ar: { menu: "القائمة الرئيسية", platforms: "المنتجات والمنصات", watch: "شاهد CINENTO WATCH", all: "جميع المنصات", profile: "استكشف الملف", gallery: "معرض CINENTO", sending: "جارٍ الإرسال…", sent: "وصل طلبك. سيراجع فريقنا مشروعك.", unavailable: "النموذج غير متاح حالياً. يرجى التواصل عبر البريد الإلكتروني.", privacy: "ستُرسل بياناتك إلى فريق مشاريع CINENTO.", email: "فتح مسودة البريد", required: "يرجى ملء جميع الحقول.", invalidEmail: "يرجى إدخال بريد إلكتروني صالح.", short: "يرجى وصف مشروعك في ٢٠ حرفاً على الأقل.", translation: "تُعرض بعض تفاصيل المشاريع بالإنجليزية إلى حين حفظ ترجمتها في لوحة التحكم.", previousSlide: "الشريحة السابقة", nextSlide: "الشريحة التالية", pauseSlides: "إيقاف الشرائح", playSlides: "تشغيل الشرائح" },
 } as const;
 
 type NavItem = { label: string; href: string };
@@ -73,6 +74,7 @@ type PageContent = {
     secondaryCtaVisible?: boolean;
     primaryCtaIcon?: string;
     secondaryCtaIcon?: string;
+    slides?: HeroSlide[];
     cardTitle: string;
     cardSubtitle: string;
   };
@@ -313,12 +315,23 @@ export default function HomePage() {
   const [featuredPrograms, setFeaturedPrograms] = useState<FeaturedProgram[]>([]);
   const [uploadedImages, setUploadedImages] = useState<UploadedImages>({ hero: [], gallery: [], projects: [], active: { hero: "", gallery: "", projects: "" } });
   const [brokenImages, setBrokenImages] = useState<Record<string, boolean>>({});
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+  const [slidesPaused, setSlidesPaused] = useState(false);
+  const [slideInteraction, setSlideInteraction] = useState(false);
 
   const content = useMemo(() => mergeHomepageContent(CONTENT[lang], dynamicContent), [lang, dynamicContent]);
   const primaryHeroLink = heroLink(content.hero.primaryCtaHref, lang, "watch");
   const secondaryHeroLink = heroLink(content.hero.secondaryCtaHref, lang, "/platforms");
   const primaryHeroIcon = heroIcon(content.hero.primaryCtaIcon);
   const secondaryHeroIcon = heroIcon(content.hero.secondaryCtaIcon);
+  const heroSlides = visibleHeroSlides(content.hero.slides);
+  const currentSlide = heroSlides.length ? heroSlides[activeSlideIndex % heroSlides.length] : null;
+
+  useEffect(() => {
+    if (heroSlides.length < 2 || slidesPaused || slideInteraction || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const timer = window.setInterval(() => setActiveSlideIndex(index => (index + 1) % heroSlides.length), 7000);
+    return () => window.clearInterval(timer);
+  }, [heroSlides.length, slidesPaused, slideInteraction]);
 
   const activeHeroImage = useMemo(() => {
     const activeHero = uploadedImages.active.hero;
@@ -326,6 +339,7 @@ export default function HomePage() {
     const validHeroImages = uploadedImages.hero.filter((image) => !brokenImages[image]);
     return validHeroImages.length > 0 ? validHeroImages[0] : null;
   }, [uploadedImages.active.hero, uploadedImages.hero, brokenImages]);
+  const displayHeroImage = currentSlide?.image && !brokenImages[currentSlide.image] ? currentSlide.image : activeHeroImage;
 
   const activeGalleryImages = useMemo(() => {
     const uploadedGallery = uploadedImages.gallery.filter((image) => !brokenImages[image]);
@@ -524,15 +538,23 @@ export default function HomePage() {
         <div className="flex items-center">
           <div className="relative w-full border border-[#d4af37]/30 bg-neutral-900/80 p-2 shadow-[0_35px_100px_rgba(0,0,0,.65)] sm:p-3">
             <div className="relative min-h-[430px] overflow-hidden bg-gradient-to-br from-[#1d1a16] via-[#101010] to-[#080808] p-8 sm:min-h-[520px]">
-              {activeHeroImage && (
+              {displayHeroImage && (
                 <>
-                  <Image src={activeHeroImage} alt="" fill priority sizes="(min-width: 768px) 50vw, 100vw" unoptimized={activeHeroImage.startsWith("https://")} onError={() => handleImageError(activeHeroImage)} className="object-cover opacity-45" />
+                  <Image src={displayHeroImage} alt="" fill priority sizes="(min-width: 768px) 50vw, 100vw" unoptimized={displayHeroImage.startsWith("https://")} onError={() => handleImageError(displayHeroImage)} className="object-cover opacity-45" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-black/10" />
                 </>
               )}
-              <div className="relative z-10 flex min-h-[366px] flex-col justify-between sm:min-h-[456px]">
-                <div className="flex items-start justify-between gap-4 text-xs font-semibold uppercase tracking-[0.28em] text-[#e6c878]"><span>{content.hero.cardTitle}</span><span aria-hidden="true">✦</span></div>
-                <div className="max-w-sm border-t border-white/40 pt-5 text-2xl font-semibold leading-snug text-white sm:text-3xl">{content.hero.cardSubtitle}</div>
+              <div className="relative z-10 flex min-h-[366px] flex-col justify-between sm:min-h-[456px]" onMouseEnter={() => setSlideInteraction(true)} onMouseLeave={() => setSlideInteraction(false)} onFocusCapture={() => setSlideInteraction(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setSlideInteraction(false); }}>
+                <div className="flex items-start justify-between gap-4 text-xs font-semibold uppercase tracking-[0.28em] text-[#e6c878]"><span>{currentSlide?.title || content.hero.cardTitle}</span><span aria-hidden="true">✦</span></div>
+                <div>
+                  <div className="max-w-sm border-t border-white/40 pt-5 text-2xl font-semibold leading-snug text-white sm:text-3xl">{currentSlide?.subtitle || content.hero.cardSubtitle}</div>
+                  {heroSlides.length > 1 && <div className="mt-5 flex items-center gap-2 text-sm text-white" role="group" aria-label={content.hero.title}>
+                    <button type="button" aria-label={ui[lang].previousSlide} onClick={() => setActiveSlideIndex(index => (index - 1 + heroSlides.length) % heroSlides.length)} className="grid min-h-10 min-w-10 place-items-center border border-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#d4af37]">‹</button>
+                    <span className="px-2 tabular-nums" aria-live="off">{activeSlideIndex % heroSlides.length + 1} / {heroSlides.length}</span>
+                    <button type="button" aria-label={ui[lang].nextSlide} onClick={() => setActiveSlideIndex(index => (index + 1) % heroSlides.length)} className="grid min-h-10 min-w-10 place-items-center border border-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#d4af37]">›</button>
+                    <button type="button" aria-label={slidesPaused ? ui[lang].playSlides : ui[lang].pauseSlides} aria-pressed={slidesPaused} onClick={() => setSlidesPaused(value => !value)} className="grid min-h-10 min-w-10 place-items-center border border-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#d4af37]">{slidesPaused ? "▶" : "Ⅱ"}</button>
+                  </div>}
+                </div>
               </div>
             </div>
           </div>
