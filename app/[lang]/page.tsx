@@ -1,7 +1,7 @@
 /* 
 File: app/[lang]/page.tsx
-Version: CINENTO Website PRO v3.7.1
-Updated: 2026-05-01 [Europe/Istanbul]
+Version: CINENTO Website PRO v3.7.2 — Services readability
+Updated: 2026-11-14 [Europe/Istanbul]
 Status: PAGE54 BASE + CMS CONNECTED + IMAGE MANAGER ACTIVE HERO SYSTEM CONNECTED + WATCH CTA CONNECTED + JSX STRUCTURE FIXED
 */
 
@@ -23,10 +23,10 @@ import SiteHeader from "../../components/SiteHeader";
 type Lang = "en" | "tr" | "fa" | "ar";
 const isRtl = (lang: Lang) => lang === "fa" || lang === "ar";
 const ui = {
-  en: { menu: "Main navigation", platforms: "Products & Platforms", watch: "Watch Now", all: "All platforms", profile: "Explore profile", gallery: "CINENTO Gallery", sending: "Sending…", sent: "Your inquiry was received. Our team will review your project.", unavailable: "The form is unavailable right now. Please contact us by email.", privacy: "Your details will be sent to the CINENTO project team.", email: "Open email draft", required: "Please fill in all fields.", invalidEmail: "Enter a valid email address.", short: "Please describe your project in at least 20 characters.", translation: "Some project details are awaiting translation.", previousSlide: "Previous slide", nextSlide: "Next slide", pauseSlides: "Pause slides", playSlides: "Play slides" },
-  tr: { menu: "Ana menü", platforms: "Ürünler & Platformlar", watch: "İzlemeye Başla", all: "Tüm platformlar", profile: "Profili incele", gallery: "CINENTO Galeri", sending: "Gönderiliyor…", sent: "Mesajınız alındı. Ekibimiz projenizi inceleyecek.", unavailable: "Şu anda form gönderilemiyor. Lütfen e-posta ile iletişime geçin.", privacy: "Bilgileriniz CINENTO proje ekibine iletilecektir.", email: "E-posta taslağı aç", required: "Lütfen tüm alanları doldurun.", invalidEmail: "Geçerli bir e-posta adresi girin.", short: "Lütfen projenizi en az 20 karakterle açıklayın.", translation: "Bazı proje ayrıntılarının çevirisi bekleniyor.", previousSlide: "Önceki slayt", nextSlide: "Sonraki slayt", pauseSlides: "Slaytları durdur", playSlides: "Slaytları oynat" },
-  fa: { menu: "منوی اصلی", platforms: "محصولات و پلتفرم‌ها", watch: "تماشای CINENTO WATCH", all: "همه پلتفرم‌ها", profile: "مشاهده معرفی", gallery: "گالری CINENTO", sending: "در حال ارسال…", sent: "درخواست شما دریافت شد. تیم ما پروژه را بررسی می‌کند.", unavailable: "فرم موقتاً در دسترس نیست. لطفاً از راه ایمیل تماس بگیرید.", privacy: "اطلاعات شما به تیم پروژه CINENTO ارسال می‌شود.", email: "بازکردن پیش‌نویس ایمیل", required: "لطفاً همه فیلدها را تکمیل کنید.", invalidEmail: "یک نشانی ایمیل معتبر وارد کنید.", short: "لطفاً پروژه را در دست‌کم ۲۰ نویسه توضیح دهید.", translation: "ترجمه برخی اطلاعات پروژه‌ها هنوز ثبت نشده است.", previousSlide: "اسلاید قبلی", nextSlide: "اسلاید بعدی", pauseSlides: "توقف اسلایدها", playSlides: "پخش اسلایدها" },
-  ar: { menu: "القائمة الرئيسية", platforms: "المنتجات والمنصات", watch: "شاهد CINENTO WATCH", all: "جميع المنصات", profile: "استكشف الملف", gallery: "معرض CINENTO", sending: "جارٍ الإرسال…", sent: "وصل طلبك. سيراجع فريقنا مشروعك.", unavailable: "النموذج غير متاح حالياً. يرجى التواصل عبر البريد الإلكتروني.", privacy: "ستُرسل بياناتك إلى فريق مشاريع CINENTO.", email: "فتح مسودة البريد", required: "يرجى ملء جميع الحقول.", invalidEmail: "يرجى إدخال بريد إلكتروني صالح.", short: "يرجى وصف مشروعك في ٢٠ حرفاً على الأقل.", translation: "ترجمة بعض تفاصيل المشاريع قيد الإعداد.", previousSlide: "الشريحة السابقة", nextSlide: "الشريحة التالية", pauseSlides: "إيقاف الشرائح", playSlides: "تشغيل الشرائح" },
+  en: { readMore: "Read more", readLess: "Read less", serviceDetails: "View service details", hideServiceDetails: "Hide service details", menu: "Main navigation", platforms: "Products & Platforms", watch: "Watch Now", all: "All platforms", profile: "Explore profile", gallery: "CINENTO Gallery", sending: "Sending…", sent: "Your inquiry was received. Our team will review your project.", unavailable: "The form is unavailable right now. Please contact us by email.", privacy: "Your details will be sent to the CINENTO project team.", email: "Open email draft", required: "Please fill in all fields.", invalidEmail: "Enter a valid email address.", short: "Please describe your project in at least 20 characters.", translation: "Some project details are awaiting translation.", previousSlide: "Previous slide", nextSlide: "Next slide", pauseSlides: "Pause slides", playSlides: "Play slides" },
+  tr: { readMore: "Devamını oku", readLess: "Daha az göster", serviceDetails: "Hizmet ayrıntılarını göster", hideServiceDetails: "Hizmet ayrıntılarını gizle", menu: "Ana menü", platforms: "Ürünler & Platformlar", watch: "İzlemeye Başla", all: "Tüm platformlar", profile: "Profili incele", gallery: "CINENTO Galeri", sending: "Gönderiliyor…", sent: "Mesajınız alındı. Ekibimiz projenizi inceleyecek.", unavailable: "Şu anda form gönderilemiyor. Lütfen e-posta ile iletişime geçin.", privacy: "Bilgileriniz CINENTO proje ekibine iletilecektir.", email: "E-posta taslağı aç", required: "Lütfen tüm alanları doldurun.", invalidEmail: "Geçerli bir e-posta adresi girin.", short: "Lütfen projenizi en az 20 karakterle açıklayın.", translation: "Bazı proje ayrıntılarının çevirisi bekleniyor.", previousSlide: "Önceki slayt", nextSlide: "Sonraki slayt", pauseSlides: "Slaytları durdur", playSlides: "Slaytları oynat" },
+  fa: { readMore: "بیشتر بخوانید", readLess: "نمایش کمتر", serviceDetails: "مشاهده جزئیات خدمت", hideServiceDetails: "بستن جزئیات خدمت", menu: "منوی اصلی", platforms: "محصولات و پلتفرم‌ها", watch: "تماشای CINENTO WATCH", all: "همه پلتفرم‌ها", profile: "مشاهده معرفی", gallery: "گالری CINENTO", sending: "در حال ارسال…", sent: "درخواست شما دریافت شد. تیم ما پروژه را بررسی می‌کند.", unavailable: "فرم موقتاً در دسترس نیست. لطفاً از راه ایمیل تماس بگیرید.", privacy: "اطلاعات شما به تیم پروژه CINENTO ارسال می‌شود.", email: "بازکردن پیش‌نویس ایمیل", required: "لطفاً همه فیلدها را تکمیل کنید.", invalidEmail: "یک نشانی ایمیل معتبر وارد کنید.", short: "لطفاً پروژه را در دست‌کم ۲۰ نویسه توضیح دهید.", translation: "ترجمه برخی اطلاعات پروژه‌ها هنوز ثبت نشده است.", previousSlide: "اسلاید قبلی", nextSlide: "اسلاید بعدی", pauseSlides: "توقف اسلایدها", playSlides: "پخش اسلایدها" },
+  ar: { readMore: "اقرأ المزيد", readLess: "عرض أقل", serviceDetails: "عرض تفاصيل الخدمة", hideServiceDetails: "إخفاء تفاصيل الخدمة", menu: "القائمة الرئيسية", platforms: "المنتجات والمنصات", watch: "شاهد CINENTO WATCH", all: "جميع المنصات", profile: "استكشف الملف", gallery: "معرض CINENTO", sending: "جارٍ الإرسال…", sent: "وصل طلبك. سيراجع فريقنا مشروعك.", unavailable: "النموذج غير متاح حالياً. يرجى التواصل عبر البريد الإلكتروني.", privacy: "ستُرسل بياناتك إلى فريق مشاريع CINENTO.", email: "فتح مسودة البريد", required: "يرجى ملء جميع الحقول.", invalidEmail: "يرجى إدخال بريد إلكتروني صالح.", short: "يرجى وصف مشروعك في ٢٠ حرفاً على الأقل.", translation: "ترجمة بعض تفاصيل المشاريع قيد الإعداد.", previousSlide: "الشريحة السابقة", nextSlide: "الشريحة التالية", pauseSlides: "إيقاف الشرائح", playSlides: "تشغيل الشرائح" },
 } as const;
 
 type NavItem = { label: string; href: string };
@@ -564,19 +564,29 @@ export default function HomePage() {
 
       <section className="border-y border-white/5 site-band py-20" aria-labelledby="services-title">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="mb-10 max-w-3xl"><div className="mb-4 h-px w-14 bg-[var(--site-accent)]" /><h2 id="services-title" className="text-3xl font-semibold md:text-4xl">{content.services.title}</h2><p className="mt-4 leading-8 text-neutral-400">{content.services.subtitle}</p></div>
-          <div className="grid gap-5 md:grid-cols-3">
+          <div className="mb-10 max-w-4xl">
+            <div className="mb-4 h-px w-14 bg-[var(--site-accent)]" />
+            <h2 id="services-title" className="text-3xl font-semibold md:text-4xl">{content.services.title}</h2>
+            {content.services.subtitle.length > 360 ? <details className="group mt-4">
+              <summary className="cursor-pointer list-none rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--site-accent)] [&::-webkit-details-marker]:hidden">
+                <p className="line-clamp-4 whitespace-pre-line break-words text-base leading-8 text-neutral-300 group-open:line-clamp-none">{content.services.subtitle}</p>
+                <span className="mt-3 inline-block text-sm font-medium text-[var(--site-accent)]"><span className="group-open:hidden">{ui[lang].readMore} +</span><span className="hidden group-open:inline">{ui[lang].readLess} −</span></span>
+              </summary>
+            </details> : <p className="mt-4 whitespace-pre-line break-words text-base leading-8 text-neutral-300">{content.services.subtitle}</p>}
+          </div>
+          <div className="grid items-start gap-5 md:grid-cols-2 lg:grid-cols-3">
             {content.services.items.filter(item => item.title.trim() && item.status !== "archived").map((item, index, visibleServices) => (
-              <article key={item.id || `${item.title}-${index}`} className="border border-white/10 site-surface p-7 transition hover:border-[var(--site-accent)]/50">
-                {serviceHasDistinctDetail(item) ? <details className="group">
-                  <summary className="cursor-pointer list-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--site-accent)] [&::-webkit-details-marker]:hidden">
-                    <div className="mb-12 flex justify-between text-sm tracking-[0.25em] text-[var(--site-accent)]"><span>{String(index + 1).padStart(2, "0")} / {String(visibleServices.length).padStart(2, "0")}</span><span aria-hidden="true" className="transition-transform group-open:rotate-180">⌄</span></div>
-                    <h3 className="text-xl font-semibold leading-7">{item.title}</h3><p className="mt-4 text-sm leading-7 text-neutral-400">{serviceCardSummary(item)}</p>
+              <article key={item.id || `${item.title}-${index}`} className="min-w-0 self-start rounded-xl border border-white/10 site-surface p-6 transition hover:border-[var(--site-accent)]/50">
+                {serviceHasDistinctDetail(item) || serviceCardSummary(item).length > 240 ? <details className="group">
+                  <summary className="cursor-pointer list-none rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--site-accent)] [&::-webkit-details-marker]:hidden">
+                    <div className="mb-6 text-sm tracking-[0.15em] text-[var(--site-accent)]">{String(index + 1).padStart(2, "0")} / {String(visibleServices.length).padStart(2, "0")}</div>
+                    <h3 className="break-words text-xl font-semibold leading-7">{item.title}</h3><p className="mt-4 line-clamp-4 whitespace-pre-line break-words text-base leading-7 text-neutral-300 group-open:line-clamp-none">{serviceCardSummary(item)}</p>
+                    <span className="mt-5 inline-block text-sm font-medium text-[var(--site-accent)]"><span className="group-open:hidden">{ui[lang].serviceDetails} +</span><span className="hidden group-open:inline">{ui[lang].hideServiceDetails} −</span></span>
                   </summary>
-                  <p className="mt-5 border-t border-white/10 pt-5 text-sm leading-7 whitespace-pre-line text-neutral-300">{serviceDetailText(item)}</p>
+                  {serviceHasDistinctDetail(item) && <p className="mt-5 border-t border-white/10 pt-5 text-base leading-7 whitespace-pre-line break-words text-neutral-300">{serviceDetailText(item)}</p>}
                 </details> : <div>
-                  <div className="mb-12 text-sm tracking-[0.25em] text-[var(--site-accent)]">{String(index + 1).padStart(2, "0")} / {String(visibleServices.length).padStart(2, "0")}</div>
-                  <h3 className="text-xl font-semibold leading-7">{item.title}</h3><p className="mt-4 text-sm leading-7 text-neutral-400">{serviceCardSummary(item)}</p>
+                  <div className="mb-6 text-sm tracking-[0.15em] text-[var(--site-accent)]">{String(index + 1).padStart(2, "0")} / {String(visibleServices.length).padStart(2, "0")}</div>
+                  <h3 className="break-words text-xl font-semibold leading-7">{item.title}</h3><p className="mt-4 whitespace-pre-line break-words text-base leading-7 text-neutral-300">{serviceCardSummary(item)}</p>
                 </div>}
               </article>
             ))}
