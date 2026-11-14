@@ -61,6 +61,18 @@ html[lang="fa"] body {
   line-height: 1.8;
 }
 
+/* CINENTO Arabic Typography v1.0 | 2026-11-14
+ * Use the already loaded Arabic-capable font; preserve other locales.
+ */
+html[lang="ar"] body {
+  font-family: var(--font-vazirmatn), Tahoma, sans-serif;
+  line-height: 1.8;
+}
+
+html[lang="ar"] :is(h1, h2, h3, h4, h5, h6, p, a, button, label) {
+  letter-spacing: normal;
+}
+
 img,
 picture,
 video,
@@ -135,3 +147,4 @@ section {
 @media (prefers-reduced-motion: reduce) {
   .site-hero-enter { animation: none; }
 }
+
