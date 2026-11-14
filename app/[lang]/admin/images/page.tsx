@@ -1,6 +1,6 @@
 /*
 File: app/[lang]/admin/images/page.tsx
-Version: CINENTO Image Manager UI v4.0 PRO
+Version: CINENTO Image Manager UI v4.1 PRO — Navigation Icons v1.0
 Updated: 2026-04-30 [Europe/Istanbul]
 Status: Netflix-Level UI + Upload + Preview + Set Active + Delete
 */
@@ -10,12 +10,13 @@ Status: Netflix-Level UI + Upload + Preview + Set Active + Delete
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-type FolderType = "hero" | "gallery" | "projects";
+type FolderType = "hero" | "gallery" | "projects" | "icons";
 
 type ImagesData = {
   hero: string[];
   gallery: string[];
   projects: string[];
+  icons: string[];
 };
 
 type ActiveData = {
@@ -33,6 +34,7 @@ export default function ImageManagerPage() {
     hero: [],
     gallery: [],
     projects: [],
+    icons: [],
   });
 
   const [active, setActive] = useState<ActiveData>({
@@ -44,6 +46,7 @@ export default function ImageManagerPage() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState("");
+  const [readOnly, setReadOnly] = useState(true);
 
   async function loadImages() {
     try {
@@ -55,7 +58,9 @@ export default function ImageManagerPage() {
           hero: data.images.hero || [],
           gallery: data.images.gallery || [],
           projects: data.images.projects || [],
+          icons: data.images.icons || [],
         });
+        setReadOnly(data.readOnly === true);
 
         setActive({
           hero: data.active?.hero || "",
@@ -95,6 +100,7 @@ export default function ImageManagerPage() {
       setMessage("Please choose an image first.");
       return;
     }
+    if (readOnly) { setMessage("Uploads are unavailable in this preview."); return; }
     if (file.size > 4 * 1024 * 1024) {
       setMessage("Choose a PNG, JPG or WebP image under 4 MB.");
       return;
@@ -166,7 +172,7 @@ export default function ImageManagerPage() {
   }
 
   async function deleteImage(section: FolderType, url: string) {
-    const confirmed = confirm("Delete this image?");
+    const confirmed = confirm(section === "icons" ? "Delete this icon image file? Menus still using its URL will show a fallback icon. Remove unused collection entries in Navigation Manager separately." : "Delete this image?");
     if (!confirmed) return;
 
     setActionLoading(`delete-${url}`);
@@ -237,6 +243,7 @@ export default function ImageManagerPage() {
             >
               <option value="hero">Hero</option>
               <option value="gallery">Gallery</option>
+              <option value="icons">Navigation icons (separate from public Gallery)</option>
               <option value="projects">Projects</option>
             </select>
 
@@ -249,7 +256,7 @@ export default function ImageManagerPage() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || readOnly}
               className="rounded-xl bg-[#d4af37] px-4 py-3 font-semibold text-black transition hover:opacity-90 disabled:opacity-50"
             >
               {loading ? "Uploading..." : "Upload Image"}
@@ -283,7 +290,7 @@ export default function ImageManagerPage() {
         </form>
 
         <div className="grid gap-8">
-          {(["hero", "gallery", "projects"] as FolderType[]).map((section) => (
+          {(["hero", "gallery", "projects", "icons"] as FolderType[]).map((section) => (
             <section
               key={section}
               className="rounded-3xl border border-white/10 bg-neutral-900/80 p-6 shadow-xl"
@@ -298,7 +305,7 @@ export default function ImageManagerPage() {
                 </span>
               </div>
 
-              {active[section] && (
+              {section !== "icons" && active[section] && (
                 <div className="mb-5 rounded-xl border border-[#d4af37]/30 bg-black/40 px-4 py-3 text-sm text-[#d4af37]">
                   Active {section}: {active[section]}
                 </div>
@@ -311,7 +318,7 @@ export default function ImageManagerPage() {
               ) : (
                 <div className="grid gap-5 md:grid-cols-3">
                   {images[section].map((src) => {
-                    const isActive = active[section] === src;
+                    const isActive = section !== "icons" && active[section] === src;
 
                     return (
                       <div
@@ -324,7 +331,7 @@ export default function ImageManagerPage() {
                           <img
                             src={src}
                             alt={section}
-                            className="h-56 w-full object-cover"
+                            className={section === "icons" ? "h-40 w-full object-contain p-5" : "h-56 w-full object-cover"}
                           />
 
                           {isActive && (
@@ -340,10 +347,10 @@ export default function ImageManagerPage() {
                           </div>
 
                           <div className="flex flex-wrap gap-2">
-                            <button
+                            {section !== "icons" && <button
                               type="button"
                               onClick={() => setActiveImage(section, src)}
-                              disabled={isActive || actionLoading === `active-${src}`}
+                              disabled={readOnly || isActive || actionLoading === `active-${src}`}
                               className={`rounded-lg px-3 py-2 text-xs font-semibold transition ${
                                 isActive
                                   ? "bg-[#d4af37] text-black"
@@ -357,7 +364,7 @@ export default function ImageManagerPage() {
                                 : section === "hero"
                                 ? "Set as Hero"
                                 : `Set as ${section}`}
-                            </button>
+                            </button>}
 
                             <a
                               href={src}
@@ -371,7 +378,7 @@ export default function ImageManagerPage() {
                             {!src.startsWith("/images/") && <button
                               type="button"
                               onClick={() => deleteImage(section, src)}
-                              disabled={actionLoading === `delete-${src}`}
+                              disabled={readOnly || actionLoading === `delete-${src}`}
                               className="rounded-lg border border-red-500/50 px-3 py-2 text-xs text-red-400 hover:bg-red-500 hover:text-white disabled:opacity-60"
                             >
                               {actionLoading === `delete-${src}`
@@ -392,3 +399,4 @@ export default function ImageManagerPage() {
     </main>
   );
 }
+
