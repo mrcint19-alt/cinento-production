@@ -7,7 +7,7 @@ import ts from "typescript";
 import { createRequire } from "node:module";
 import { renderToStaticMarkup } from "react-dom/server";
 
-const file = path.resolve(import.meta.dirname, "../app/[lang]/page.tsx");
+const file = path.resolve(import.meta.dirname, "../app/[lang]/HomepageClient.tsx");
 const text = readFileSync(file, "utf8");
 const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
 const helper = source.statements.find(statement => ts.isFunctionDeclaration(statement) && statement.name?.text === "serviceDetailText");
