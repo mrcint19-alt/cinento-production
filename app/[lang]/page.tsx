@@ -104,6 +104,7 @@ type PageContent = {
     email?: string;
     whatsappNumber?: string;
     whatsappText?: string;
+    websiteLabel?: string;
     social?: { instagram?: string; linkedin?: string; website?: string };
   };
 };
@@ -384,7 +385,7 @@ export default function HomePage() {
       .then((data) => {
         if (!isActive) return;
         setTheme(siteTheme(data?.theme));
-        setSharedFooter(footerShared(data?.footerShared));
+        setSharedFooter(footerShared({ ...data?.footerShared, officialAddress: data?.footerShared?.officialAddress || data?.en?.footer?.location || "" }));
         setSliderSettings(heroSliderSettings(data?.heroSlider));
         const selected = data?.[lang] || null;
         const englishProjects = data?.en?.featuredProjects?.items;
@@ -702,7 +703,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {sharedFooter.enabled ? <ManagedFooter settings={sharedFooter} copy={content.footer} brand={content.brand} whatsappLabel={content.contact.whatsappLabel} /> : <footer className="border-t border-white/10 site-band">
+      {sharedFooter.enabled ? <ManagedFooter settings={sharedFooter} copy={content.footer} brand={content.brand} whatsappLabel={content.contact.whatsappLabel} locale={lang} /> : <footer lang={lang} dir={isRtl(lang) ? "rtl" : "ltr"} className="border-t border-white/10 site-band">
         <div className="mx-auto grid max-w-7xl gap-10 px-6 py-12 md:grid-cols-3">
           <div>
             <div className="mb-3 text-lg font-bold text-white">{content.brand}</div>
@@ -711,7 +712,7 @@ export default function HomePage() {
           <div>
             <div className="mb-3 font-semibold text-white">{content.footer.contactTitle}</div>
             <div className="space-y-2 text-sm text-neutral-400">
-              <div>{content.footer.location?.trim() || "Istanbul, Turkey"}</div>
+              <div className="whitespace-pre-line"><bdi dir="auto">{sharedFooter.officialAddress || "Istanbul, Turkey"}</bdi></div>
               <a href={`mailto:${contactEmail}`} className="block hover:text-[var(--site-accent)]">{contactEmail}</a>
               {footerHref("whatsapp", whatsappNumber) && <a href={footerHref("whatsapp", whatsappNumber)!} target="_blank" className="block hover:text-[var(--site-accent)]" rel="noreferrer">{content.footer.whatsappText?.trim() || content.contact.whatsappLabel}</a>}
             </div>
@@ -730,4 +731,5 @@ export default function HomePage() {
     </main>
   );
 }
+
 
