@@ -189,13 +189,14 @@ export default function ContentManager() {
   const [footerLinkedin, setFooterLinkedin] = useState("");
   const [footerWebsite, setFooterWebsite] = useState("");
   const [footerRights, setFooterRights] = useState("");
+  const [footerWebsiteLabel, setFooterWebsiteLabel] = useState("");
 
   useEffect(() => {
     fetch("/api/content/homepage", { cache: "no-store" })
       .then((res) => res.json())
       .then((json) => {
         setData(json);
-        setSharedFooter(footerShared(json?.footerShared));
+        setSharedFooter(footerShared({ ...json?.footerShared, officialAddress: json?.footerShared?.officialAddress || json?.en?.footer?.location || "" }));
         setHeroSlider(heroSliderSettings(json?.heroSlider));
         setTheme(siteTheme(json?.theme));
         setNavigation(navigationFromContent(json));
@@ -315,6 +316,7 @@ export default function ContentManager() {
     setFooterLinkedin(section.footer?.social?.linkedin || "");
     setFooterWebsite(section.footer?.social?.website || "");
     setFooterRights(section.footer?.rights || "");
+    setFooterWebsiteLabel(section.footer?.websiteLabel || { en: "Website", tr: "Web sitesi", fa: "وب‌سایت", ar: "الموقع الإلكتروني" }[selectedLang]);
   };
 
   const handleLangChange = (newLang: Lang) => {
@@ -469,6 +471,7 @@ export default function ContentManager() {
               website: footerWebsite,
             },
             rights: footerRights,
+            websiteLabel: footerWebsiteLabel,
           },
         },
       };
@@ -490,7 +493,7 @@ export default function ContentManager() {
           "Persistent content storage is unavailable": "The database could not save the content. Your entries are still in this form.",
           "Failed to save content": "The server could not process the save request. Your entries are still in this form.",
         };
-        const invalidFooter = /^Invalid footer (email|whatsapp|instagram|linkedin|website)$/.exec(reason);
+        const invalidFooter = /^Invalid footer (email|phone|whatsapp|instagram|linkedin|website)$/.exec(reason);
         const detail = invalidFooter ? `Please correct the shared footer ${invalidFooter[1]} field.` : known[reason];
         throw new Error(`Save failed (HTTP ${response.status}). ${detail || "The server rejected the request without a recognized error message. Your entries are still in this form."}`);
       }
@@ -731,10 +734,10 @@ export default function ContentManager() {
         </Section>
 
         <Section title="Footer Contact & Social">
-          <FooterSharedEditor value={sharedFooter} onChange={setSharedFooter} />
+          <FooterSharedEditor value={sharedFooter} onChange={setSharedFooter} locale={lang} />
           <Input label="Brand Line" value={footerBrandLine} onChange={setFooterBrandLine} />
           <Input label="Contact Title" value={footerContactTitle} onChange={setFooterContactTitle} />
-          <Input label="Location" value={footerLocation} onChange={setFooterLocation} />
+          <Input label="Legacy location (official shared address above takes precedence)" value={footerLocation} onChange={setFooterLocation} />
           <Input label="Email" value={footerEmail} onChange={setFooterEmail} />
           <Input label="WhatsApp Text" value={footerWhatsappText} onChange={setFooterWhatsappText} />
           <Input label="WhatsApp Number (country code, no +; leave blank to use email)" value={footerWhatsappNumber} onChange={setFooterWhatsappNumber} />
@@ -743,6 +746,7 @@ export default function ContentManager() {
           <Input label="LinkedIn URL" value={footerLinkedin} onChange={setFooterLinkedin} />
           <Input label="Website URL" value={footerWebsite} onChange={setFooterWebsite} />
           <Input label="Rights" value={footerRights} onChange={setFooterRights} />
+          <Input label="Website link title (selected language)" value={footerWebsiteLabel} onChange={setFooterWebsiteLabel} />
         </Section>
       </div>
 
@@ -795,4 +799,5 @@ function Textarea({ label, value, onChange }: { label: string; value: string; on
     </label>
   );
 }
+
 

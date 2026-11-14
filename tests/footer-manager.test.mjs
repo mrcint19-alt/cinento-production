@@ -17,6 +17,39 @@ function compile(relative, dependencies = {}) {
 const helpers = compile("../lib/footer-manager.ts");
 const { footerShared, footerHref, footerErrors } = helpers;
 const Footer = compile("../components/ManagedFooter.tsx", { "../lib/footer-manager": helpers }).default;
+test("legal links need approval for the selected language with no fallback", () => {
+  const link = helpers.footerGuideLink({ id: "privacy", kind: "privacy", enabled: true, translations: { en: { label: "Privacy", href: "/en/privacy", approved: true, approvalRef: "LEGAL-1", reviewedOn: "2026-11-14", revision: "v1" }, fa: { label: "حریم خصوصی", href: "/fa/privacy", approved: false } } });
+  assert.equal(helpers.approvedFooterCopy(link, "en").label, "Privacy");
+  assert.equal(helpers.approvedFooterCopy(link, "fa"), null);
+  assert.equal(helpers.approvedFooterCopy(link, "tr"), null);
+  link.translations.en.revision = "";
+  assert.equal(helpers.approvedFooterCopy(link, "en"), null);
+});
+test("guide destinations reject scripts and cross-origin protocol-relative URLs", () => {
+  assert.equal(helpers.footerGuideHref("javascript:alert(1)"), null);
+  assert.equal(helpers.footerGuideHref("//example.com/legal"), null);
+  assert.equal(helpers.footerGuideHref("/en/contact"), "/en/contact");
+  assert.equal(helpers.footerGuideHref("https://example.com/privacy"), "https://example.com/privacy");
+});
+test("address and phone remain unchanged while footer direction follows locale", () => {
+  const address = "Istanbul, Turkey";
+  const settings = footerShared({ enabled: true, officialAddress: address, phone: "+90 555 123 4567" });
+  for (const locale of ["en", "tr", "fa", "ar"]) {
+    const html = renderToStaticMarkup(React.createElement(Footer, { locale, settings, brand: "CINENTO", whatsappLabel: "WA", copy: { brandLine: "", contactTitle: "", followTitle: "", rights: "", location: "ترجمه قدیمی" } }));
+    assert.ok(html.includes(`lang="${locale}" dir="${["fa", "ar"].includes(locale) ? "rtl" : "ltr"}"`));
+    assert.ok(html.includes(address));
+    assert.ok(!html.includes("ترجمه قدیمی"));
+    assert.ok(html.includes('href="tel:+905551234567"'));
+    assert.ok(html.includes('<bdi dir="ltr">+90 555 123 4567</bdi>'));
+  }
+});
+test("legal approval and four translations survive JSON storage", () => {
+  const settings = footerShared({ enabled: true, officialAddress: "Address", guideLinks: [{ kind: "terms", id: "terms", enabled: true, translations: { tr: { label: "Koşullar", href: "/tr/terms", approved: true, approvalRef: "REVIEW-TR-1", reviewedOn: "2026-11-14", revision: "v2" } } }] });
+  const restored = footerShared(JSON.parse(JSON.stringify(settings)));
+  assert.equal(JSON.stringify(settings), JSON.stringify(restored));
+  assert.ok(helpers.approvedFooterCopy(restored.guideLinks[0], "tr"));
+  assert.equal(helpers.approvedFooterCopy(restored.guideLinks[0], "ar"), null);
+});
 test("legacy content does not enable migration or invent contact values", () => {
   const value = footerShared(undefined);
   assert.equal(value.enabled, false);
@@ -50,3 +83,4 @@ test("blank channels stay hidden and legal text is escaped", () => {
   assert.ok(!html.includes("href="));
   assert.ok(html.includes("&lt;script&gt;"));
 });
+
