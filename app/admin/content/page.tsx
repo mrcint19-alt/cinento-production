@@ -1,4 +1,5 @@
 "use client";
+// CINENTO Save Diagnostics v1.0 | 2026-11-14 | Preserve form on failed save.
 
 // Footer Manager PRO v1.0 | 2026-11-14 | baseline 5d4af80
 import FooterSharedEditor from "../../../components/FooterSharedEditor";
@@ -107,6 +108,7 @@ export default function ContentManager() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const [sharedFooter, setSharedFooter] = useState<FooterShared>(() => footerShared(null));
   const [lang, setLang] = useState<Lang>("en");
   const [theme, setTheme] = useState<SiteTheme>(DEFAULT_SITE_THEME);
@@ -381,6 +383,7 @@ export default function ContentManager() {
   };
 
   const handleSave = async () => {
+    setSaveError("");
     try {
       const errors = footerErrors(sharedFooter);
       if (errors.length) { alert(errors.join("\n")); return; }
@@ -477,13 +480,27 @@ export default function ContentManager() {
       });
 
       if (!response.ok) {
-        throw new Error("Save failed");
+        const payload: unknown = await response.json().catch(() => null);
+        const reason = payload && typeof payload === "object" && "error" in payload ? String(payload.error) : "";
+        const known: Record<string, string> = {
+          "Invalid content": "Homepage content has an invalid language section. Your entries are still in this form.",
+          "Unauthorized": "Your administrator session has expired or does not have access. Sign in again in a separate tab, then retry here.",
+          "Forbidden": "The request origin was rejected. Keep this form open and sign in from the same website address in another tab.",
+          "Administrator access is not configured": "Administrator storage access is not configured on this deployment.",
+          "Persistent content storage is unavailable": "The database could not save the content. Your entries are still in this form.",
+          "Failed to save content": "The server could not process the save request. Your entries are still in this form.",
+        };
+        const invalidFooter = /^Invalid footer (email|whatsapp|instagram|linkedin|website)$/.exec(reason);
+        const detail = invalidFooter ? `Please correct the shared footer ${invalidFooter[1]} field.` : known[reason];
+        throw new Error(`Save failed (HTTP ${response.status}). ${detail || "The server rejected the request without a recognized error message. Your entries are still in this form."}`);
       }
 
       setData(updated);
       alert("Saved successfully");
-    } catch {
-      alert("Save failed. Please try again.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Save failed. Check your connection; your entries are still in this form.";
+      setSaveError(message);
+      alert(message);
     } finally {
       setSaving(false);
     }
@@ -730,6 +747,7 @@ export default function ContentManager() {
       </div>
 
       <div className="sticky bottom-6 mt-8 rounded-2xl border border-yellow-600/20 bg-neutral-950/90 p-4 backdrop-blur">
+        {saveError && <p role="alert" className="mb-3 break-words text-sm text-red-300">{saveError}</p>}
         <button
           onClick={handleSave}
           disabled={saving}
@@ -777,3 +795,4 @@ function Textarea({ label, value, onChange }: { label: string; value: string; on
     </label>
   );
 }
+
