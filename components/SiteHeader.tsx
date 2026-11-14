@@ -1,9 +1,10 @@
 "use client";
+// Navigation Custom Icons PRO v1.0 | 2026-11-14 | Decorative image fallback.
 /* eslint-disable @next/next/no-img-element -- Navigation images are selected from the existing media library. */
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { DEFAULT_NAVIGATION, localeHref, navigationFromContent, SITE_LOCALES, switchLocalePath, type NavigationItem, type SiteLocale, type SiteNavigation } from "../lib/site-navigation";
+import { DEFAULT_NAVIGATION, defaultNavigationItemIcon, isNavigationImage, localeHref, navigationFromContent, SITE_LOCALES, switchLocalePath, type NavigationItem, type SiteLocale, type SiteNavigation } from "../lib/site-navigation";
 
 const LABELS = {
   en: { menu: "Menu", language: "Language", choose: "Choose your language", watch: "Watch Now" },
@@ -13,9 +14,11 @@ const LABELS = {
 } as const;
 const LANGUAGE_NAMES: Record<SiteLocale, string> = { en: "English", tr: "Türkçe", fa: "فارسی", ar: "العربية" };
 
-export function NavigationIcon({ value, className = "h-5 w-5" }: { value: string; className?: string }) {
-  if (/^\/images\/[a-zA-Z0-9/_-]+\.(?:png|jpg|jpeg|webp|svg)$/.test(value) || /^https:\/\/[^\s]+\.(?:png|jpg|jpeg|webp|svg)(?:\?[^\s]*)?$/.test(value)) {
-    return <img src={value} alt="" className={`${className} object-contain`} />;
+export function NavigationIcon({ value, className = "h-5 w-5", fallback = "star", showStatus = false }: { value: string; className?: string; fallback?: string; showStatus?: boolean }) {
+  const [failedSource, setFailedSource] = useState<string | null>(null);
+  const image = isNavigationImage(value);
+  if (image && failedSource !== value) {
+    return <img src={value} alt="" aria-hidden="true" className={`${className} object-contain`} onError={() => setFailedSource(value)} />;
   }
   const shapes: Record<string, React.ReactNode> = {
     menu: <><path d="M4 7h16M4 12h16M4 17h16" /></>,
@@ -34,7 +37,8 @@ export function NavigationIcon({ value, className = "h-5 w-5" }: { value: string
     investment: <><path d="M4 20h16M6 17V9m6 8V5m6 12v-6" /></>,
     star: <><path d="m12 2 3 7 7 .6-5.5 4.5 1.8 7L12 17l-6.3 4.1 1.8-7L2 9.6 9 9z" /></>,
   };
-  return <svg aria-hidden="true" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{shapes[value] || shapes.star}</svg>;
+  const icon = <svg aria-hidden="true" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{shapes[value] || shapes[fallback] || shapes.star}</svg>;
+  return showStatus && image && failedSource === value ? <span className="inline-flex items-center gap-2">{icon}<span role="status" className="text-xs text-amber-300">Image unavailable · fallback shown</span></span> : icon;
 }
 
 function getLocalePreference(): SiteLocale | null {
@@ -112,7 +116,7 @@ export default function SiteHeader({ brand = "CINENTO", showWatch = true, initia
   const visible = navigation.items.filter(item => item.enabled && item.href && item.labels[locale]?.trim());
   const top = visible.filter(item => !item.parentId || !visible.some(parent => parent.id === item.parentId));
   const text = LABELS[locale];
-  const link = (item: NavigationItem, first = false) => <a key={item.id} ref={first ? firstItemRef : undefined} href={localeHref(item.href, locale)} onClick={() => setMenuOpen(false)} className="flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm text-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-[var(--site-accent)]" target={item.href.startsWith("https://") ? "_blank" : undefined} rel={item.href.startsWith("https://") ? "noopener noreferrer" : undefined}><NavigationIcon value={item.icon} className="h-5 w-5 shrink-0 text-[var(--site-accent)]" /><span>{item.labels[locale]}</span></a>;
+  const link = (item: NavigationItem, first = false) => <a key={item.id} ref={first ? firstItemRef : undefined} href={localeHref(item.href, locale)} onClick={() => setMenuOpen(false)} className="flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm text-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-[var(--site-accent)]" target={item.href.startsWith("https://") ? "_blank" : undefined} rel={item.href.startsWith("https://") ? "noopener noreferrer" : undefined}><NavigationIcon value={item.icon} fallback={defaultNavigationItemIcon(item.id)} className="h-5 w-5 shrink-0 text-[var(--site-accent)]" /><span>{item.labels[locale]}</span></a>;
 
   return <>
     <header className="site-header sticky top-0 z-50 w-full border-b border-white/15 bg-[#111820]/95 text-white sm:backdrop-blur-xl">
@@ -120,7 +124,7 @@ export default function SiteHeader({ brand = "CINENTO", showWatch = true, initia
         <a href={`/${locale}`} className="min-w-0 max-w-[32vw] truncate text-sm font-bold tracking-[.08em] text-white sm:max-w-none sm:text-lg sm:tracking-[.13em]" aria-label="CINENTO — Home">{brand}</a>
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <div ref={menuRef} className="relative">
-            <button ref={menuButtonRef} type="button" aria-label={text.menu} aria-expanded={menuOpen} aria-controls="cinento-main-menu" onClick={() => { setMenuOpen(value => !value); setLanguageOpen(false); }} className="flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-lg border border-[var(--site-accent)]/50 px-2 sm:px-3 text-sm font-semibold text-[var(--site-accent)] hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-[var(--site-accent)]"><NavigationIcon value={navigation.menuIcon} /><span className="sr-only sm:not-sr-only">{text.menu}</span></button>
+            <button ref={menuButtonRef} type="button" aria-label={text.menu} aria-expanded={menuOpen} aria-controls="cinento-main-menu" onClick={() => { setMenuOpen(value => !value); setLanguageOpen(false); }} className="flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-lg border border-[var(--site-accent)]/50 px-2 sm:px-3 text-sm font-semibold text-[var(--site-accent)] hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-[var(--site-accent)]"><NavigationIcon value={navigation.menuIcon} fallback="menu" /><span className="sr-only sm:not-sr-only">{text.menu}</span></button>
             {menuOpen && <nav id="cinento-main-menu" aria-label={text.menu} className="fixed inset-x-3 top-16 mt-2 max-h-[70vh] w-auto sm:absolute sm:inset-x-auto sm:start-0 sm:top-full sm:w-[min(85vw,330px)] overflow-y-auto rounded-xl border border-[var(--site-accent)]/30 bg-[#1b2630] p-2 shadow-2xl">{top.map((item, index) => <div key={item.id}>{link(item, index === 0)}{visible.filter(child => child.parentId === item.id).map(child => <div key={child.id} className="ms-7 border-s border-white/15 ps-2">{link(child)}</div>)}</div>)}</nav>}
           </div>
           <div ref={languageRef} className="relative">
@@ -134,4 +138,5 @@ export default function SiteHeader({ brand = "CINENTO", showWatch = true, initia
     {firstVisit && <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-5" role="presentation"><div ref={languageDialogRef} role="dialog" aria-modal="true" aria-labelledby="cinento-choose-language" className="w-full max-w-md rounded-2xl border border-[var(--site-accent)]/50 bg-[#1b2630] p-6 text-white shadow-2xl"><h2 id="cinento-choose-language" className="text-xl font-semibold">Choose your language · زبان خود را انتخاب کنید</h2><div className="mt-5 grid grid-cols-2 gap-3">{SITE_LOCALES.map(option => <button key={option} type="button" lang={option} onClick={() => chooseLanguage(option)} className="min-h-12 rounded-lg border border-yellow-500/40 px-3 text-center hover:bg-[var(--site-accent)] hover:text-black focus-visible:outline-2 focus-visible:outline-[var(--site-accent)]">{LANGUAGE_NAMES[option]}</button>)}</div></div></div>}
   </>;
 }
+
 

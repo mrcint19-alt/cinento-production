@@ -1,3 +1,4 @@
+// Navigation Custom Icons PRO v1.0 | 2026-11-14 | Virtual icon folder; existing auth/schema retained.
 import { NextRequest, NextResponse } from "next/server";
 import legacyMeta from "../../../data/images.json";
 import { catalogSession, publicCatalogClient, readBoundedJson, sameOrigin } from "../../../../lib/program-catalog";
@@ -6,16 +7,24 @@ export const dynamic = "force-dynamic";
 const BUCKET = "site-homepage-media";
 const TABLE = "site_homepage_media";
 const MAX_BYTES = 4 * 1024 * 1024;
-const FOLDERS = ["hero", "gallery", "projects"] as const;
+const FOLDERS = ["hero", "gallery", "projects", "icons"] as const;
 type Folder = (typeof FOLDERS)[number];
+type ActiveFolder = Exclude<Folder, "icons">;
 type Media = { url: string; folder: Folder; storage_path: string | null; is_active: boolean };
 const legacy: Record<Folder, string[]> = {
   hero: [legacyMeta.active.hero, "/images/hero/1777547550890-cinento-app-icon-design.png"],
   // The former gallery-3.jpg is only 154 px wide. Keep the file but do not show it.
   gallery: ["/images/gallery/gallery-1.JPG", "/images/gallery/gallery-2.jpg", "/images/gallery/gallery-4.jpg"],
   projects: ["/images/projects/project-1.jpg", "/images/projects/project-2.jpg", "/images/projects/project-3.jpg"],
+  icons: [],
 };
 function isFolder(value: unknown): value is Folder { return FOLDERS.includes(value as Folder); }
+// A virtual icon folder keeps the existing database CHECK and RLS unchanged.
+// Icon files live at icons/* in the same bucket, with legacy folder='gallery'.
+function databaseFolder(folder: Folder): ActiveFolder { return folder === "icons" ? "gallery" : folder; }
+function mediaFolder(row: Pick<Media, "folder" | "storage_path">): Folder {
+  return row.folder === "gallery" && row.storage_path?.startsWith("icons/") ? "icons" : row.folder;
+}
 function imageType(bytes: Uint8Array) {
   if (bytes.length >= 8 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47 &&
       bytes[4] === 0x0d && bytes[5] === 0x0a && bytes[6] === 0x1a && bytes[7] === 0x0a) return { mime: "image/png", ext: "png" };
@@ -29,20 +38,20 @@ export async function GET() {
   const started = performance.now();
   const client = publicCatalogClient();
   if (process.env.VERCEL_ENV === "preview" || !client)
-    return NextResponse.json({ success: true, images: legacy, active: legacyMeta.active }, { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json({ success: true, images: legacy, active: legacyMeta.active, readOnly: process.env.VERCEL_ENV === "preview" }, { headers: { "Cache-Control": "no-store" } });
   const { data, error } = await client.from(TABLE).select("url,folder,storage_path,is_active").order("created_at", { ascending: false });
   const timing = { "Server-Timing": `media-db;dur=${(performance.now() - started).toFixed(1)}` };
   // Show the built-in images while the persistent media table is being provisioned.
-  if (error) return NextResponse.json({ success: true, images: legacy, active: legacyMeta.active }, { headers: { "Cache-Control": "no-store", "X-CINENTO-Source": "snapshot", ...timing } });
+  if (error) return NextResponse.json({ success: true, images: legacy, active: legacyMeta.active, readOnly: false }, { headers: { "Cache-Control": "no-store", "X-CINENTO-Source": "snapshot", ...timing } });
   const rows = data as Media[];
-  const images: Record<Folder, string[]> = { hero: [], gallery: [], projects: [] };
-  const active: Record<Folder, string> = { ...legacyMeta.active };
+  const images: Record<Folder, string[]> = { hero: [], gallery: [], projects: [], icons: [] };
+  const active: Record<ActiveFolder, string> = { ...legacyMeta.active };
   for (const folder of FOLDERS) {
-    images[folder] = [...rows.filter(row => row.folder === folder && row.storage_path).map(row => row.url), ...legacy[folder]];
-    const selected = rows.find(row => row.folder === folder && row.is_active);
-    if (selected) active[folder] = selected.url;
+    images[folder] = [...rows.filter(row => mediaFolder(row) === folder && row.storage_path).map(row => row.url), ...legacy[folder]];
+    const selected = rows.find(row => mediaFolder(row) === folder && row.is_active);
+    if (selected && folder !== "icons") active[folder] = selected.url;
   }
-  return NextResponse.json({ success: true, images, active }, { headers: { "Cache-Control": "no-store", ...timing } });
+  return NextResponse.json({ success: true, images, active, readOnly: false }, { headers: { "Cache-Control": "no-store", ...timing } });
 }
 
 async function authorize(request: NextRequest) {
@@ -54,9 +63,9 @@ async function authorize(request: NextRequest) {
 }
 
 async function currentActive(client: NonNullable<ReturnType<typeof publicCatalogClient>>) {
-  const active: Record<Folder, string> = { ...legacyMeta.active };
+  const active: Record<ActiveFolder, string> = { ...legacyMeta.active };
   const { data } = await client.from(TABLE).select("url,folder").eq("is_active", true).order("created_at", { ascending: false });
-  for (const row of data ?? []) if (isFolder(row.folder) && active[row.folder] === legacyMeta.active[row.folder]) active[row.folder] = row.url;
+  for (const row of data ?? []) if (isFolder(row.folder) && row.folder !== "icons" && active[row.folder] === legacyMeta.active[row.folder]) active[row.folder] = row.url;
   return active;
 }
 
@@ -85,7 +94,7 @@ export async function POST(request: NextRequest) {
     if (uploaded.error) return session.finish(NextResponse.json({ success: false, message: "Image storage is unavailable" }, { status: 503 }));
     const { data: publicImage } = session.client.storage.from(BUCKET).getPublicUrl(storagePath);
     const url = publicImage.publicUrl;
-    const saved = await session.client.from(TABLE).insert({ url, folder, storage_path: storagePath });
+    const saved = await session.client.from(TABLE).insert({ url, folder: databaseFolder(folder), storage_path: storagePath });
     const recorded = performance.now();
     if (saved.error) {
       await session.client.storage.from(BUCKET).remove([storagePath]);
@@ -105,8 +114,9 @@ export async function PATCH(request: NextRequest) {
   if (!session) return NextResponse.json({ success: false, message: "Administrator login required" }, { status: 401 });
   try {
     const { folder, url } = await readBoundedJson(request, 2048);
-    if (!isFolder(folder) || typeof url !== "string") throw new Error("Invalid image");
-    const { data: stored, error } = await session.client.from(TABLE).select("url").eq("url", url).eq("folder", folder).maybeSingle();
+    if (!isFolder(folder) || folder === "icons" || typeof url !== "string") throw new Error("Invalid image");
+    const { data: stored, error } = await session.client.from(TABLE).select("url,folder,storage_path").eq("url", url).eq("folder", folder).maybeSingle();
+    if (stored && mediaFolder(stored as Media) !== folder) throw new Error("Icon uploads cannot be activated as Gallery images");
     if (error || (!stored && !legacy[folder].includes(url))) throw new Error("Unknown image");
     const cleared = await session.client.from(TABLE).update({ is_active: false }).eq("folder", folder).eq("is_active", true);
     if (cleared.error) throw new Error("Unable to select image");
@@ -126,7 +136,8 @@ export async function DELETE(request: NextRequest) {
   try {
     const { folder, url } = await readBoundedJson(request, 2048);
     if (!isFolder(folder) || typeof url !== "string") throw new Error("Invalid image");
-    const { data: row, error } = await session.client.from(TABLE).select("storage_path").eq("url", url).eq("folder", folder).maybeSingle();
+    const { data: row, error } = await session.client.from(TABLE).select("folder,storage_path").eq("url", url).eq("folder", databaseFolder(folder)).maybeSingle();
+    if (row && mediaFolder(row as Media) !== folder) throw new Error("Image folder does not match");
     if (error || !row?.storage_path) throw new Error("Built-in images cannot be deleted");
     const removed = await session.client.from(TABLE).delete().eq("url", url);
     if (removed.error) throw new Error("Delete failed");
@@ -136,3 +147,4 @@ export async function DELETE(request: NextRequest) {
     return session.finish(NextResponse.json({ success: false, message: "This image cannot be deleted" }, { status: 400 }));
   }
 }
+

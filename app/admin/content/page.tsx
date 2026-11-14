@@ -1,4 +1,5 @@
 "use client";
+// Navigation Custom Icons PRO v1.0 | 2026-11-14 | Dashboard integration only.
 // CINENTO Save Diagnostics v1.0 | 2026-11-14 | Preserve form on failed save.
 
 // Footer Manager PRO v1.0 | 2026-11-14 | baseline 5d4af80
@@ -18,7 +19,7 @@ import rtlHomepage from "../../data/rtl-homepage.json";
 import { heroDestination, heroIcon, HERO_DESTINATIONS, HERO_DESTINATION_LABELS, HERO_ICONS } from "../../../lib/hero-cta";
 import { addHeroSlide, heroSliderSettings, moveHeroSlide, removeHeroSlide, reorderHeroSlides, setHeroSlideImage, setHeroSlideShared, type HeroSlide, type HeroSliderSettings } from "../../../lib/hero-slides";
 import { DEFAULT_SITE_THEME, siteTheme, type SiteTheme } from "../../../lib/site-theme";
-import { DEFAULT_NAVIGATION, SITE_LOCALES, navigationFromContent, siteNavigation, validNavigationHref, validNavigationIcon, type SiteNavigation } from "../../../lib/site-navigation";
+import { DEFAULT_NAVIGATION, SITE_LOCALES, isNavigationImage, navigationFromContent, siteNavigation, validNavigationHref, validNavigationIcon, type SiteNavigation } from "../../../lib/site-navigation";
 import NavigationEditor from "../../../components/NavigationEditor";
 
 type Lang = "en" | "tr" | "fa" | "ar";
@@ -113,6 +114,10 @@ export default function ContentManager() {
   const [lang, setLang] = useState<Lang>("en");
   const [theme, setTheme] = useState<SiteTheme>(DEFAULT_SITE_THEME);
   const [navigation, setNavigation] = useState<SiteNavigation>(DEFAULT_NAVIGATION);
+  const [navigationImages, setNavigationImages] = useState<{ gallery: string[]; icons: string[] }>({ gallery: [], icons: [] });
+  const [navigationMediaRevision, setNavigationMediaRevision] = useState(0);
+  const [navigationMediaWritable, setNavigationMediaWritable] = useState(false);
+  const [navigationUploadBusy, setNavigationUploadBusy] = useState(false);
 
   const [brand, setBrand] = useState("");
 
@@ -214,9 +219,11 @@ export default function ContentManager() {
       .then(json => {
         setProjectImages(Array.isArray(json?.images?.projects) ? json.images.projects : []);
         setHeroImages(Array.isArray(json?.images?.hero) ? json.images.hero : []);
+        setNavigationImages({ gallery: Array.isArray(json?.images?.gallery) ? json.images.gallery : [], icons: Array.isArray(json?.images?.icons) ? json.images.icons : [] });
+        setNavigationMediaWritable(json?.success === true && json?.readOnly === false);
       })
       .catch(() => {});
-  }, []);
+  }, [navigationMediaRevision]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const loadLang = (json: any, selectedLang: Lang) => {
@@ -386,9 +393,14 @@ export default function ContentManager() {
 
   const handleSave = async () => {
     setSaveError("");
+    if (navigationUploadBusy) { alert("Wait for the navigation icon upload to finish before saving."); return; }
     try {
       const errors = footerErrors(sharedFooter);
       if (errors.length) { alert(errors.join("\n")); return; }
+      if (navigation.iconLibrary?.some(icon => !icon.name.trim() || (icon.url && !isNavigationImage(icon.url, true)))) {
+        alert("Each icon collection entry needs a name and, when provided, a valid PNG, JPG or WebP image URL.");
+        return;
+      }
       if (!validNavigationIcon(navigation.menuIcon, true) || navigation.items.some(item => item.enabled && (!validNavigationHref(item.href) || !validNavigationIcon(item.icon) || SITE_LOCALES.some(locale => !item.labels[locale].trim())))) {
         alert("The menu icon and every visible item need a valid icon, destination and title in all four languages.");
         return;
@@ -530,7 +542,7 @@ export default function ContentManager() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Section title="Navigation Manager · shared across all languages">
-          <NavigationEditor value={navigation} onChange={setNavigation} />
+          <NavigationEditor value={navigation} onChange={setNavigation} images={navigationImages} mediaWritable={navigationMediaWritable} onMediaChanged={() => setNavigationMediaRevision(revision => revision + 1)} onUploadBusyChange={setNavigationUploadBusy} />
         </Section>
         <Section title="Theme Manager PRO · shared across all languages">
           <p className="text-sm text-neutral-300">These colors apply to the public homepage in EN, TR, FA and AR. Preview saving stays subject to the existing safety restriction.</p>
@@ -754,7 +766,7 @@ export default function ContentManager() {
         {saveError && <p role="alert" className="mb-3 break-words text-sm text-red-300">{saveError}</p>}
         <button
           onClick={handleSave}
-          disabled={saving}
+          disabled={saving || navigationUploadBusy}
           className="w-full rounded-xl bg-yellow-500 px-6 py-4 font-bold text-black transition hover:bg-yellow-400 disabled:opacity-60"
         >
           {saving ? "Saving..." : `Save ${lang.toUpperCase()} Changes`}
@@ -799,5 +811,6 @@ function Textarea({ label, value, onChange }: { label: string; value: string; on
     </label>
   );
 }
+
 
 
