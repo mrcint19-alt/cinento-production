@@ -5,7 +5,7 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 
-const publicPath = path.resolve(import.meta.dirname, "../app/[lang]/page.tsx");
+const publicPath = path.resolve(import.meta.dirname, "../app/[lang]/HomepageClient.tsx");
 const adminPath = path.resolve(import.meta.dirname, "../app/admin/content/page.tsx");
 const publicSource = ts.createSourceFile(publicPath, readFileSync(publicPath, "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
 const adminText = readFileSync(adminPath, "utf8");

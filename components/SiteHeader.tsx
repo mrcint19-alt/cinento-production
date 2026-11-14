@@ -46,11 +46,11 @@ function rememberLanguage(locale: SiteLocale) {
   document.cookie = `cinento_language=${locale}; Path=/; Max-Age=31536000; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
 }
 
-export default function SiteHeader({ brand = "CINENTO", showWatch = true }: { brand?: string; showWatch?: boolean }) {
+export default function SiteHeader({ brand = "CINENTO", showWatch = true, initialContent = null }: { brand?: string; showWatch?: boolean; initialContent?: unknown }) {
   const pathname = usePathname() || "/en";
   const router = useRouter();
   const locale = (SITE_LOCALES.find(value => pathname === `/${value}` || pathname.startsWith(`/${value}/`)) ?? "en") as SiteLocale;
-  const [navigation, setNavigation] = useState<SiteNavigation>(DEFAULT_NAVIGATION);
+  const [navigation, setNavigation] = useState<SiteNavigation>(() => initialContent ? navigationFromContent(initialContent) : DEFAULT_NAVIGATION);
   const [menuOpen, setMenuOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
   const [firstVisit, setFirstVisit] = useState(false);
@@ -62,13 +62,14 @@ export default function SiteHeader({ brand = "CINENTO", showWatch = true }: { br
   const languageDialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (initialContent) return;
     const controller = new AbortController();
     fetch("/api/content/homepage", { cache: "no-store", signal: controller.signal })
       .then(response => response.ok ? response.json() : null)
       .then(content => { if (content) setNavigation(navigationFromContent(content)); })
       .catch(() => {});
     return () => controller.abort();
-  }, []);
+  }, [initialContent]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setFirstVisit(!getLocalePreference()), 0);
@@ -133,3 +134,4 @@ export default function SiteHeader({ brand = "CINENTO", showWatch = true }: { br
     {firstVisit && <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-5" role="presentation"><div ref={languageDialogRef} role="dialog" aria-modal="true" aria-labelledby="cinento-choose-language" className="w-full max-w-md rounded-2xl border border-[var(--site-accent)]/50 bg-[#1b2630] p-6 text-white shadow-2xl"><h2 id="cinento-choose-language" className="text-xl font-semibold">Choose your language · زبان خود را انتخاب کنید</h2><div className="mt-5 grid grid-cols-2 gap-3">{SITE_LOCALES.map(option => <button key={option} type="button" lang={option} onClick={() => chooseLanguage(option)} className="min-h-12 rounded-lg border border-yellow-500/40 px-3 text-center hover:bg-[var(--site-accent)] hover:text-black focus-visible:outline-2 focus-visible:outline-[var(--site-accent)]">{LANGUAGE_NAMES[option]}</button>)}</div></div></div>}
   </>;
 }
+
