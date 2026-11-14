@@ -1,4 +1,9 @@
 {
+  "theme": {
+    "background": "#111820",
+    "surface": "#1B2630",
+    "accent": "#D4AF37"
+  },
   "en": {
     "brand": "CINENTO",
     "hero": {

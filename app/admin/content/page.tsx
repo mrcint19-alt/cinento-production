@@ -1,5 +1,9 @@
 "use client";
 
+// Footer Manager PRO v1.0 | 2026-11-14 | baseline 5d4af80
+import FooterSharedEditor from "../../../components/FooterSharedEditor";
+import { footerShared, footerErrors, type FooterShared } from "../../../lib/footer-manager";
+
 /*
 File: app/admin/content/page.tsx
 Version: v4.1 FULL HOMEPAGE CMS + FOOTER CONTACT SOCIAL
@@ -8,7 +12,13 @@ Status: HERO + WHAT WE DO + WHY + ECOSYSTEM + PLATFORMS + GALLERY + JOURNAL + CO
 */
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import rtlHomepage from "../../data/rtl-homepage.json";
+import { heroDestination, heroIcon, HERO_DESTINATIONS, HERO_DESTINATION_LABELS, HERO_ICONS } from "../../../lib/hero-cta";
+import { addHeroSlide, heroSliderSettings, moveHeroSlide, removeHeroSlide, reorderHeroSlides, setHeroSlideImage, setHeroSlideShared, type HeroSlide, type HeroSliderSettings } from "../../../lib/hero-slides";
+import { DEFAULT_SITE_THEME, siteTheme, type SiteTheme } from "../../../lib/site-theme";
+import { DEFAULT_NAVIGATION, SITE_LOCALES, navigationFromContent, siteNavigation, validNavigationHref, validNavigationIcon, type SiteNavigation } from "../../../lib/site-navigation";
+import NavigationEditor from "../../../components/NavigationEditor";
 
 type Lang = "en" | "tr" | "fa" | "ar";
 
@@ -21,7 +31,7 @@ type JournalItem = {
   title: string;
   description: string;
 };
-type ServiceItem = { title: string; description: string };
+type ServiceItem = { id?: string; title: string; description: string; shortDescription?: string; fullDescription?: string; status?: string };
 type ProjectItem = { id?: string; title: string; role: string; status: string; description: string; image: string };
 const emptyService: ServiceItem = { title: "", description: "" };
 const emptyProject: ProjectItem = { title: "", role: "", status: "", description: "", image: "" };
@@ -47,6 +57,22 @@ const serviceDefaults: Record<Lang, { title: string; subtitle: string; items: Se
   fa: { title: rtlHomepage.fa.services.title, subtitle: rtlHomepage.fa.services.subtitle, items: rtlHomepage.fa.services.items, processTitle: rtlHomepage.fa.process.title, processSubtitle: rtlHomepage.fa.process.subtitle, steps: rtlHomepage.fa.process.steps, projectsTitle: rtlHomepage.fa.featuredProjects.title, projectsSubtitle: rtlHomepage.fa.featuredProjects.subtitle },
   ar: { title: rtlHomepage.ar.services.title, subtitle: rtlHomepage.ar.services.subtitle, items: rtlHomepage.ar.services.items, processTitle: rtlHomepage.ar.process.title, processSubtitle: rtlHomepage.ar.process.subtitle, steps: rtlHomepage.ar.process.steps, projectsTitle: rtlHomepage.ar.featuredProjects.title, projectsSubtitle: rtlHomepage.ar.featuredProjects.subtitle },
 };
+
+type ServiceHomepageData = Partial<Record<Lang, { services?: { items?: ServiceItem[] }; [key: string]: unknown }>> & Record<string, unknown>;
+
+function appendServiceAcrossLocales(current: ServiceHomepageData | null, id: string): ServiceHomepageData {
+  const updated: ServiceHomepageData = { ...current };
+  for (const locale of ["en", "tr", "fa", "ar"] as const) {
+    const section = current?.[locale] ?? {};
+    const services = section.services ?? {};
+    const items = Array.isArray(services.items) ? services.items : serviceDefaults[locale].items;
+    updated[locale] = {
+      ...section,
+      services: { ...services, items: [...items, { id, title: "", description: "" }] },
+    };
+  }
+  return updated;
+}
 
 const emptyPlatform: PlatformItem = { title: "", description: "" };
 const emptyJournal: JournalItem = { title: "", description: "" };
@@ -81,7 +107,10 @@ export default function ContentManager() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [sharedFooter, setSharedFooter] = useState<FooterShared>(() => footerShared(null));
   const [lang, setLang] = useState<Lang>("en");
+  const [theme, setTheme] = useState<SiteTheme>(DEFAULT_SITE_THEME);
+  const [navigation, setNavigation] = useState<SiteNavigation>(DEFAULT_NAVIGATION);
 
   const [brand, setBrand] = useState("");
 
@@ -90,16 +119,23 @@ export default function ContentManager() {
   const [heroDescription, setHeroDescription] = useState("");
   const [heroPrimaryCta, setHeroPrimaryCta] = useState("");
   const [heroPrimaryCtaHref, setHeroPrimaryCtaHref] = useState("watch");
+  const [heroPrimaryCtaVisible, setHeroPrimaryCtaVisible] = useState(true);
+  const [heroPrimaryCtaIcon, setHeroPrimaryCtaIcon] = useState("none");
   const [heroSecondaryCta, setHeroSecondaryCta] = useState("");
   const [heroSecondaryCtaHref, setHeroSecondaryCtaHref] = useState("/platforms");
+  const [heroSecondaryCtaVisible, setHeroSecondaryCtaVisible] = useState(true);
+  const [heroSecondaryCtaIcon, setHeroSecondaryCtaIcon] = useState("none");
   const [heroCardTitle, setHeroCardTitle] = useState("");
   const [heroCardSubtitle, setHeroCardSubtitle] = useState("");
+  const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
+  const [heroSlider, setHeroSlider] = useState<HeroSliderSettings>(heroSliderSettings(null));
+  const [heroImages, setHeroImages] = useState<string[]>([]);
 
   const [whatTitle, setWhatTitle] = useState("");
   const [whatItems, setWhatItems] = useState("");
   const [servicesTitle, setServicesTitle] = useState("");
   const [servicesSubtitle, setServicesSubtitle] = useState("");
-  const [services, setServices] = useState<ServiceItem[]>(threeItems(undefined, emptyService));
+  const [services, setServices] = useState<ServiceItem[]>(serviceDefaults.en.items);
   const [projectsTitle, setProjectsTitle] = useState("");
   const [projectsSubtitle, setProjectsSubtitle] = useState("");
   const [projects, setProjects] = useState<ProjectItem[]>(threeItems(undefined, emptyProject));
@@ -157,6 +193,10 @@ export default function ContentManager() {
       .then((res) => res.json())
       .then((json) => {
         setData(json);
+        setSharedFooter(footerShared(json?.footerShared));
+        setHeroSlider(heroSliderSettings(json?.heroSlider));
+        setTheme(siteTheme(json?.theme));
+        setNavigation(navigationFromContent(json));
         loadLang(json, "en");
         setLoading(false);
       })
@@ -168,7 +208,10 @@ export default function ContentManager() {
 
   useEffect(() => {
     fetch("/api/admin/images", { cache: "no-store" }).then(res => res.json())
-      .then(json => setProjectImages(Array.isArray(json?.images?.projects) ? json.images.projects : []))
+      .then(json => {
+        setProjectImages(Array.isArray(json?.images?.projects) ? json.images.projects : []);
+        setHeroImages(Array.isArray(json?.images?.hero) ? json.images.hero : []);
+      })
       .catch(() => {});
   }, []);
 
@@ -185,11 +228,16 @@ export default function ContentManager() {
     setHeroTitle(section.hero?.title || section.heroTitle || "");
     setHeroDescription(section.hero?.description || section.heroSubtitle || "");
     setHeroPrimaryCta(section.hero?.primaryCta || section.buttonPrimary || "");
-    setHeroPrimaryCtaHref(section.hero?.primaryCtaHref === "#contact" ? "#contact" : "watch");
+    setHeroPrimaryCtaHref(heroDestination(section.hero?.primaryCtaHref, "watch"));
+    setHeroPrimaryCtaVisible(section.hero?.primaryCtaVisible !== false);
+    setHeroPrimaryCtaIcon(heroIcon(section.hero?.primaryCtaIcon));
     setHeroSecondaryCta(section.hero?.secondaryCta || section.buttonSecondary || "");
-    setHeroSecondaryCtaHref(section.hero?.secondaryCtaHref === "#contact" ? "#contact" : "/platforms");
+    setHeroSecondaryCtaHref(heroDestination(section.hero?.secondaryCtaHref, "/platforms"));
+    setHeroSecondaryCtaVisible(section.hero?.secondaryCtaVisible !== false);
+    setHeroSecondaryCtaIcon(heroIcon(section.hero?.secondaryCtaIcon));
     setHeroCardTitle(section.hero?.cardTitle || "CINENTO");
     setHeroCardSubtitle(section.hero?.cardSubtitle || "");
+    setHeroSlides(Array.isArray(section.hero?.slides) ? section.hero.slides : []);
 
     setWhatTitle(section.whatWeDo?.title || section.whatTitle || "");
     setWhatItems(
@@ -202,7 +250,7 @@ export default function ContentManager() {
     const defaults = serviceDefaults[selectedLang];
     setServicesTitle(section.services?.title ?? defaults.title);
     setServicesSubtitle(section.services?.subtitle ?? defaults.subtitle);
-    setServices(threeItems(section.services?.items ?? defaults.items, emptyService));
+    setServices(Array.isArray(section.services?.items) ? section.services.items : defaults.items);
     setProjectsTitle(section.featuredProjects?.title ?? defaults.projectsTitle);
     setProjectsSubtitle(section.featuredProjects?.subtitle ?? defaults.projectsSubtitle);
     const savedProjects: ProjectItem[] = Array.isArray(section.featuredProjects?.items) ? section.featuredProjects.items : [];
@@ -268,8 +316,31 @@ export default function ContentManager() {
   };
 
   const handleLangChange = (newLang: Lang) => {
+    if (newLang === lang) return;
+    const original = data?.[lang]?.services;
+    const defaults = serviceDefaults[lang];
+    const savedItems = Array.isArray(original?.items) ? original.items : defaults.items;
+    const savedHero = data?.[lang]?.hero ?? {};
+    if ((servicesTitle !== (original?.title ?? defaults.title) ||
+         servicesSubtitle !== (original?.subtitle ?? defaults.subtitle) ||
+         JSON.stringify(services) !== JSON.stringify(savedItems) ||
+         JSON.stringify(heroSlides) !== JSON.stringify(savedHero.slides ?? []) ||
+         heroPrimaryCta !== (savedHero.primaryCta ?? data?.[lang]?.buttonPrimary ?? "") ||
+         heroSecondaryCta !== (savedHero.secondaryCta ?? data?.[lang]?.buttonSecondary ?? "") ||
+         heroPrimaryCtaHref !== heroDestination(savedHero.primaryCtaHref, "watch") ||
+         heroSecondaryCtaHref !== heroDestination(savedHero.secondaryCtaHref, "/platforms") ||
+         heroPrimaryCtaVisible !== (savedHero.primaryCtaVisible !== false) ||
+         heroSecondaryCtaVisible !== (savedHero.secondaryCtaVisible !== false) ||
+         heroPrimaryCtaIcon !== heroIcon(savedHero.primaryCtaIcon) ||
+         heroSecondaryCtaIcon !== heroIcon(savedHero.secondaryCtaIcon)) &&
+        !window.confirm("Unsaved Hero or service changes will be lost. Switch language?")) return;
     setLang(newLang);
     loadLang(data, newLang);
+  };
+
+  const updateSharedSlide = (id: string, patch: Partial<Pick<HeroSlide, "durationMs" | "primaryCtaHref" | "secondaryCtaHref" | "primaryCtaVisible" | "secondaryCtaVisible">>) => {
+    setData((current: ServiceHomepageData | null) => setHeroSlideShared(current ?? {}, id, patch));
+    setHeroSlides(current => current.map(slide => slide.id === id ? { ...slide, ...patch } : slide));
   };
 
   const updatePlatform = (index: number, key: keyof PlatformItem, value: string) => {
@@ -290,13 +361,41 @@ export default function ContentManager() {
   const updateItem = <T extends ServiceItem | ProjectItem>(setter: React.Dispatch<React.SetStateAction<T[]>>, index: number, key: keyof T, value: string) => {
     setter(prev => prev.map((item, itemIndex) => itemIndex === index ? { ...item, [key]: value } : item));
   };
+  const moveService = (index: number, direction: -1 | 1) => {
+    setServices(prev => {
+      const target = index + direction;
+      if (target < 0 || target >= prev.length) return prev;
+      const reordered = [...prev];
+      [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+      return reordered;
+    });
+  };
+  const toggleServiceArchive = (index: number) => {
+    const service = services[index];
+    if (!service) return;
+    const archived = service.status === "archived";
+    if (!archived && !window.confirm(`Archive service "${service.title || index + 1}" in ${lang.toUpperCase()}? You can restore it later.`)) return;
+    setServices(prev => prev.map((item, itemIndex) => itemIndex === index
+      ? { ...item, status: archived ? "active" : "archived" }
+      : item));
+  };
 
   const handleSave = async () => {
     try {
+      const errors = footerErrors(sharedFooter);
+      if (errors.length) { alert(errors.join("\n")); return; }
+      if (!validNavigationIcon(navigation.menuIcon, true) || navigation.items.some(item => item.enabled && (!validNavigationHref(item.href) || !validNavigationIcon(item.icon) || SITE_LOCALES.some(locale => !item.labels[locale].trim())))) {
+        alert("The menu icon and every visible item need a valid icon, destination and title in all four languages.");
+        return;
+      }
       setSaving(true);
 
       const updated = {
         ...data,
+        footerShared: footerShared(sharedFooter),
+        heroSlider: heroSliderSettings(heroSlider),
+        theme: siteTheme(theme),
+        navigation: siteNavigation(navigation),
         [lang]: {
           ...data?.[lang],
           brand,
@@ -306,16 +405,21 @@ export default function ContentManager() {
             description: heroDescription,
             primaryCta: heroPrimaryCta,
             primaryCtaHref: heroPrimaryCtaHref,
+            primaryCtaVisible: heroPrimaryCtaVisible,
+            primaryCtaIcon: heroPrimaryCtaIcon,
             secondaryCta: heroSecondaryCta,
             secondaryCtaHref: heroSecondaryCtaHref,
+            secondaryCtaVisible: heroSecondaryCtaVisible,
+            secondaryCtaIcon: heroSecondaryCtaIcon,
             cardTitle: heroCardTitle,
             cardSubtitle: heroCardSubtitle,
+            slides: heroSlides,
           },
           whatWeDo: {
             title: whatTitle,
             items: linesToArray(whatItems),
           },
-          services: { title: servicesTitle, subtitle: servicesSubtitle, items: services.filter(item => item.title.trim()) },
+          services: { ...data?.[lang]?.services, title: servicesTitle, subtitle: servicesSubtitle, items: services },
           featuredProjects: { title: projectsTitle, subtitle: projectsSubtitle, items: lang !== "en"
             ? projects.map((item, index) => ({ ...item, id: item.id || `project-${index + 1}`, image: data?.en?.featuredProjects?.items?.[index]?.image || "" }))
             : projects.filter(item => item.title.trim()).map((item, index) => ({ ...item, id: item.id || `project-${index + 1}` })) },
@@ -348,6 +452,7 @@ export default function ContentManager() {
             whatsappLabel: contactWhatsappLabel,
           },
           footer: {
+            ...data?.[lang]?.footer,
             brandLine: footerBrandLine,
             contactTitle: footerContactTitle,
             location: footerLocation,
@@ -404,6 +509,19 @@ export default function ContentManager() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
+        <Section title="Navigation Manager · shared across all languages">
+          <NavigationEditor value={navigation} onChange={setNavigation} />
+        </Section>
+        <Section title="Theme Manager PRO · shared across all languages">
+          <p className="text-sm text-neutral-300">These colors apply to the public homepage in EN, TR, FA and AR. Preview saving stays subject to the existing safety restriction.</p>
+          {(["background", "surface", "accent"] as const).map(key => <label key={key} className="flex items-center justify-between gap-4 text-sm text-neutral-200">
+            <span className="capitalize">{key}</span>
+            <span className="flex items-center gap-2"><input type="color" aria-label={`${key} color`} value={theme[key]} onChange={event => setTheme(current => ({ ...current, [key]: event.target.value }))} className="h-11 w-14 cursor-pointer p-1" /><code>{theme[key]}</code></span>
+          </label>)}
+          {(["background", "surface", "accent"] as const).some(key => theme[key] !== siteTheme(theme)[key]) && <p role="alert" className="text-sm text-yellow-400">A selected color lacks text contrast. It will use the approved color when saved.</p>}
+          <div className="rounded-lg border p-5" style={{ background: siteTheme(theme).background, borderColor: siteTheme(theme).accent, color: "white" }}><strong style={{ color: siteTheme(theme).accent }}>CINENTO</strong><div className="mt-3 rounded-lg p-4" style={{ background: siteTheme(theme).surface }}>Live color sample · Card content</div></div>
+          <button type="button" onClick={() => setTheme(DEFAULT_SITE_THEME)} className="rounded-lg border border-yellow-500 px-4 py-2 text-sm text-yellow-400">Restore approved palette</button>
+        </Section>
         <Section title="Brand">
           <Input label="Brand" value={brand} onChange={setBrand} />
         </Section>
@@ -413,21 +531,76 @@ export default function ContentManager() {
           <Input label="Hero Title" value={heroTitle} onChange={setHeroTitle} />
           <Textarea label="Hero Description" value={heroDescription} onChange={setHeroDescription} />
           <Input label="Primary Button" value={heroPrimaryCta} onChange={setHeroPrimaryCta} />
+          <label className="flex items-center gap-2 text-sm text-neutral-300"><input type="checkbox" checked={heroPrimaryCtaVisible} onChange={event => setHeroPrimaryCtaVisible(event.target.checked)} />Show primary button</label>
           <label className="block text-sm text-neutral-300">Primary Button Destination
             <select value={heroPrimaryCtaHref} onChange={(event) => setHeroPrimaryCtaHref(event.target.value)} className="mt-2 w-full rounded-lg border border-neutral-700 bg-neutral-900 p-3 text-white">
-              <option value="watch">CINENTO Watch</option>
-              <option value="#contact">Contact form</option>
+              {HERO_DESTINATIONS.map(destination => <option key={destination} value={destination}>{HERO_DESTINATION_LABELS[destination]}</option>)}
+            </select>
+          </label>
+          <label className="block text-sm text-neutral-300">Primary Button Icon
+            <select value={heroPrimaryCtaIcon} onChange={event => setHeroPrimaryCtaIcon(event.target.value)} className="mt-2 w-full rounded-lg border border-neutral-700 bg-neutral-900 p-3 text-white">
+              {HERO_ICONS.map(icon => <option key={icon} value={icon}>{icon === "none" ? "No icon" : icon}</option>)}
             </select>
           </label>
           <Input label="Secondary Button" value={heroSecondaryCta} onChange={setHeroSecondaryCta} />
+          <label className="flex items-center gap-2 text-sm text-neutral-300"><input type="checkbox" checked={heroSecondaryCtaVisible} onChange={event => setHeroSecondaryCtaVisible(event.target.checked)} />Show secondary button</label>
           <label className="block text-sm text-neutral-300">Secondary Button Destination
             <select value={heroSecondaryCtaHref} onChange={(event) => setHeroSecondaryCtaHref(event.target.value)} className="mt-2 w-full rounded-lg border border-neutral-700 bg-neutral-900 p-3 text-white">
-              <option value="/platforms">Products & Platforms</option>
-              <option value="#contact">Contact form</option>
+              {HERO_DESTINATIONS.map(destination => <option key={destination} value={destination}>{HERO_DESTINATION_LABELS[destination]}</option>)}
+            </select>
+          </label>
+          <label className="block text-sm text-neutral-300">Secondary Button Icon
+            <select value={heroSecondaryCtaIcon} onChange={event => setHeroSecondaryCtaIcon(event.target.value)} className="mt-2 w-full rounded-lg border border-neutral-700 bg-neutral-900 p-3 text-white">
+              {HERO_ICONS.map(icon => <option key={icon} value={icon}>{icon === "none" ? "No icon" : icon}</option>)}
             </select>
           </label>
           <Input label="Hero Card Title" value={heroCardTitle} onChange={setHeroCardTitle} />
           <Input label="Hero Card Subtitle" value={heroCardSubtitle} onChange={setHeroCardSubtitle} />
+          <div className="space-y-4 border-t border-white/10 pt-5">
+            <p className="text-sm text-neutral-300">Hero slides · text is separate for each language; the image and order are shared. Blank titles stay hidden. With no slides, the current active Hero image and card remain.</p>
+            <div className="grid gap-3 rounded-xl border border-white/15 p-4 sm:grid-cols-2">
+              <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={heroSlider.autoplay} onChange={event => setHeroSlider(current => ({ ...current, autoplay: event.target.checked }))} />Autoplay</label>
+              <label className="text-sm">Transition
+                <select value={heroSlider.transition} onChange={event => setHeroSlider(current => ({ ...current, transition: event.target.value === "slide" ? "slide" : "fade" }))} className="mt-2 w-full rounded-lg border border-neutral-700 bg-neutral-900 p-3"><option value="fade">Fade</option><option value="slide">Slide</option></select>
+              </label>
+              <label className="text-sm">Time per slide (seconds)
+                <input type="number" min="3" max="20" step="1" value={heroSlider.intervalMs / 1000} onChange={event => setHeroSlider(current => ({ ...current, intervalMs: Number(event.target.value) * 1000 }))} className="mt-2 w-full rounded-lg border border-neutral-700 bg-neutral-900 p-3" />
+              </label>
+              <label className="text-sm">Transition duration (milliseconds)
+                <input type="number" min="150" max="1500" step="50" value={heroSlider.transitionMs} onChange={event => setHeroSlider(current => ({ ...current, transitionMs: Number(event.target.value) }))} className="mt-2 w-full rounded-lg border border-neutral-700 bg-neutral-900 p-3" />
+              </label>
+              <p className="text-xs text-neutral-400 sm:col-span-2">Autoplay pauses on hover, focus and reduced-motion preference. Each slide may override the display time.</p>
+            </div>
+            <button type="button" onClick={() => {
+              const id = crypto.randomUUID();
+              setData((current: ServiceHomepageData | null) => addHeroSlide(current ?? {}, id));
+              setHeroSlides(current => [...current, { id, title: "", subtitle: "", image: "" }]);
+            }} className="rounded-lg border border-yellow-500 px-4 py-2 text-sm font-semibold text-yellow-400">Add Hero slide</button>
+            {heroSlides.map((slide, index) => <div key={slide.id} className="space-y-3 rounded-2xl border border-yellow-600/20 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3"><span className="text-sm text-yellow-400">Slide {index + 1}</span><div className="flex gap-2">
+                <button type="button" aria-label={`Move Hero slide ${index + 1} up`} disabled={index === 0} onClick={() => { setData((current: ServiceHomepageData | null) => moveHeroSlide(current ?? {}, slide.id, -1)); setHeroSlides(current => reorderHeroSlides(current, slide.id, -1)); }} className="rounded border border-neutral-600 px-3 py-1 disabled:opacity-40">↑</button>
+                <button type="button" aria-label={`Move Hero slide ${index + 1} down`} disabled={index === heroSlides.length - 1} onClick={() => { setData((current: ServiceHomepageData | null) => moveHeroSlide(current ?? {}, slide.id, 1)); setHeroSlides(current => reorderHeroSlides(current, slide.id, 1)); }} className="rounded border border-neutral-600 px-3 py-1 disabled:opacity-40">↓</button>
+                <button type="button" onClick={() => { if (!window.confirm(`Remove Hero slide ${index + 1} from all four languages?`)) return; setData((current: ServiceHomepageData | null) => removeHeroSlide(current ?? {}, slide.id)); setHeroSlides(current => current.filter(item => item.id !== slide.id)); }} className="rounded border border-neutral-600 px-3 py-1">Remove</button>
+              </div></div>
+              <Input label={`${lang.toUpperCase()} slide title`} value={slide.title} onChange={value => setHeroSlides(current => current.map(item => item.id === slide.id ? { ...item, title: value } : item))} />
+              <Textarea label={`${lang.toUpperCase()} slide subtitle`} value={slide.subtitle} onChange={value => setHeroSlides(current => current.map(item => item.id === slide.id ? { ...item, subtitle: value } : item))} />
+              <label className="block text-sm">Display time (seconds; blank uses global setting)<input type="number" min="3" max="20" step="1" value={slide.durationMs ? slide.durationMs / 1000 : ""} onChange={event => updateSharedSlide(slide.id, { durationMs: event.target.value ? Number(event.target.value) * 1000 : undefined })} className="mt-2 w-full rounded-lg border border-neutral-700 bg-neutral-900 p-3" /></label>
+              <Input label={`${lang.toUpperCase()} primary button (blank uses Hero button)`} value={slide.primaryCta ?? ""} onChange={value => setHeroSlides(current => current.map(item => item.id === slide.id ? { ...item, primaryCta: value } : item))} />
+              <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={slide.primaryCtaVisible ?? heroPrimaryCtaVisible} onChange={event => updateSharedSlide(slide.id, { primaryCtaVisible: event.target.checked })} />Show primary button on this slide</label>
+              <label className="block text-sm">Primary destination<select value={slide.primaryCtaHref ?? heroPrimaryCtaHref} onChange={event => updateSharedSlide(slide.id, { primaryCtaHref: event.target.value })} className="mt-2 w-full rounded-lg border border-neutral-700 bg-neutral-900 p-3">{HERO_DESTINATIONS.map(destination => <option key={destination} value={destination}>{HERO_DESTINATION_LABELS[destination]}</option>)}</select></label>
+              <Input label={`${lang.toUpperCase()} secondary button (blank uses Hero button)`} value={slide.secondaryCta ?? ""} onChange={value => setHeroSlides(current => current.map(item => item.id === slide.id ? { ...item, secondaryCta: value } : item))} />
+              <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={slide.secondaryCtaVisible ?? heroSecondaryCtaVisible} onChange={event => updateSharedSlide(slide.id, { secondaryCtaVisible: event.target.checked })} />Show secondary button on this slide</label>
+              <label className="block text-sm">Secondary destination<select value={slide.secondaryCtaHref ?? heroSecondaryCtaHref} onChange={event => updateSharedSlide(slide.id, { secondaryCtaHref: event.target.value })} className="mt-2 w-full rounded-lg border border-neutral-700 bg-neutral-900 p-3">{HERO_DESTINATIONS.map(destination => <option key={destination} value={destination}>{HERO_DESTINATION_LABELS[destination]}</option>)}</select></label>
+              <label className="block text-sm text-neutral-300">Image (shared across languages)
+                <select value={slide.image} onChange={event => { const image = event.target.value; setData((current: ServiceHomepageData | null) => setHeroSlideImage(current ?? {}, slide.id, image)); setHeroSlides(current => current.map(item => item.id === slide.id ? { ...item, image } : item)); }} className="mt-2 w-full rounded-lg border border-neutral-700 bg-neutral-900 p-3 text-white">
+                  <option value="">Use active Hero image</option>
+                  {slide.image && !heroImages.includes(slide.image) && <option value={slide.image}>Previously selected image</option>}
+                  {heroImages.map((image, imageIndex) => <option key={image} value={image}>Hero image {imageIndex + 1}</option>)}
+                </select>
+              </label>
+              {slide.image && <Image src={slide.image} alt="Selected Hero slide preview" width={640} height={128} unoptimized className="h-32 w-full object-cover" />}
+            </div>)}
+          </div>
         </Section>
 
         <Section title="What We Do">
@@ -438,10 +611,22 @@ export default function ContentManager() {
         <Section title="Services / خدمات اصلی">
           <Input label="Section title" value={servicesTitle} onChange={setServicesTitle} />
           <Textarea label="Introduction" value={servicesSubtitle} onChange={setServicesSubtitle} />
-          {services.map((item, index) => <div key={index} className="rounded-2xl border border-yellow-600/20 p-4">
-            <div className="mb-3 text-sm text-yellow-400">Service {index + 1}</div>
+          <button type="button" onClick={() => {
+            const id = crypto.randomUUID();
+            setData((prev: ServiceHomepageData | null) => appendServiceAcrossLocales(prev, id));
+            setServices(prev => [...prev, { ...emptyService, id }]);
+          }} className="rounded-lg border border-yellow-500 px-4 py-2 text-sm font-semibold text-yellow-400 hover:bg-yellow-500/10">Add Service</button>
+          {services.map((item, index) => <div key={item.id || index} className="rounded-2xl border border-yellow-600/20 p-4">
+            <div className="mb-3 flex items-center justify-between gap-3"><span className="text-sm text-yellow-400">Service {index + 1}</span><div className="flex gap-2">
+              <button type="button" aria-label={`Move service ${index + 1} up`} disabled={index === 0} onClick={() => moveService(index, -1)} className="rounded border border-neutral-600 px-3 py-1 text-sm disabled:opacity-40">↑</button>
+              <button type="button" aria-label={`Move service ${index + 1} down`} disabled={index === services.length - 1} onClick={() => moveService(index, 1)} className="rounded border border-neutral-600 px-3 py-1 text-sm disabled:opacity-40">↓</button>
+              <button type="button" onClick={() => toggleServiceArchive(index)} className="rounded border border-neutral-600 px-3 py-1 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-yellow-400">{item.status === "archived" ? "Restore" : "Archive"}</button>
+            </div></div>
+            {item.status === "archived" && <p className="mb-3 text-sm text-neutral-400">Archived in {lang.toUpperCase()}: hidden from this language after saving. All text is retained.</p>}
             <Input label="Title" value={item.title} onChange={value => updateItem(setServices, index, "title", value)} />
             <Textarea label="Description" value={item.description} onChange={value => updateItem(setServices, index, "description", value)} />
+            <Textarea label="Card summary (optional; uses Description when empty)" value={item.shortDescription ?? ""} onChange={value => updateItem(setServices, index, "shortDescription", value)} />
+            <Textarea label="Full description (optional)" value={item.fullDescription ?? ""} onChange={value => updateItem(setServices, index, "fullDescription", value)} />
           </div>)}
         </Section>
 
@@ -529,6 +714,7 @@ export default function ContentManager() {
         </Section>
 
         <Section title="Footer Contact & Social">
+          <FooterSharedEditor value={sharedFooter} onChange={setSharedFooter} />
           <Input label="Brand Line" value={footerBrandLine} onChange={setFooterBrandLine} />
           <Input label="Contact Title" value={footerContactTitle} onChange={setFooterContactTitle} />
           <Input label="Location" value={footerLocation} onChange={setFooterLocation} />

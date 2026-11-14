@@ -67,7 +67,8 @@ export async function proxy(request: NextRequest) {
     }
     if (pathname === "/") {
       const url = request.nextUrl.clone();
-      url.pathname = "/en";
+      const preference = request.cookies.get("cinento_language")?.value;
+      url.pathname = preference && /^(en|tr|fa|ar)$/.test(preference) ? `/${preference}` : "/en";
       const response = NextResponse.redirect(url);
       Object.entries(headers).forEach(([key, value]) => response.headers.set(key, value));
       return response;
@@ -89,7 +90,8 @@ export async function proxy(request: NextRequest) {
   // Preserve the baseline behavior outside Preview.
   if (pathname === "/") {
     const url = request.nextUrl.clone();
-    url.pathname = "/en";
+    const preference = request.cookies.get("cinento_language")?.value;
+    url.pathname = preference && /^(en|tr|fa|ar)$/.test(preference) ? `/${preference}` : "/en";
     return NextResponse.redirect(url);
   }
   return NextResponse.next({ request: { headers: routeHeaders } });
