@@ -13,6 +13,13 @@
   background: color-mix(in srgb, var(--site-background, #111820) 88%, transparent);
 }
 
+/* Mobile header must cover scrolling text even when backdrop filters are unavailable. */
+@media (max-width: 639px) {
+  .site-theme .site-header {
+    background: var(--site-background, #111820);
+  }
+}
+
 .site-theme .site-surface {
   background: var(--site-surface, #1b2630);
 }

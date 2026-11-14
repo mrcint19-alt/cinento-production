@@ -547,7 +547,7 @@ export default function HomepageClient({ lang, initialData, initialImages, initi
                   <div className="max-w-sm border-t border-white/40 pt-5 text-2xl font-semibold leading-snug text-white sm:text-3xl">{currentSlide?.subtitle || content.hero.cardSubtitle}</div>
                   {heroSlides.length > 1 && <div className="mt-5 flex items-center gap-2 text-sm text-white" role="group" aria-label={content.hero.title}>
                     <button type="button" aria-label={ui[lang].previousSlide} onClick={() => setActiveSlideIndex(index => (index - 1 + heroSlides.length) % heroSlides.length)} className="grid min-h-10 min-w-10 place-items-center border border-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--site-accent)]">‹</button>
-                    <span className="px-2 tabular-nums" aria-live="off">{activeSlideIndex % heroSlides.length + 1} / {heroSlides.length}</span>
+                    <span className="px-2 tabular-nums" aria-live="off"><bdi dir="ltr">{activeSlideIndex % heroSlides.length + 1} / {heroSlides.length}</bdi></span>
                     <button type="button" aria-label={ui[lang].nextSlide} onClick={() => setActiveSlideIndex(index => (index + 1) % heroSlides.length)} className="grid min-h-10 min-w-10 place-items-center border border-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--site-accent)]">›</button>
                     {sliderSettings.autoplay && <button type="button" aria-label={slidesPaused ? ui[lang].playSlides : ui[lang].pauseSlides} aria-pressed={slidesPaused} onClick={() => setSlidesPaused(value => !value)} className="grid min-h-10 min-w-10 place-items-center border border-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--site-accent)]">{slidesPaused ? "▶" : "Ⅱ"}</button>}
                   </div>}
@@ -588,13 +588,13 @@ export default function HomepageClient({ lang, initialData, initialImages, initi
               <article key={item.id || `${item.title}-${index}`} className="min-w-0 self-start rounded-xl border border-white/10 site-surface p-6 transition hover:border-[var(--site-accent)]/50">
                 {serviceHasDistinctDetail(item) || serviceCardSummary(item).length > 240 ? <details className="group">
                   <summary className="cursor-pointer list-none rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--site-accent)] [&::-webkit-details-marker]:hidden">
-                    <div className="mb-6 text-sm tracking-[0.15em] text-[var(--site-accent)]">{String(index + 1).padStart(2, "0")} / {String(visibleServices.length).padStart(2, "0")}</div>
+                    <div className="mb-6 text-sm tracking-[0.15em] text-[var(--site-accent)]"><bdi dir="ltr">{String(index + 1).padStart(2, "0")} / {String(visibleServices.length).padStart(2, "0")}</bdi></div>
                     <h3 className="break-words text-xl font-semibold leading-7">{item.title}</h3><p className="mt-4 line-clamp-4 whitespace-pre-line break-words text-base leading-7 text-neutral-300 group-open:line-clamp-none">{serviceCardSummary(item)}</p>
                     <span className="mt-5 inline-block text-sm font-medium text-[var(--site-accent)]"><span className="group-open:hidden">{ui[lang].serviceDetails} +</span><span className="hidden group-open:inline">{ui[lang].hideServiceDetails} −</span></span>
                   </summary>
                   {serviceHasDistinctDetail(item) && <p className="mt-5 border-t border-white/10 pt-5 text-base leading-7 whitespace-pre-line break-words text-neutral-300">{serviceDetailText(item)}</p>}
                 </details> : <div>
-                  <div className="mb-6 text-sm tracking-[0.15em] text-[var(--site-accent)]">{String(index + 1).padStart(2, "0")} / {String(visibleServices.length).padStart(2, "0")}</div>
+                  <div className="mb-6 text-sm tracking-[0.15em] text-[var(--site-accent)]"><bdi dir="ltr">{String(index + 1).padStart(2, "0")} / {String(visibleServices.length).padStart(2, "0")}</bdi></div>
                   <h3 className="break-words text-xl font-semibold leading-7">{item.title}</h3><p className="mt-4 whitespace-pre-line break-words text-base leading-7 text-neutral-300">{serviceCardSummary(item)}</p>
                 </div>}
               </article>

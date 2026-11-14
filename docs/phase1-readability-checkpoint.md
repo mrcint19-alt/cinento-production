@@ -1,6 +1,6 @@
 # CINENTO Website — Phase 1 checkpoint
 
-Version: 1.1 | Updated: 2026-11-14
+Version: 1.2 | Updated: 2026-11-14
 
 ## Verified on production at commit 1364ee9
 
@@ -18,21 +18,26 @@ that data before rendering; seeded data avoids duplicate browser requests.
 Fallback readers remain available if a source is unavailable. No CMS records,
 credentials, authorization rules or legal approvals are changed.
 
-## Dashboard actions still required
+## Dashboard corrections — saved and verified on production
 
-1. Arabic Hero slide 2 (ID 56ad223a-5bdc-42cc-8e04-f290f724839f):
-   primary destination remains /platforms; set its Arabic label to
-   "استكشف منصاتنا". Secondary destination remains #contact; set its label to
-   "ابدأ مشروعك". These destinations are shared with other languages; change
-   only the Arabic labels.
-2. Shared footer is currently disabled. Review the saved legal owner, registration
-   country, official address, contact values and visibility before enabling it.
-   Verify the public footer after saving and reloading. Do not approve legal links
-   without the required reviewed documents and approval metadata.
+1. Arabic Hero slide 2 labels now match their unchanged destinations:
+   "استكشف منصاتنا" opens /platforms; "ابدأ مشروعك" opens #contact.
+2. Shared footer is enabled; the saved legal owner and corrected Instagram
+   destination are present in the public footer. Legal document review remains separate.
+
+## Mobile screenshot findings and prepared correction
+
+User-supplied Arabic mobile screenshots show readable single-column cards and
+the legal footer. They also show a tall two-row header with content visible
+underneath, and reversed service counters. The prepared correction compacts
+the mobile header, gives it an opaque theme background, bounds the mobile menu
+to the viewport, preserves all three controls and isolates counters as LTR.
+No dashboard content is replaced.
 
 ## Outstanding validation
 
-- Preview and production visual checks for the server-loaded homepage.
+- Server-loaded content was verified in the production HTML across all four locales.
 - Mobile and reduced-motion tests.
-- Authenticated saving and persistence of the two dashboard corrections.
+- Preview and phone visual checks for the mobile header correction.
+- Project and catalog Arabic translations are incomplete; complete them in the content phase.
 - Qualified review of legal documents remains separate work.
