@@ -7,6 +7,10 @@ Status: PAGE54 BASE + CMS CONNECTED + IMAGE MANAGER ACTIVE HERO SYSTEM CONNECTED
 
 "use client";
 
+// Footer Manager PRO v1.0 | 2026-11-14 | baseline 5d4af80
+import ManagedFooter from "../../components/ManagedFooter";
+import { footerShared, footerHref, type FooterShared } from "../../lib/footer-manager";
+
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
@@ -99,6 +103,7 @@ type PageContent = {
     location?: string;
     email?: string;
     whatsappNumber?: string;
+    whatsappText?: string;
     social?: { instagram?: string; linkedin?: string; website?: string };
   };
 };
@@ -311,6 +316,7 @@ export default function HomePage() {
   }, [lang]);
 
   const [dynamicContent, setDynamicContent] = useState<DynamicHomepageContent | null>(null);
+  const [sharedFooter, setSharedFooter] = useState<FooterShared>(() => footerShared(null));
   const [theme, setTheme] = useState<SiteTheme>(DEFAULT_SITE_THEME);
   const [showEnglishProjectDetails, setShowEnglishProjectDetails] = useState(false);
   const [featuredPrograms, setFeaturedPrograms] = useState<FeaturedProgram[]>([]);
@@ -378,6 +384,7 @@ export default function HomePage() {
       .then((data) => {
         if (!isActive) return;
         setTheme(siteTheme(data?.theme));
+        setSharedFooter(footerShared(data?.footerShared));
         setSliderSettings(heroSliderSettings(data?.heroSlider));
         const selected = data?.[lang] || null;
         const englishProjects = data?.en?.featuredProjects?.items;
@@ -695,7 +702,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <footer className="border-t border-white/10 site-band">
+      {sharedFooter.enabled ? <ManagedFooter settings={sharedFooter} copy={content.footer} brand={content.brand} whatsappLabel={content.contact.whatsappLabel} /> : <footer className="border-t border-white/10 site-band">
         <div className="mx-auto grid max-w-7xl gap-10 px-6 py-12 md:grid-cols-3">
           <div>
             <div className="mb-3 text-lg font-bold text-white">{content.brand}</div>
@@ -706,7 +713,7 @@ export default function HomePage() {
             <div className="space-y-2 text-sm text-neutral-400">
               <div>{content.footer.location?.trim() || "Istanbul, Turkey"}</div>
               <a href={`mailto:${contactEmail}`} className="block hover:text-[var(--site-accent)]">{contactEmail}</a>
-              {whatsappNumber && <a href={`https://wa.me/${whatsappNumber}`} target="_blank" className="block hover:text-[var(--site-accent)]" rel="noreferrer">{content.contact.whatsappLabel}</a>}
+              {footerHref("whatsapp", whatsappNumber) && <a href={footerHref("whatsapp", whatsappNumber)!} target="_blank" className="block hover:text-[var(--site-accent)]" rel="noreferrer">{content.footer.whatsappText?.trim() || content.contact.whatsappLabel}</a>}
             </div>
           </div>
           <div>
@@ -719,7 +726,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="border-t border-white/10 py-4 text-center text-xs text-neutral-500">{content.footer.rights}</div>
-      </footer>
+      </footer>}
     </main>
   );
 }

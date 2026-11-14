@@ -1,5 +1,9 @@
 "use client";
 
+// Footer Manager PRO v1.0 | 2026-11-14 | baseline 5d4af80
+import FooterSharedEditor from "../../../components/FooterSharedEditor";
+import { footerShared, footerErrors, type FooterShared } from "../../../lib/footer-manager";
+
 /*
 File: app/admin/content/page.tsx
 Version: v4.1 FULL HOMEPAGE CMS + FOOTER CONTACT SOCIAL
@@ -103,6 +107,7 @@ export default function ContentManager() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [sharedFooter, setSharedFooter] = useState<FooterShared>(() => footerShared(null));
   const [lang, setLang] = useState<Lang>("en");
   const [theme, setTheme] = useState<SiteTheme>(DEFAULT_SITE_THEME);
   const [navigation, setNavigation] = useState<SiteNavigation>(DEFAULT_NAVIGATION);
@@ -188,6 +193,7 @@ export default function ContentManager() {
       .then((res) => res.json())
       .then((json) => {
         setData(json);
+        setSharedFooter(footerShared(json?.footerShared));
         setHeroSlider(heroSliderSettings(json?.heroSlider));
         setTheme(siteTheme(json?.theme));
         setNavigation(navigationFromContent(json));
@@ -376,6 +382,8 @@ export default function ContentManager() {
 
   const handleSave = async () => {
     try {
+      const errors = footerErrors(sharedFooter);
+      if (errors.length) { alert(errors.join("\n")); return; }
       if (!validNavigationIcon(navigation.menuIcon, true) || navigation.items.some(item => item.enabled && (!validNavigationHref(item.href) || !validNavigationIcon(item.icon) || SITE_LOCALES.some(locale => !item.labels[locale].trim())))) {
         alert("The menu icon and every visible item need a valid icon, destination and title in all four languages.");
         return;
@@ -384,6 +392,7 @@ export default function ContentManager() {
 
       const updated = {
         ...data,
+        footerShared: footerShared(sharedFooter),
         heroSlider: heroSliderSettings(heroSlider),
         theme: siteTheme(theme),
         navigation: siteNavigation(navigation),
@@ -443,6 +452,7 @@ export default function ContentManager() {
             whatsappLabel: contactWhatsappLabel,
           },
           footer: {
+            ...data?.[lang]?.footer,
             brandLine: footerBrandLine,
             contactTitle: footerContactTitle,
             location: footerLocation,
@@ -704,6 +714,7 @@ export default function ContentManager() {
         </Section>
 
         <Section title="Footer Contact & Social">
+          <FooterSharedEditor value={sharedFooter} onChange={setSharedFooter} />
           <Input label="Brand Line" value={footerBrandLine} onChange={setFooterBrandLine} />
           <Input label="Contact Title" value={footerContactTitle} onChange={setFooterContactTitle} />
           <Input label="Location" value={footerLocation} onChange={setFooterLocation} />

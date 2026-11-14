@@ -3,6 +3,8 @@ import { createClient } from "@supabase/supabase-js";
 import snapshot from "../../../data/homepage.json";
 import { catalogSession, publicCatalogClient, readBoundedJson, sameOrigin } from "../../../../lib/program-catalog";
 import { previewAuth, previewAuthConfig } from "../../../../lib/site-admin-auth";
+// CINENTO Footer Manager PRO v1.0 | 2026-11-14
+import { footerShared, footerErrors } from "../../../../lib/footer-manager";
 
 export const dynamic = "force-dynamic";
 const TABLE = "site_homepage_content";
@@ -46,6 +48,11 @@ export async function POST(req: NextRequest) {
     const { data, error } = await session.client.auth.getUser();
     if (error || !data.user || !session.allowed(data.user.id)) return session.finish(NextResponse.json({ error: "Unauthorized" }, { status: 401 }));
     const body = await readBoundedJson(req, 131072);
+    if (body.footerShared !== undefined) {
+      const errors = footerErrors(body.footerShared);
+      if (errors.length) return session.finish(NextResponse.json({ error: errors.join("; ") }, { status: 400 }));
+      body.footerShared = footerShared(body.footerShared);
+    }
     if (!body.en || typeof body.en !== "object" || Array.isArray(body.en) ||
         !body.tr || typeof body.tr !== "object" || Array.isArray(body.tr) ||
         ["fa", "ar"].some(locale => body[locale] != null && (typeof body[locale] !== "object" || Array.isArray(body[locale]))))
